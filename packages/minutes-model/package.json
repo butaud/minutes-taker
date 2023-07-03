@@ -1,0 +1,19 @@
+{
+    "name": "my-package",
+    "version": "1.0.0",
+    "description": "My TypeScript package",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+      "dist"
+    ],
+    "scripts": {
+      "build": "tsc",
+      "test": "jest"
+    },
+    "devDependencies": {
+      "@types/jest": "^27.0.1",
+      "jest": "^27.0.6",
+      "typescript": "^4.4.3"
+    }
+  }
