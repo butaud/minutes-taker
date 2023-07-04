@@ -78,7 +78,7 @@ const fakeSession: Session = {
         {
           type: "actionItem",
           assignee: boardMember1,
-          text: "to follow up with the headmaster about the report.",
+          text: "to follow up with the headmaster about the report",
           dueDate: new Date(),
         },
       ],
