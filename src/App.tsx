@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./App.css";
 import { Person, Session } from "minute-model";
 import { SessionEditor } from "./minutes/SessionEditor";
