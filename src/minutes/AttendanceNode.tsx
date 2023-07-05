@@ -90,21 +90,15 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
     setIsEditing(true);
   };
 
-  const handleCancelClick = () => {
+  const handleStopEditingClick = () => {
     setIsEditing(false);
   };
-
-  const handleSaveClick = () => {
-    setIsEditing(false);
-  };
-
   return (
     <div className="attendance-container">
       <NodeControls
         isEditing={isEditing}
         onEdit={handleEditClick}
-        onCancel={handleCancelClick}
-        onSave={handleSaveClick}
+        onStopEditing={handleStopEditingClick}
       >
         <PersonList
           title="Members in attendance"
