@@ -1,6 +1,9 @@
 import "./App.css";
 import { Person, Session } from "minute-model";
-import { SessionEditor } from "./minutes/SessionEditor";
+import { SessionEditor } from "./ui/SessionEditor";
+import { useEffect, useState } from "react";
+import { ImmutableSession, SessionStore } from "./store/SessionStore";
+import { SessionProvider } from "./store/SessionStoreContext";
 
 const boardMember1: Person = {
   firstName: "Joe",
@@ -82,12 +85,23 @@ const fakeSession: Session = {
     },
   ],
 };
+const store = new SessionStore(fakeSession);
 function App() {
+  const [session, setSession] = useState<ImmutableSession | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    setSession(store.session);
+    return store.subscribe(setSession);
+  }, [fakeSession]);
+  if (session === undefined) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
-      <div>
-        <SessionEditor session={fakeSession} />
-      </div>
+      <SessionProvider sessionStore={store}>
+        <SessionEditor session={session} />
+      </SessionProvider>
     </>
   );
 }

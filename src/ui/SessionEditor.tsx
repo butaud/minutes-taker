@@ -1,10 +1,12 @@
-import { Session } from "minute-model";
 import React from "react";
 import { TopicNode } from "./TopicNode";
 import { AttendanceNode } from "./AttendanceNode";
 import "./SessionEditor.css";
+import { ImmutableSession } from "../store/SessionStore";
 
-export const SessionEditor: React.FC<{ session: Session }> = ({ session }) => {
+export const SessionEditor: React.FC<{ session: ImmutableSession }> = ({
+  session,
+}) => {
   return (
     <div>
       <h1>Meeting on {session.metadata.startTime.toLocaleString()}</h1>
