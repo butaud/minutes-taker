@@ -19,24 +19,32 @@ export type Person = {
 export type Topic = {
     title: string;
     notes: Note[];
+    startTime: Date;
+    endTime: Date;
+    leader?: Person;
 };
 
 export type Note = TextNote | ActionItemNote | MotionNote;
 
 export type TextNote = {
+    type: 'text';
     text: string;
-    speaker?: Person;
 }
 
 export type ActionItemNote = {
+    type: 'actionItem';
     text: string;
     assignee: Person;
     dueDate: Date;
 }
 
 export type MotionNote = {
+    type: 'motion';
     text: string;
     mover: Person;
     seconder: Person;
-    voteCount: number;
+    inFavorCount?: number;
+    opposedCount?: number;
+    abstainedCount?: number;
+    outcome: 'passed' | 'failed' | 'tabled' | 'withdrawn';
 };

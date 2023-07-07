@@ -1,9 +1,9 @@
 {
-    "name": "my-package",
+    "name": "minute-model",
     "version": "1.0.0",
     "description": "My TypeScript package",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "dist/interfaces.js",
+    "types": "dist/interfaces.d.ts",
     "files": [
       "dist"
     ],
