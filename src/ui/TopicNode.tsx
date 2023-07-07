@@ -10,10 +10,12 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
   const sessionStore = useSessionStore();
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(topic.title);
+
   const onSave = useCallback(() => {
     sessionStore.updateTopic({ ...topic, title: workingTitle });
     setIsEditing(false);
   }, [topic, workingTitle]);
+
   const onCancel = useCallback(() => {
     setWorkingTitle(topic.title);
     setIsEditing(false);
