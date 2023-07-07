@@ -4,6 +4,6 @@ h3 {
   margin: 10px 0px;
   font-size: medium;
   font-weight: regular;
-  background-color: rgb(162, 176, 184);
+  background-color: var(--color-background);
   color: black;
 }
