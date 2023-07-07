@@ -2,3 +2,4 @@
 - TODO Make all meeting metadata editable
 - TODO Add topic controls
 - TODO Add note controls
+- TODO Fix date editors timezone issue
