@@ -2,9 +2,10 @@ import React from "react";
 import { TopicNode } from "./TopicNode";
 import { AttendanceNode } from "./AttendanceNode";
 import "./SessionEditor.css";
-import { ImmutableSession } from "../store/SessionStore";
+import { Immutable } from "immer";
+import { Session } from "minute-model";
 
-export const SessionEditor: React.FC<{ session: ImmutableSession }> = ({
+export const SessionEditor: React.FC<{ session: Immutable<Session> }> = ({
   session,
 }) => {
   return (
