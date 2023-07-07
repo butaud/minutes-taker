@@ -4,6 +4,7 @@ import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
 import { StoredSession } from "../store/SessionStore";
 import { useSessionStore } from "./context/SessionStoreContext";
+import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -28,7 +29,7 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
 
   return (
     <div>
-      <h1>Meeting on {session.metadata.startTime.toLocaleString()}</h1>
+      <SessionHeaderNode metadata={session.metadata} />
       <AttendanceNode
         present={session.metadata.membersPresent}
         absent={session.metadata.membersAbsent}

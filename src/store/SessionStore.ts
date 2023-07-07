@@ -230,9 +230,17 @@ export class SessionStore {
     }
   };
 
-  setStartTime = (startTime: Date) => {
+  updateMetadata = (
+    metadata: Omit<
+      SessionMetadata,
+      "membersPresent" | "membersAbsent" | "administrationPresent"
+    >
+  ) => {
     this.produceUpdate((draft) => {
-      draft.metadata.startTime = startTime;
+      draft.metadata = {
+        ...draft.metadata,
+        ...metadata,
+      };
     });
   };
 
@@ -313,13 +321,6 @@ export class SessionStore {
         ...member,
         id: draft.metadata.administrationPresent[index].id,
       };
-    });
-  };
-
-  setLocation = (location: string) => {
-    this.updateSession({
-      ...this._session,
-      metadata: { ...this._session.metadata, location },
     });
   };
 

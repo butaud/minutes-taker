@@ -13,6 +13,8 @@ const SessionContext = createContext<SessionContextType>({
       administrationPresent: [],
       location: "",
       startTime: new Date(),
+      title: "",
+      organization: "",
     },
     topics: [],
   }),
