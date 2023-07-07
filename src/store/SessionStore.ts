@@ -107,23 +107,28 @@ export class SessionStore {
     }));
   }
 
-  private updateSession(session: StoredSession, isUndo: boolean = false) {
+  private updateSession(
+    session: StoredSession,
+    isUndo: boolean = false,
+    isRedo: boolean = false
+  ) {
     if (isUndo) {
       this._undoHistory.push(this._session);
       this._history.pop();
     } else {
       this._history.push(this._session);
-      this._undoHistory = [];
+      if (isRedo) {
+        this._undoHistory.pop();
+      } else {
+        this._undoHistory = [];
+      }
     }
     this._session = session;
     this.callbacks.forEach((cb) => cb(this._session));
   }
 
-  private produceUpdate(
-    update: (draft: Draft<StoredSession>) => void,
-    isUndo: boolean = false
-  ) {
-    this.updateSession(produce(this._session, update), isUndo);
+  private produceUpdate(update: (draft: Draft<StoredSession>) => void) {
+    this.updateSession(produce(this._session, update));
   }
 
   get session() {
@@ -146,7 +151,11 @@ export class SessionStore {
 
   redo = () => {
     if (this._undoHistory.length > 0) {
-      this.updateSession(this._undoHistory[this._undoHistory.length - 1]);
+      this.updateSession(
+        this._undoHistory[this._undoHistory.length - 1],
+        false,
+        true
+      );
     }
   };
 

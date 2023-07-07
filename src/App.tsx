@@ -2,7 +2,7 @@ import "./App.css";
 import { Person, Session } from "minute-model";
 import { SessionEditor } from "./ui/SessionEditor";
 import { useEffect, useState } from "react";
-import { ImmutableSession, SessionStore } from "./store/SessionStore";
+import { SessionStore, StoredSession } from "./store/SessionStore";
 import { SessionProvider } from "./store/SessionStoreContext";
 
 const boardMember1: Person = {
@@ -87,9 +87,7 @@ const fakeSession: Session = {
 };
 const store = new SessionStore(fakeSession);
 function App() {
-  const [session, setSession] = useState<ImmutableSession | undefined>(
-    undefined
-  );
+  const [session, setSession] = useState<StoredSession | undefined>(undefined);
   useEffect(() => {
     setSession(store.session);
     return store.subscribe(setSession);
