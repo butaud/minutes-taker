@@ -1,25 +1,17 @@
-import { Topic } from "minute-model";
 import { NoteNode } from "./NoteNode";
 import "./TopicNode.css";
 import { SpeakerReference } from "./SpeakerReference";
 import { NodeControls } from "./NodeControls";
 import { useCallback, useState } from "react";
-import { Immutable } from "../store/SessionStore";
 import { useSessionStore } from "../store/SessionStoreContext";
+import { StoredTopic } from "../store/SessionStore";
 
-export const TopicNode: React.FC<{ topic: Immutable<Topic> }> = ({ topic }) => {
+export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
   const sessionStore = useSessionStore();
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(topic.title);
   const onSave = useCallback(() => {
-    sessionStore.setTopics(
-      sessionStore.topics.map((t) => {
-        if (t === topic) {
-          t.title = workingTitle;
-        }
-        return t;
-      })
-    )
+    sessionStore.updateTopic({ ...topic, title: workingTitle });
     setIsEditing(false);
   }, [topic, workingTitle]);
   const onCancel = useCallback(() => {

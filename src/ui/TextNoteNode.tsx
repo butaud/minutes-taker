@@ -1,12 +1,15 @@
 import { useCallback, useState } from "react";
-import { TextNote } from "minute-model";
 import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
 import "./TextNoteNode.css";
+import { StoredTextNote } from "../store/SessionStore";
+import { useSessionStore } from "../store/SessionStoreContext";
 
-export const TextNoteNode: React.FC<{ note: TextNote }> = ({ note }) => {
+export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(note.text);
+
+  const sessionStore = useSessionStore();
 
   const handleTextChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,7 +19,10 @@ export const TextNoteNode: React.FC<{ note: TextNote }> = ({ note }) => {
   );
 
   const handleSave = useCallback(() => {
-    note.text = text;
+    sessionStore.updateNote({
+      ...note,
+      text,
+    });
     setIsEditing(false);
   }, [note, text]);
 

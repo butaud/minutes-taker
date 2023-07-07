@@ -2,20 +2,22 @@ import { Person } from "minute-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
 import { NodeControls } from "./NodeControls";
-import { Immutable } from "../store/SessionStore";
 import { useSessionStore } from "../store/SessionStoreContext";
+import { StoredPerson } from "../store/SessionStore";
 
 type PersonListProps = {
   title: string;
-  people: readonly Immutable<Person>[];
-  updatePeople: (people: readonly Immutable<Person>[]) => void;
+  people: readonly StoredPerson[];
+  addPerson: (newPerson: Person) => void;
+  removePerson: (person: StoredPerson) => void;
   isEditing: boolean;
 };
 
 const PersonList: React.FC<PersonListProps> = ({
   title,
   people,
-  updatePeople,
+  addPerson,
+  removePerson,
   isEditing,
 }) => {
   const [newPerson, setNewPerson] = useState("");
@@ -30,14 +32,13 @@ const PersonList: React.FC<PersonListProps> = ({
     event.preventDefault();
     const [firstName, lastName] = newPerson.split(" ");
     if (firstName && lastName) {
-      const newPerson = { firstName, lastName };
-      updatePeople([...people, newPerson]);
+      addPerson({ firstName, lastName });
       setNewPerson("");
     }
   };
 
-  const handleRemovePerson = (person: Person) => {
-    updatePeople(people.filter((p) => p !== person));
+  const handleRemovePerson = (person: StoredPerson) => {
+    removePerson(person);
   };
 
   return (
@@ -74,9 +75,9 @@ const PersonList: React.FC<PersonListProps> = ({
 };
 
 type AttendanceNodeProps = {
-  present: readonly Immutable<Person>[];
-  absent: readonly Immutable<Person>[];
-  administrationPresent: readonly Immutable<Person>[];
+  present: readonly StoredPerson[];
+  absent: readonly StoredPerson[];
+  administrationPresent: readonly StoredPerson[];
 };
 
 export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
@@ -95,19 +96,6 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
     setIsEditing(false);
   };
 
-  const updateMembersPresent = (people: readonly Immutable<Person>[]) => {
-    sessionStore.setMembersPresent(people);
-  };
-
-  const updateMembersAbsent = (people: readonly Immutable<Person>[]) => {
-    sessionStore.setMembersAbsent(people);
-  };
-
-  const updateAdministrationPresent = (
-    people: readonly Immutable<Person>[]
-  ) => {
-    sessionStore.setAdministrationPresent(people);
-  };
   return (
     <div className="attendance-container">
       <NodeControls
@@ -118,19 +106,22 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
         <PersonList
           title="Members in attendance"
           people={present}
-          updatePeople={updateMembersPresent}
+          addPerson={sessionStore.addMemberPresent}
+          removePerson={sessionStore.removeMemberPresent}
           isEditing={isEditing}
         />
         <PersonList
           title="Members not in attendance"
           people={absent}
-          updatePeople={updateMembersAbsent}
+          addPerson={sessionStore.addMemberAbsent}
+          removePerson={sessionStore.removeMemberAbsent}
           isEditing={isEditing}
         />
         <PersonList
           title="Administration"
           people={administrationPresent}
-          updatePeople={updateAdministrationPresent}
+          addPerson={sessionStore.addAdministrationPresent}
+          removePerson={sessionStore.removeAdministrationPresent}
           isEditing={isEditing}
         />
       </NodeControls>

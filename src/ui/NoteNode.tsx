@@ -2,6 +2,7 @@ import { TextNote, ActionItemNote, MotionNote, Note } from "minute-model";
 import { TextNoteNode } from "./TextNoteNode";
 import { ActionItemNoteNode } from "./ActionItemNoteNode";
 import { MotionNoteNode } from "./MotionNoteNode";
+import { StoredNote } from "../store/SessionStore";
 
 const isTextNote = (note: Note): note is TextNote => {
   return note.type === "text";
@@ -15,7 +16,7 @@ const isMotionNote = (note: Note): note is MotionNote => {
   return note.type === "motion";
 };
 
-export const NoteNode: React.FC<{ note: Note }> = ({ note }) => {
+export const NoteNode: React.FC<{ note: StoredNote }> = ({ note }) => {
   if (isTextNote(note)) {
     return <TextNoteNode note={note} />;
   } else if (isActionItemNote(note)) {

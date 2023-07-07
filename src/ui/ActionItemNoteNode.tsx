@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { ActionItemNote } from "minute-model";
 import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
 
 import "./ActionItemNoteNode.css";
+import { StoredActionItemNote } from "../store/SessionStore";
+import { useSessionStore } from "../store/SessionStoreContext";
 
-export const ActionItemNoteNode: React.FC<{ note: ActionItemNote }> = ({
+export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
   note,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(note.text);
   const [dueDate, setDueDate] = useState(note.dueDate);
+
+  const sessionStore = useSessionStore();
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
@@ -24,8 +27,11 @@ export const ActionItemNoteNode: React.FC<{ note: ActionItemNote }> = ({
   };
 
   const handleSave = () => {
-    note.text = text;
-    note.dueDate = dueDate;
+    sessionStore.updateNote({
+      ...note,
+      text,
+      dueDate,
+    });
     setIsEditing(false);
   };
 

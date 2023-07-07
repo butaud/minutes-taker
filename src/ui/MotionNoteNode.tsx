@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { MotionNote } from "minute-model";
 import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
+import { StoredMotionNote } from "../store/SessionStore";
+import { useSessionStore } from "../store/SessionStoreContext";
 
-export const MotionNoteNode: React.FC<{ note: MotionNote }> = ({ note }) => {
+export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
+  note,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [outcome, setOutcome] = useState(note.outcome);
   const [inFavorCount, setInFavorCount] = useState(note.inFavorCount);
   const [opposedCount, setOpposedCount] = useState(note.opposedCount);
   const [abstainedCount, setAbstainedCount] = useState(note.abstainedCount);
 
+  const sessionStore = useSessionStore();
+
   const handleOutcomeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setOutcome(event.target.value as MotionNote["outcome"]);
+    setOutcome(event.target.value as StoredMotionNote["outcome"]);
   };
 
   const handleInFavorCountChange = (
@@ -33,10 +38,13 @@ export const MotionNoteNode: React.FC<{ note: MotionNote }> = ({ note }) => {
   };
 
   const handleSave = () => {
-    note.outcome = outcome;
-    note.inFavorCount = inFavorCount;
-    note.opposedCount = opposedCount;
-    note.abstainedCount = abstainedCount;
+    sessionStore.updateNote({
+      ...note,
+      outcome,
+      inFavorCount,
+      opposedCount,
+      abstainedCount,
+    });
     setIsEditing(false);
   };
 
@@ -106,7 +114,9 @@ export const MotionNoteNode: React.FC<{ note: MotionNote }> = ({ note }) => {
   );
 };
 
-const MotionOutcomeDisplay: React.FC<{ note: MotionNote }> = ({ note }) => {
+const MotionOutcomeDisplay: React.FC<{ note: StoredMotionNote }> = ({
+  note,
+}) => {
   if (note.outcome === "withdrawn") {
     return <p>The motion was abandoned.</p>;
   } else if (note.outcome === "tabled") {

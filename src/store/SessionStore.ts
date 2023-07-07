@@ -1,40 +1,51 @@
-import { Person, Session, SessionMetadata, Topic, Note } from "minute-model";
-import { produce, Immutable } from "immer";
-
-type StoredNote = Note & {
-  id: number;
-};
-
-type StoredTopic = Omit<Topic, "notes" | "leader"> & {
-  id: number;
-  notes: StoredNote[];
-  leader?: StoredPerson;
-};
-
-type StoredPerson = Person & {
-  id: number;
-};
-
-type StoredSessionMetadata = Omit<
+import {
+  Person,
+  Session,
   SessionMetadata,
-  "membersPresent" | "membersAbsent" | "administrationPresent"
-> & {
-  membersPresent: StoredPerson[];
-  membersAbsent: StoredPerson[];
-  administrationPresent: StoredPerson[];
+  Topic,
+  Note,
+  ActionItemNote,
+  MotionNote,
+  TextNote,
+} from "minute-model";
+import { produce, Immutable, Draft } from "immer";
+
+type WithId<T> = T & { id: number };
+
+type HaltingTypes =
+  | string
+  | number
+  | boolean
+  | bigint
+  | symbol
+  | null
+  | undefined
+  | Function
+  | Date;
+
+type AddIdToArrayTypes<T> = {
+  [K in keyof T]: T[K] extends Array<infer Item>
+    ? Array<WithId<AddIdToArrayTypes<Item>>>
+    : T[K] extends HaltingTypes
+    ? T[K]
+    : AddIdToArrayTypes<T[K]>;
 };
 
-type StoredSession = {
-  metadata: StoredSessionMetadata;
-  topics: StoredTopic[];
-};
+export type StoredSession = Immutable<AddIdToArrayTypes<Session>>;
+export type StoredSessionMetadata = StoredSession["metadata"];
+export type StoredTopic = StoredSession["topics"][number];
+export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
+export type StoredNote = StoredTopic["notes"][number];
+export type StoredTextNote = WithId<TextNote>;
+export type StoredActionItemNote = WithId<ActionItemNote>;
+export type StoredMotionNote = WithId<MotionNote>;
 
 export class SessionStore {
   _history: StoredSession[] = [];
   _undoHistory: StoredSession[] = [];
   _session: StoredSession;
   _allPeople: StoredPerson[] = [];
-  callbacks: ((session: Immutable<Session>) => void)[] = [];
+  callbacks: ((session: StoredSession) => void)[] = [];
   personId = 0;
   topicId = 0;
   noteId = 0;
@@ -109,7 +120,7 @@ export class SessionStore {
   }
 
   private produceUpdate(
-    update: (draft: StoredSession) => void,
+    update: (draft: Draft<StoredSession>) => void,
     isUndo: boolean = false
   ) {
     this.updateSession(produce(this._session, update), isUndo);
@@ -119,118 +130,122 @@ export class SessionStore {
     return this._session;
   }
 
-  subscribe(callback: (session: Immutable<Session>) => void) {
+  subscribe = (callback: (session: StoredSession) => void) => {
     this.callbacks.push(callback);
-  }
+  };
 
-  unsubscribe(callback: (session: Immutable<Session>) => void) {
+  unsubscribe = (callback: (session: StoredSession) => void) => {
     this.callbacks = this.callbacks.filter((cb) => cb !== callback);
-  }
+  };
 
-  undo() {
+  undo = () => {
     if (this._history.length > 0) {
       this.updateSession(this._history[this._history.length - 1], true);
     }
-  }
+  };
 
-  redo() {
+  redo = () => {
     if (this._undoHistory.length > 0) {
       this.updateSession(this._undoHistory[this._undoHistory.length - 1]);
     }
-  }
+  };
 
-  setStartTime(startTime: Date) {
+  setStartTime = (startTime: Date) => {
     this.produceUpdate((draft) => {
       draft.metadata.startTime = startTime;
     });
-  }
+  };
 
-  addMemberPresent(member: Immutable<Person>) {
+  addMemberPresent = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersPresent.push({ ...member, id: this.personId++ });
     });
-  }
+  };
 
-  removeMemberPresent(id: number) {
+  removeMemberPresent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersPresent = draft.metadata.membersPresent.filter(
-        (m) => m.id !== id
+        (m) => m.id !== member.id
       );
     });
-  }
+  };
 
-  updateMemberPresent(id: number, member: Immutable<Person>) {
+  updateMemberPresent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
-      const index = draft.metadata.membersPresent.findIndex((m) => m.id === id);
+      const index = draft.metadata.membersPresent.findIndex(
+        (m) => m.id === member.id
+      );
       draft.metadata.membersPresent[index] = {
         ...member,
         id: draft.metadata.membersPresent[index].id,
       };
     });
-  }
+  };
 
-  addMemberAbsent(member: Immutable<Person>) {
+  addMemberAbsent = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersAbsent.push({ ...member, id: this.personId++ });
     });
-  }
+  };
 
-  removeMemberAbsent(id: number) {
+  removeMemberAbsent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersAbsent = draft.metadata.membersAbsent.filter(
-        (m) => m.id !== id
+        (m) => m.id !== member.id
       );
     });
-  }
+  };
 
-  updateMemberAbsent(id: number, member: Immutable<Person>) {
+  updateMemberAbsent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
-      const index = draft.metadata.membersAbsent.findIndex((m) => m.id === id);
+      const index = draft.metadata.membersAbsent.findIndex(
+        (m) => m.id === member.id
+      );
       draft.metadata.membersAbsent[index] = {
         ...member,
         id: draft.metadata.membersAbsent[index].id,
       };
     });
-  }
+  };
 
-  addAdministrationPresent(member: Immutable<Person>) {
+  addAdministrationPresent = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.administrationPresent.push({
         ...member,
         id: this.personId++,
       });
     });
-  }
+  };
 
-  removeAdministrationPresent(id: number) {
+  removeAdministrationPresent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
       draft.metadata.administrationPresent =
-        draft.metadata.administrationPresent.filter((m) => m.id !== id);
+        draft.metadata.administrationPresent.filter((m) => m.id !== member.id);
     });
-  }
+  };
 
-  updateAdministrationPresent(id: number, member: Immutable<Person>) {
+  updateAdministrationPresent = (member: StoredPerson) => {
     this.produceUpdate((draft) => {
       const index = draft.metadata.administrationPresent.findIndex(
-        (m) => m.id === id
+        (m) => m.id === member.id
       );
       draft.metadata.administrationPresent[index] = {
         ...member,
         id: draft.metadata.administrationPresent[index].id,
       };
     });
-  }
+  };
 
-  setLocation(location: string) {
+  setLocation = (location: string) => {
     this.updateSession({
       ...this._session,
       metadata: { ...this._session.metadata, location },
     });
-  }
+  };
 
-  addTopic(
-    topic: Pick<Immutable<Topic>, "title" | "startTime" | "endTime" | "leader">
-  ) {
+  addTopic = (
+    topic: Pick<Topic, "title" | "startTime" | "endTime" | "leader">
+  ) => {
     this.produceUpdate((draft) => {
       draft.topics.push({
         ...topic,
@@ -239,20 +254,22 @@ export class SessionStore {
         leader: topic.leader && this.findPerson(topic.leader),
       });
     });
-  }
+  };
 
-  removeTopic(id: number) {
+  removeTopic = (topic: StoredTopic) => {
     this.produceUpdate((draft) => {
-      draft.topics = draft.topics.filter((t) => t.id !== id);
+      draft.topics = draft.topics.filter((t) => t.id !== topic.id);
     });
-  }
+  };
 
-  updateTopic(
-    id: number,
-    topic: Pick<Immutable<Topic>, "title" | "startTime" | "endTime" | "leader">
-  ) {
+  updateTopic = (
+    topic: Pick<
+      StoredTopic,
+      "title" | "startTime" | "endTime" | "leader" | "id"
+    >
+  ) => {
     this.produceUpdate((draft) => {
-      const index = draft.topics.findIndex((t) => t.id === id);
+      const index = draft.topics.findIndex((t) => t.id === topic.id);
       draft.topics[index] = {
         ...topic,
         id: draft.topics[index].id,
@@ -260,9 +277,9 @@ export class SessionStore {
         leader: topic.leader && this.findPerson(topic.leader),
       };
     });
-  }
+  };
 
-  addNote(topicId: number, note: Immutable<Note>) {
+  addNote = (topicId: number, note: Note) => {
     this.produceUpdate((draft) => {
       const index = draft.topics.findIndex((t) => t.id === topicId);
       draft.topics[index].notes.push({
@@ -270,25 +287,27 @@ export class SessionStore {
         id: this.noteId++,
       });
     });
-  }
+  };
 
-  removeNote(noteId: number) {
+  removeNote = (note: StoredNote) => {
     this.produceUpdate((draft) => {
       draft.topics.forEach((topic) => {
-        topic.notes = topic.notes.filter((n) => n.id !== noteId);
+        topic.notes = topic.notes.filter((n) => n.id !== note.id);
       });
     });
-  }
+  };
 
-  updateNote(noteId: number, note: Immutable<Note>) {
+  updateNote = (note: StoredNote) => {
     this.produceUpdate((draft) => {
       draft.topics.forEach((topic) => {
-        const index = topic.notes.findIndex((n) => n.id === noteId);
-        topic.notes[index] = {
-          ...note,
-          id: topic.notes[index].id,
-        };
+        const index = topic.notes.findIndex((n) => n.id === note.id);
+        if (index !== -1) {
+          topic.notes[index] = {
+            ...note,
+            id: topic.notes[index].id,
+          };
+        }
       });
     });
-  }
+  };
 }
