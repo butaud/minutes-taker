@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import { NodeControls } from "./NodeControls";
-import { SpeakerReference } from "./SpeakerReference";
+import { NodeControls } from "../../controls/NodeControls";
+import { SpeakerReference } from "../../controls/SpeakerReference";
 import "./TextNoteNode.css";
-import { StoredTextNote } from "../store/SessionStore";
-import { useSessionStore } from "./context/SessionStoreContext";
+import { StoredTextNote } from "../../../store/SessionStore";
+import { useSessionStore } from "../../context/SessionStoreContext";
 
 export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {
   const [isEditing, setIsEditing] = useState(false);

@@ -1,10 +1,10 @@
-import { NoteNode } from "./NoteNode";
+import { NoteNode } from "../NoteNode";
 import "./TopicNode.css";
-import { SpeakerReference } from "./SpeakerReference";
-import { NodeControls } from "./NodeControls";
+import { SpeakerReference } from "../../controls/SpeakerReference";
+import { NodeControls } from "../../controls/NodeControls";
 import { useCallback, useState } from "react";
-import { useSessionStore } from "./context/SessionStoreContext";
-import { StoredTopic } from "../store/SessionStore";
+import { useSessionStore } from "../../context/SessionStoreContext";
+import { StoredTopic } from "../../../store/SessionStore";
 
 export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
   const sessionStore = useSessionStore();

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { TopicNode } from "./TopicNode";
-import { AttendanceNode } from "./AttendanceNode";
+import { TopicNode } from "./nodes/topic/TopicNode";
+import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
 import { StoredSession } from "../store/SessionStore";
 import { useSessionStore } from "./context/SessionStoreContext";

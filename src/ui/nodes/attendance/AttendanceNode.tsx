@@ -1,9 +1,9 @@
 import { Person } from "minute-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
-import { NodeControls } from "./NodeControls";
-import { useSessionStore } from "./context/SessionStoreContext";
-import { StoredPerson } from "../store/SessionStore";
+import { NodeControls } from "../../controls/NodeControls";
+import { useSessionStore } from "../../context/SessionStoreContext";
+import { StoredPerson } from "../../../store/SessionStore";
 
 type PersonListProps = {
   title: string;

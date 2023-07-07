@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { NodeControls } from "./NodeControls";
-import { SpeakerReference } from "./SpeakerReference";
+import { NodeControls } from "../../controls/NodeControls";
+import { SpeakerReference } from "../../controls/SpeakerReference";
 
 import "./ActionItemNoteNode.css";
-import { StoredActionItemNote, StoredPerson } from "../store/SessionStore";
-import { useSessionStore } from "./context/SessionStoreContext";
-import { PersonSelector } from "./PersonSelector";
+import {
+  StoredActionItemNote,
+  StoredPerson,
+} from "../../../store/SessionStore";
+import { useSessionStore } from "../../context/SessionStoreContext";
+import { PersonSelector } from "../../controls/PersonSelector";
 
 export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
   note,

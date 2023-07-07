@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { NodeControls } from "./NodeControls";
-import { SpeakerReference } from "./SpeakerReference";
-import { StoredMotionNote, StoredPerson } from "../store/SessionStore";
-import { useSessionStore } from "./context/SessionStoreContext";
-import { PersonSelector } from "./PersonSelector";
+import { NodeControls } from "../../controls/NodeControls";
+import { SpeakerReference } from "../../controls/SpeakerReference";
+import { StoredMotionNote, StoredPerson } from "../../../store/SessionStore";
+import { useSessionStore } from "../../context/SessionStoreContext";
+import { PersonSelector } from "../../controls/PersonSelector";
 
 export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
   note,

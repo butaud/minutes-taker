@@ -1,12 +1,12 @@
-import { TextNoteNode } from "./TextNoteNode";
+import { TextNoteNode } from "./text/TextNoteNode";
 import { ActionItemNoteNode } from "./ActionItemNoteNode";
 import { MotionNoteNode } from "./MotionNoteNode";
-import { StoredNote } from "../store/SessionStore";
+import { StoredNote } from "../../store/SessionStore";
 import {
   isStoredActionItemNote,
   isStoredTextNote,
   isStoredMotionNote,
-} from "../util/types";
+} from "../../util/types";
 
 export const NoteNode: React.FC<{ note: StoredNote }> = ({ note }) => {
   if (isStoredTextNote(note)) {
