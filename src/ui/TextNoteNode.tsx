@@ -3,7 +3,7 @@ import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
 import "./TextNoteNode.css";
 import { StoredTextNote } from "../store/SessionStore";
-import { useSessionStore } from "../store/SessionStoreContext";
+import { useSessionStore } from "./context/SessionStoreContext";
 
 export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {
   const [isEditing, setIsEditing] = useState(false);

@@ -3,7 +3,7 @@ import "./TopicNode.css";
 import { SpeakerReference } from "./SpeakerReference";
 import { NodeControls } from "./NodeControls";
 import { useCallback, useState } from "react";
-import { useSessionStore } from "../store/SessionStoreContext";
+import { useSessionStore } from "./context/SessionStoreContext";
 import { StoredTopic } from "../store/SessionStore";
 
 export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {

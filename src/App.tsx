@@ -2,8 +2,13 @@ import "./App.css";
 import { Person, Session } from "minute-model";
 import { SessionEditor } from "./ui/SessionEditor";
 import { useEffect, useState } from "react";
-import { SessionStore, StoredSession } from "./store/SessionStore";
-import { SessionProvider } from "./store/SessionStoreContext";
+import {
+  SessionStore,
+  StoredPerson,
+  StoredSession,
+} from "./store/SessionStore";
+import { SessionProvider } from "./ui/context/SessionStoreContext";
+import { PersonListContext } from "./ui/context/PersonListContext";
 
 const boardMember1: Person = {
   firstName: "Joe",
@@ -88,9 +93,14 @@ const fakeSession: Session = {
 const store = new SessionStore(fakeSession);
 function App() {
   const [session, setSession] = useState<StoredSession | undefined>(undefined);
+  const [personList, setPersonList] = useState<readonly StoredPerson[]>([]);
   useEffect(() => {
     setSession(store.session);
-    return store.subscribe(setSession);
+    setPersonList(store.allPeople);
+    return store.subscribe(() => {
+      setSession(store.session);
+      setPersonList(store.allPeople);
+    });
   }, [fakeSession]);
   if (session === undefined) {
     return <div>Loading...</div>;
@@ -98,7 +108,9 @@ function App() {
   return (
     <>
       <SessionProvider sessionStore={store}>
-        <SessionEditor session={session} />
+        <PersonListContext.Provider value={personList}>
+          <SessionEditor session={session} />
+        </PersonListContext.Provider>
       </SessionProvider>
     </>
   );

@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { SessionStore } from "./SessionStore";
+import { SessionStore } from "../../store/SessionStore";
 
 type SessionContextType = {
   sessionStore: SessionStore;

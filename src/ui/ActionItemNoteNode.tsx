@@ -3,8 +3,9 @@ import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
 
 import "./ActionItemNoteNode.css";
-import { StoredActionItemNote } from "../store/SessionStore";
-import { useSessionStore } from "../store/SessionStoreContext";
+import { StoredActionItemNote, StoredPerson } from "../store/SessionStore";
+import { useSessionStore } from "./context/SessionStoreContext";
+import { PersonSelector } from "./PersonSelector";
 
 export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
   note,
@@ -12,8 +13,13 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(note.text);
   const [dueDate, setDueDate] = useState(note.dueDate);
+  const [assignee, setAssignee] = useState(note.assignee);
 
   const sessionStore = useSessionStore();
+
+  const handleAssigneeChange = (newAssignee: StoredPerson) => {
+    setAssignee(newAssignee);
+  };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
@@ -31,6 +37,7 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
       ...note,
       text,
       dueDate,
+      assignee,
     });
     setIsEditing(false);
   };
@@ -53,6 +60,10 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
           <em>Action item:</em>{" "}
           {isEditing ? (
             <>
+              <PersonSelector
+                selectedPerson={note.assignee}
+                onChange={handleAssigneeChange}
+              />
               <input
                 className="ainn-text-input"
                 type="text"

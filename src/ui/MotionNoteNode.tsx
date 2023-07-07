@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
 import { StoredMotionNote } from "../store/SessionStore";
-import { useSessionStore } from "../store/SessionStoreContext";
+import { useSessionStore } from "./context/SessionStoreContext";
 
 export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
   note,

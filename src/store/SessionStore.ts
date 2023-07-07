@@ -23,32 +23,43 @@ type HaltingTypes =
   | Function
   | Date;
 
-type AddIdToArrayTypes<T> = {
+type AddIdToArrayTypes<T, SpecialIdTypes = never> = {
   [K in keyof T]: T[K] extends Array<infer Item>
-    ? Array<WithId<AddIdToArrayTypes<Item>>>
+    ? Array<WithId<AddIdToArrayTypes<Item, SpecialIdTypes>>>
     : T[K] extends HaltingTypes
     ? T[K]
-    : AddIdToArrayTypes<T[K]>;
+    : T[K] extends SpecialIdTypes
+    ? WithId<T[K]>
+    : AddIdToArrayTypes<T[K], SpecialIdTypes>;
 };
 
-export type StoredSession = Immutable<AddIdToArrayTypes<Session>>;
+export type StoredSession = Immutable<AddIdToArrayTypes<Session, Person>>;
 export type StoredSessionMetadata = StoredSession["metadata"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
 export type StoredNote = StoredTopic["notes"][number];
-export type StoredTextNote = WithId<TextNote>;
-export type StoredActionItemNote = WithId<ActionItemNote>;
-export type StoredMotionNote = WithId<MotionNote>;
+export type StoredTextNote = Omit<WithId<TextNote>, "speaker"> & {
+  speaker?: StoredPerson;
+};
+export type StoredActionItemNote = Omit<WithId<ActionItemNote>, "assignee"> & {
+  assignee: StoredPerson;
+};
+export type StoredMotionNote = Omit<
+  WithId<MotionNote>,
+  "mover" | "seconder"
+> & {
+  mover: StoredPerson;
+  seconder: StoredPerson;
+};
 
 export class SessionStore {
-  _history: StoredSession[] = [];
-  _undoHistory: StoredSession[] = [];
-  _session: StoredSession;
-  _allPeople: StoredPerson[] = [];
-  callbacks: ((session: StoredSession) => void)[] = [];
-  personId = 0;
-  topicId = 0;
-  noteId = 0;
+  private _history: StoredSession[] = [];
+  private _undoHistory: StoredSession[] = [];
+  private _session: StoredSession;
+  private callbacks: ((session: StoredSession) => void)[] = [];
+  private personId = 0;
+  private topicId = 0;
+  private noteId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -56,11 +67,6 @@ export class SessionStore {
 
   private convertSession(session: Session): StoredSession {
     const sessionMetadata = this.convertSessionMetadata(session.metadata);
-    this._allPeople = [
-      ...sessionMetadata.membersPresent,
-      ...sessionMetadata.membersAbsent,
-      ...sessionMetadata.administrationPresent,
-    ];
     return {
       metadata: sessionMetadata,
       topics: this.convertTopics(session.topics),
@@ -68,7 +74,7 @@ export class SessionStore {
   }
 
   private findPerson(person: Person): StoredPerson | undefined {
-    return this._allPeople.find(
+    return this.allPeople.find(
       (p) => p.firstName === person.firstName && p.lastName === person.lastName
     );
   }
@@ -92,12 +98,64 @@ export class SessionStore {
     };
   }
 
+  private convertTextNote = (note: TextNote): StoredTextNote => {
+    return {
+      ...note,
+      id: this.noteId++,
+      speaker: note.speaker && this.findPerson(note.speaker),
+    };
+  };
+
+  private convertActionItemNote = (
+    note: ActionItemNote
+  ): StoredActionItemNote => {
+    const assignee = this.findPerson(note.assignee);
+    if (!assignee) {
+      throw new Error(
+        `Could not find person ${note.assignee.firstName} ${note.assignee.lastName}`
+      );
+    }
+    return {
+      ...note,
+      id: this.noteId++,
+      assignee,
+    };
+  };
+
+  private convertMotionNote = (note: MotionNote): StoredMotionNote => {
+    const mover = this.findPerson(note.mover);
+    if (!mover) {
+      throw new Error(
+        `Could not find person ${note.mover.firstName} ${note.mover.lastName}`
+      );
+    }
+    const seconder = this.findPerson(note.seconder);
+    if (!seconder) {
+      throw new Error(
+        `Could not find person ${note.seconder.firstName} ${note.seconder.lastName}`
+      );
+    }
+    return {
+      ...note,
+      id: this.noteId++,
+      mover,
+      seconder,
+    };
+  };
+
+  private convertNote = (note: Note): StoredNote => {
+    if (note.type === "text") {
+      return this.convertTextNote(note);
+    } else if (note.type === "actionItem") {
+      return this.convertActionItemNote(note);
+    } else {
+      return this.convertMotionNote(note);
+    }
+  };
+
   private convertTopics(topics: Topic[]): StoredTopic[] {
     const noteListConverter = (notes: Note[]) => {
-      return notes.map((note) => ({
-        ...note,
-        id: this.noteId++,
-      }));
+      return notes.map((note) => this.convertNote(note));
     };
     return topics.map((topic) => ({
       ...topic,
@@ -133,6 +191,14 @@ export class SessionStore {
 
   get session() {
     return this._session;
+  }
+
+  get allPeople(): readonly StoredPerson[] {
+    return [
+      ...this.session.metadata.membersPresent,
+      ...this.session.metadata.membersAbsent,
+      ...this.session.metadata.administrationPresent,
+    ];
   }
 
   subscribe = (callback: (session: StoredSession) => void) => {
@@ -291,10 +357,7 @@ export class SessionStore {
   addNote = (topicId: number, note: Note) => {
     this.produceUpdate((draft) => {
       const index = draft.topics.findIndex((t) => t.id === topicId);
-      draft.topics[index].notes.push({
-        ...note,
-        id: this.noteId++,
-      });
+      draft.topics[index].notes.push(this.convertNote(note));
     });
   };
 
