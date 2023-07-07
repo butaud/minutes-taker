@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { NodeControls } from "./NodeControls";
 import { SpeakerReference } from "./SpeakerReference";
-import { StoredMotionNote } from "../store/SessionStore";
+import { StoredMotionNote, StoredPerson } from "../store/SessionStore";
 import { useSessionStore } from "./context/SessionStoreContext";
+import { PersonSelector } from "./PersonSelector";
 
 export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
   note,
@@ -12,6 +13,8 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
   const [inFavorCount, setInFavorCount] = useState(note.inFavorCount);
   const [opposedCount, setOpposedCount] = useState(note.opposedCount);
   const [abstainedCount, setAbstainedCount] = useState(note.abstainedCount);
+  const [mover, setMover] = useState(note.mover);
+  const [seconder, setSeconder] = useState(note.seconder);
 
   const sessionStore = useSessionStore();
 
@@ -37,6 +40,14 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
     setAbstainedCount(parseInt(event.target.value));
   };
 
+  const handleMoverChange = (newMover: StoredPerson) => {
+    setMover(newMover);
+  };
+
+  const handleSeconderChange = (newSeconder: StoredPerson) => {
+    setSeconder(newSeconder);
+  };
+
   const handleSave = () => {
     sessionStore.updateNote({
       ...note,
@@ -44,6 +55,8 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
       inFavorCount,
       opposedCount,
       abstainedCount,
+      mover,
+      seconder,
     });
     setIsEditing(false);
   };
@@ -53,6 +66,8 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
     setInFavorCount(note.inFavorCount);
     setOpposedCount(note.opposedCount);
     setAbstainedCount(note.abstainedCount);
+    setMover(note.mover);
+    setSeconder(note.seconder);
     setIsEditing(false);
   };
 
@@ -64,13 +79,34 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
       onCancel={handleCancel}
     >
       <div>
-        <p>
-          <SpeakerReference speaker={note.mover} emphasis /> moved that{" "}
-          {note.text}.
-        </p>
-        <p>
-          <SpeakerReference speaker={note.seconder} emphasis /> seconded.
-        </p>
+        {isEditing ? (
+          <>
+            <label>
+              Mover:
+              <PersonSelector
+                selectedPerson={note.mover}
+                onChange={handleMoverChange}
+              />
+            </label>
+            <label>
+              Seconder:
+              <PersonSelector
+                selectedPerson={note.seconder}
+                onChange={handleSeconderChange}
+              />
+            </label>
+          </>
+        ) : (
+          <>
+            <p>
+              <SpeakerReference speaker={note.mover} emphasis /> moved that{" "}
+              {note.text}.
+            </p>
+            <p>
+              <SpeakerReference speaker={note.seconder} emphasis /> seconded.
+            </p>
+          </>
+        )}
         {isEditing ? (
           <select value={outcome} onChange={handleOutcomeChange}>
             <option value="passed">Motion passed</option>

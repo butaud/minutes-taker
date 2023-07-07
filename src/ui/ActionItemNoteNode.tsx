@@ -46,6 +46,7 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
     setText(note.text);
     setDueDate(note.dueDate);
     setIsEditing(false);
+    setAssignee(note.assignee);
   };
 
   return (
