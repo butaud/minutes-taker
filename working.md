@@ -1,4 +1,4 @@
-- TODO Make text note speaker editable (or remove)
+- DONE Make text note speaker editable (or remove)
 - TODO Make all meeting metadata editable
 - TODO Add topic controls
 - TODO Add note controls

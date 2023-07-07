@@ -46,7 +46,6 @@ const fakeSession: Session = {
       notes: [
         {
           type: "text",
-          speaker: boardMember1,
           text: "The meeting was called to order at 7:00pm.",
         },
       ],
@@ -77,7 +76,6 @@ const fakeSession: Session = {
       notes: [
         {
           type: "text",
-          speaker: headmaster,
           text: "The headmaster gave his report.",
         },
         {

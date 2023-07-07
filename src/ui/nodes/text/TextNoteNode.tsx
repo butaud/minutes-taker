@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { NodeControls } from "../../controls/NodeControls";
-import { SpeakerReference } from "../../controls/SpeakerReference";
 import "./TextNoteNode.css";
 import { StoredTextNote } from "../../../store/SessionStore";
 import { useSessionStore } from "../../context/SessionStoreContext";
@@ -40,8 +39,6 @@ export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {
     >
       <div>
         <p>
-          {note.speaker && <SpeakerReference speaker={note.speaker} />}
-          {note.speaker && ":"}{" "}
           {isEditing ? (
             <input
               className="tnn-input"

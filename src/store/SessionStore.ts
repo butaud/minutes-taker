@@ -38,9 +38,7 @@ export type StoredSessionMetadata = StoredSession["metadata"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
 export type StoredNote = StoredTopic["notes"][number];
-export type StoredTextNote = Omit<WithId<TextNote>, "speaker"> & {
-  speaker?: StoredPerson;
-};
+export type StoredTextNote = WithId<TextNote>;
 export type StoredActionItemNote = Omit<WithId<ActionItemNote>, "assignee"> & {
   assignee: StoredPerson;
 };
@@ -110,7 +108,6 @@ export class SessionStore {
     return {
       ...note,
       id: this.noteId++,
-      speaker: note.speaker && this.findPerson(note.speaker),
     };
   };
 
