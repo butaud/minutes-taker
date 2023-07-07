@@ -9,6 +9,8 @@ export type SessionMetadata = {
     administrationPresent: Person[];
     location: string;
     startTime: Date;
+    organization: string;
+    title: string;
 };
 
 export type Person = {
