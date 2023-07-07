@@ -4,3 +4,5 @@
 - TODO "Add topic" controls
 - TODO "Add note" controls
 - TODO Fix date editors timezone issue
+- TODO Save and load file to local storage
+- TODO Save and load file to filesystem

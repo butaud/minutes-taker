@@ -54,7 +54,7 @@ const NotEditingButtons = ({
   return (
     <span className="node-controls">
       <button onClick={editCallback}>Edit</button>
-      <button onClick={deleteCallback}>Delete</button>
+      {onDelete && <button onClick={deleteCallback}>Delete</button>}
     </span>
   );
 };
@@ -78,7 +78,9 @@ const EditingButtons = ({
     <span className="node-controls">
       {onSave && <button onClick={saveCallback}>Save</button>}
       {onCancel && <button onClick={cancelCallback}>Cancel</button>}
-      {onStopEditing && <button onClick={stopEditingCallback}>Stop</button>}
+      {onStopEditing && (
+        <button onClick={stopEditingCallback}>Stop Editing</button>
+      )}
     </span>
   );
 };
