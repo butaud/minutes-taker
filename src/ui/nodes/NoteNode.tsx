@@ -1,6 +1,6 @@
 import { TextNoteNode } from "./text/TextNoteNode";
-import { ActionItemNoteNode } from "./ActionItemNoteNode";
-import { MotionNoteNode } from "./MotionNoteNode";
+import { ActionItemNoteNode } from "./action-item/ActionItemNoteNode";
+import { MotionNoteNode } from "./motion/MotionNoteNode";
 import { StoredNote } from "../../store/SessionStore";
 import {
   isStoredActionItemNote,

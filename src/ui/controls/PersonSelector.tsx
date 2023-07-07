@@ -1,5 +1,5 @@
-import { StoredPerson } from "../store/SessionStore";
-import { usePersonList } from "./context/PersonListContext";
+import { StoredPerson } from "../../store/SessionStore";
+import { usePersonList } from "../context/PersonListContext";
 
 type PersonSelectorProps = {
   selectedPerson?: StoredPerson;

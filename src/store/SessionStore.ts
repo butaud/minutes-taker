@@ -67,6 +67,14 @@ export class SessionStore {
 
   private convertSession(session: Session): StoredSession {
     const sessionMetadata = this.convertSessionMetadata(session.metadata);
+
+    // Kind of a hack so that we can access the full list of persons when we are creating
+    // the topics.
+    this._session = {
+      metadata: sessionMetadata,
+      topics: [],
+    };
+
     return {
       metadata: sessionMetadata,
       topics: this.convertTopics(session.topics),
