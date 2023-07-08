@@ -23,13 +23,13 @@ export const PersonSelector: React.FC<PersonSelectorProps> = ({
   };
 
   return (
-    <select onChange={handleChange}>
+    <select
+      onChange={handleChange}
+      value={selectedPerson?.id}
+      aria-label="Person selector"
+    >
       {personList.map((person) => (
-        <option
-          key={person.id}
-          value={person.id}
-          selected={person.id === selectedPerson?.id}
-        >
+        <option key={person.id} value={person.id}>
           {person.firstName} {person.lastName}
         </option>
       ))}

@@ -30,8 +30,6 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
 
   const handleDueDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(event.target.value);
-    const offset = date.getTimezoneOffset();
-    date.setTime(date.getTime() - offset * 60 * 1000);
     setDueDate(date);
   };
 
@@ -69,12 +67,14 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
                 onChange={handleAssigneeChange}
               />
               <input
+                aria-label="Action item text"
                 className="ainn-text-input"
                 type="text"
                 value={text}
                 onChange={handleTextChange}
               />
               <input
+                aria-label="Action item due date"
                 type="date"
                 value={dueDate?.toISOString().substr(0, 10)}
                 onChange={handleDueDateChange}
@@ -84,7 +84,10 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
             <>
               <SpeakerReference speaker={note.assignee} emphasis /> to{" "}
               {note.text}{" "}
-              {note.dueDate && "by " + note.dueDate.toLocaleDateString()}.
+              {note.dueDate &&
+                "by " +
+                  note.dueDate.toLocaleDateString("en-US", { timeZone: "UTC" })}
+              .
             </>
           )}
         </p>
