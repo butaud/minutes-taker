@@ -1,6 +1,7 @@
 import { NodeControls } from "./NodeControls";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 
 describe("NodeControls", () => {
   it("renders without crashing", () => {
@@ -136,6 +137,92 @@ describe("NodeControls", () => {
 
       await user.hover(screen.getByText("Test"));
       expect(screen.queryByText("Stop Editing")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("button callbacks", () => {
+    it("calls onEdit when edit is clicked", async () => {
+      const user = userEvent.setup();
+      const onEdit = vi.fn();
+
+      render(
+        <NodeControls isEditing={false} onEdit={onEdit}>
+          <div>Test</div>
+        </NodeControls>
+      );
+
+      await user.hover(screen.getByText("Test"));
+      fireEvent.click(screen.getByText("Edit"));
+
+      expect(onEdit).toHaveBeenCalled();
+    });
+
+    it("calls onDelete when delete is clicked", async () => {
+      const user = userEvent.setup();
+      const onDelete = vi.fn();
+
+      render(
+        <NodeControls isEditing={false} onEdit={() => {}} onDelete={onDelete}>
+          <div>Test</div>
+        </NodeControls>
+      );
+
+      await user.hover(screen.getByText("Test"));
+      fireEvent.click(screen.getByText("Delete"));
+
+      expect(onDelete).toHaveBeenCalled();
+    });
+
+    it("calls onSave when save is clicked", async () => {
+      const user = userEvent.setup();
+      const onSave = vi.fn();
+
+      render(
+        <NodeControls isEditing={true} onEdit={() => {}} onSave={onSave}>
+          <div>Test</div>
+        </NodeControls>
+      );
+
+      await user.hover(screen.getByText("Test"));
+      fireEvent.click(screen.getByText("Save"));
+
+      expect(onSave).toHaveBeenCalled();
+    });
+
+    it("calls onCancel when cancel is clicked", async () => {
+      const user = userEvent.setup();
+      const onCancel = vi.fn();
+
+      render(
+        <NodeControls isEditing={true} onEdit={() => {}} onCancel={onCancel}>
+          <div>Test</div>
+        </NodeControls>
+      );
+
+      await user.hover(screen.getByText("Test"));
+      fireEvent.click(screen.getByText("Cancel"));
+
+      expect(onCancel).toHaveBeenCalled();
+    });
+
+    it("calls onStopEditing when stop editing is clicked", async () => {
+      const user = userEvent.setup();
+      const onStopEditing = vi.fn();
+
+      render(
+        <NodeControls
+          isEditing={true}
+          onEdit={() => {}}
+          onStopEditing={onStopEditing}
+        >
+          <div>Test</div>
+        </NodeControls>
+      );
+
+      await user.hover(screen.getByText("Test"));
+      fireEvent.click(screen.getByText("Stop Editing"));
+
+      expect(onStopEditing).toHaveBeenCalled();
     });
   });
 });
