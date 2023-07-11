@@ -21,6 +21,7 @@ const PersonList: React.FC<PersonListProps> = ({
   isEditing,
 }) => {
   const [newPerson, setNewPerson] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   const handleNewPersonChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -32,13 +33,21 @@ const PersonList: React.FC<PersonListProps> = ({
     event.preventDefault();
     const [firstName, lastName] = newPerson.split(" ");
     if (firstName && lastName) {
+      setErrorMessage(undefined);
       addPerson({ firstName, lastName });
       setNewPerson("");
+    } else {
+      setErrorMessage("Please enter a first and last name.");
     }
   };
 
   const handleRemovePerson = (person: StoredPerson) => {
-    removePerson(person);
+    setErrorMessage(undefined);
+    try {
+      removePerson(person);
+    } catch (error) {
+      setErrorMessage(`${error}`);
+    }
   };
 
   return (
@@ -58,6 +67,7 @@ const PersonList: React.FC<PersonListProps> = ({
             </div>
           ))}
           <form onSubmit={handleAddPerson}>
+            {errorMessage && <p role="alert">{errorMessage}</p>}
             <label>
               Add member to {title.toLowerCase()} list:
               <input

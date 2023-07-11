@@ -26,14 +26,25 @@ type HaltingTypes =
 type AddIdToArrayTypes<T, SpecialIdTypes = never> = {
   [K in keyof T]: T[K] extends Array<infer Item>
     ? Array<WithId<AddIdToArrayTypes<Item, SpecialIdTypes>>>
-    : T[K] extends HaltingTypes
-    ? T[K]
     : T[K] extends SpecialIdTypes
     ? WithId<T[K]>
+    : T[K] extends HaltingTypes
+    ? T[K]
     : AddIdToArrayTypes<T[K], SpecialIdTypes>;
 };
-
-export type StoredSession = Immutable<AddIdToArrayTypes<Session, Person>>;
+type StoredSessionBeforeTopicLeaderHack = AddIdToArrayTypes<Session, Person>;
+type StoredSessionAfterTopicLeaderHack = Omit<
+  StoredSessionBeforeTopicLeaderHack,
+  "topics"
+> & {
+  topics: (Omit<
+    StoredSessionBeforeTopicLeaderHack["topics"][number],
+    "leader"
+  > & {
+    leader?: StoredPerson;
+  })[];
+};
+export type StoredSession = Immutable<StoredSessionAfterTopicLeaderHack>;
 export type StoredSessionMetadata = StoredSession["metadata"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
@@ -194,6 +205,29 @@ export class SessionStore {
     this.updateSession(produce(this._session, update));
   }
 
+  private throwIfMemberIsReferenced = (person: StoredPerson) => {
+    if (this._session.topics.some((topic) => topic.leader?.id === person.id)) {
+      throw new Error(
+        "This person is the leader of a topic and cannot be removed."
+      );
+    }
+    if (
+      this._session.topics.some((topic) =>
+        topic.notes.some(
+          (note) =>
+            (note.type === "motion" &&
+              (note.mover.id === person.id ||
+                note.seconder.id === person.id)) ||
+            (note.type === "actionItem" && note.assignee.id === person.id)
+        )
+      )
+    ) {
+      throw new Error(
+        "This person is referenced in a note and cannot be removed."
+      );
+    }
+  };
+
   get session() {
     return this._session;
   }
@@ -251,6 +285,7 @@ export class SessionStore {
   };
 
   removeMemberPresent = (member: StoredPerson) => {
+    this.throwIfMemberIsReferenced(member);
     this.produceUpdate((draft) => {
       draft.metadata.membersPresent = draft.metadata.membersPresent.filter(
         (m) => m.id !== member.id
@@ -277,6 +312,7 @@ export class SessionStore {
   };
 
   removeMemberAbsent = (member: StoredPerson) => {
+    this.throwIfMemberIsReferenced(member);
     this.produceUpdate((draft) => {
       draft.metadata.membersAbsent = draft.metadata.membersAbsent.filter(
         (m) => m.id !== member.id
@@ -306,6 +342,7 @@ export class SessionStore {
   };
 
   removeAdministrationPresent = (member: StoredPerson) => {
+    this.throwIfMemberIsReferenced(member);
     this.produceUpdate((draft) => {
       draft.metadata.administrationPresent =
         draft.metadata.administrationPresent.filter((m) => m.id !== member.id);

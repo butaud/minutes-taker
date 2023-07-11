@@ -68,6 +68,7 @@ export const SessionHeaderNode: React.FC<{
         {editing ? (
           <input
             type="text"
+            aria-label="Organization"
             value={organization}
             onChange={handleOrganizationChange}
           />
@@ -78,14 +79,21 @@ export const SessionHeaderNode: React.FC<{
       <h2>
         {editing ? (
           <>
-            <input type="text" value={title} onChange={handleTitleChange} />{" "}
             <input
               type="text"
+              aria-label="Title"
+              value={title}
+              onChange={handleTitleChange}
+            />{" "}
+            <input
+              type="text"
+              aria-label="Location"
               value={location}
               onChange={handleLocationChange}
             />{" "}
             <input
               type="datetime-local"
+              aria-label="Start time"
               value={startTime.toISOString().slice(0, -8)}
               onChange={handleStartTimeChange}
             />
