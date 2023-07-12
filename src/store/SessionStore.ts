@@ -90,10 +90,16 @@ export class SessionStore {
     };
   }
 
-  private findPerson(person: Person): StoredPerson | undefined {
-    return this.allPeople.find(
+  private findPerson(person: Person): StoredPerson {
+    const found = this.allPeople.find(
       (p) => p.firstName === person.firstName && p.lastName === person.lastName
     );
+    if (!found) {
+      throw new Error(
+        `Could not find person named ${person.firstName} ${person.lastName}.`
+      );
+    }
+    return found;
   }
 
   private convertSessionMetadata(
@@ -125,37 +131,19 @@ export class SessionStore {
   private convertActionItemNote = (
     note: ActionItemNote
   ): StoredActionItemNote => {
-    const assignee = this.findPerson(note.assignee);
-    if (!assignee) {
-      throw new Error(
-        `Could not find person ${note.assignee.firstName} ${note.assignee.lastName}`
-      );
-    }
     return {
       ...note,
       id: this.noteId++,
-      assignee,
+      assignee: this.findPerson(note.assignee),
     };
   };
 
   private convertMotionNote = (note: MotionNote): StoredMotionNote => {
-    const mover = this.findPerson(note.mover);
-    if (!mover) {
-      throw new Error(
-        `Could not find person ${note.mover.firstName} ${note.mover.lastName}`
-      );
-    }
-    const seconder = this.findPerson(note.seconder);
-    if (!seconder) {
-      throw new Error(
-        `Could not find person ${note.seconder.firstName} ${note.seconder.lastName}`
-      );
-    }
     return {
       ...note,
       id: this.noteId++,
-      mover,
-      seconder,
+      mover: this.findPerson(note.mover),
+      seconder: this.findPerson(note.seconder),
     };
   };
 
@@ -362,9 +350,17 @@ export class SessionStore {
   };
 
   addTopic = (
-    topic: Pick<Topic, "title" | "startTime" | "endTime" | "leader">
+    topic: Pick<Topic, "title" | "startTime" | "durationMinutes" | "leader">
   ) => {
     this.produceUpdate((draft) => {
+      // Update the duration on the previous topic
+      if (draft.topics.length > 0) {
+        const previousTopic = draft.topics[draft.topics.length - 1];
+        previousTopic.durationMinutes = Math.round(
+          (topic.startTime.getTime() - previousTopic.startTime.getTime()) /
+            60000
+        );
+      }
       draft.topics.push({
         ...topic,
         id: this.topicId++,
@@ -383,7 +379,7 @@ export class SessionStore {
   updateTopic = (
     topic: Pick<
       StoredTopic,
-      "title" | "startTime" | "endTime" | "leader" | "id"
+      "title" | "startTime" | "durationMinutes" | "leader" | "id"
     >
   ) => {
     this.produceUpdate((draft) => {
@@ -392,7 +388,7 @@ export class SessionStore {
         ...topic,
         id: draft.topics[index].id,
         notes: draft.topics[index].notes,
-        leader: topic.leader && this.findPerson(topic.leader),
+        leader: topic.leader,
       };
     });
   };

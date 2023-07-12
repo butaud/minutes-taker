@@ -7,3 +7,39 @@ h3 {
   background-color: var(--color-background);
   color: black;
 }
+
+form.topic {
+  border: 1px solid #000;
+  padding: 10px;
+  margin: 10px 0px;
+  font-size: medium;
+  font-weight: regular;
+  background-color: var(--color-background);
+  color: black;
+}
+
+form.topic input {
+  margin-left: 10px;
+}
+
+form.topic select {
+  margin-left: 10px;
+}
+
+p.topicTime {
+  margin-top: 0;
+  font-size: small;
+  font-weight: regular;
+  color: var(--color-text);
+}
+
+button.newTopic {
+  border: 1px solid #000;
+  padding: 10px;
+  margin: 10px 0px;
+  font-size: medium;
+  font-weight: regular;
+  background-color: var(--color-background);
+  color: black;
+  display: flex;
+}

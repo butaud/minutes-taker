@@ -12,6 +12,7 @@ import { Session } from "minute-model";
 import { ReactElement } from "react";
 import { SessionProvider } from "./context/SessionStoreContext";
 import { getByTextContent } from "../test/matchers";
+import { PersonListContext } from "./context/PersonListContext";
 
 const INITIAL_START_TIME = new Date(2000, 0, 1, 12, 0, 0);
 const INITIAL_ORG_NAME = "Test Organization";
@@ -32,12 +33,17 @@ const session: Session = {
 };
 
 let sessionStore = new SessionStore(session);
-const SessionStoreProvider = ({ children }: { children: ReactElement }) => (
-  <SessionProvider sessionStore={sessionStore}>{children}</SessionProvider>
+let personList = sessionStore.allPeople;
+const AllProviders = ({ children }: { children: ReactElement }) => (
+  <SessionProvider sessionStore={sessionStore}>
+    <PersonListContext.Provider value={personList}>
+      {children}
+    </PersonListContext.Provider>
+  </SessionProvider>
 );
 
 const render = (ui: ReactElement, options?: RenderOptions) =>
-  origRender(ui, { wrapper: SessionStoreProvider, ...options });
+  origRender(ui, { wrapper: AllProviders, ...options });
 
 describe("SessionEditor", () => {
   afterEach(() => {
@@ -169,6 +175,7 @@ describe("SessionEditor", () => {
         )
       ).toBeInTheDocument();
     });
+
     it("shows the list of members not in attendance", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
@@ -197,6 +204,7 @@ describe("SessionEditor", () => {
         )
       ).toBeInTheDocument();
     });
+
     it("shows the administrators in attendance", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
@@ -242,6 +250,7 @@ describe("SessionEditor", () => {
         screen.getByText(getByTextContent("Members in attendance: Jones"))
       ).toBeInTheDocument();
     });
+
     it("shows an error message if new member does not have first and last name", async () => {
       expect.assertions(1);
       const user = userEvent.setup();
@@ -262,6 +271,7 @@ describe("SessionEditor", () => {
       );
       rerender(<SessionEditor session={sessionStore.session} />);
     });
+
     it("allows removing members from attendance", async () => {
       expect.assertions(1);
 
@@ -286,6 +296,7 @@ describe("SessionEditor", () => {
         screen.queryByText(getByTextContent("Members in attendance: Jones"))
       ).not.toBeInTheDocument();
     });
+
     it("doesn't allow removing members from attendance if they are referenced in a note", async () => {
       expect.assertions(1);
 
@@ -293,7 +304,7 @@ describe("SessionEditor", () => {
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date(),
-        endTime: new Date(),
+        durationMinutes: 5,
       });
       const testTopicId = sessionStore.session.topics[0].id;
       sessionStore.addNote(testTopicId, {
@@ -321,6 +332,7 @@ describe("SessionEditor", () => {
         "This person is referenced in a note and cannot be removed."
       );
     });
+
     it("allows adding members to not in attendance", async () => {
       expect.assertions(1);
       const user = userEvent.setup();
@@ -387,6 +399,7 @@ describe("SessionEditor", () => {
         screen.getByText(getByTextContent("Administration: Jones"))
       ).toBeInTheDocument();
     });
+
     it("allows removing administrators from attendance", async () => {
       expect.assertions(1);
 
@@ -417,18 +430,324 @@ describe("SessionEditor", () => {
   });
 
   describe("topics", () => {
-    it.todo("shows the list of topics");
-    it.todo("shows the topic title");
-    it.todo("shows the topic start time");
-    it.todo("shows the topic duration");
-    it.todo("allows editing the topic title");
-    it.todo("allows editing the topic start time");
-    it.todo("allows editing the topic duration");
-    it.todo("does not apply changes if cancel is clicked");
-    it.todo("allows adding a topic");
-    it.todo("automatically sets a new topic's start time to the current time");
-    it.todo("automatically sets the previous topic's duration");
-    it.todo("allows deleting a topic");
+    it("shows the list of topics", () => {
+      sessionStore.addTopic({
+        title: "Test Topic 1",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+      sessionStore.addTopic({
+        title: "Test Topic 2",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(2);
+      sessionStore.addTopic({
+        title: "Test Topic 3",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
+    });
+
+    it("shows the topic title", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+        "Test Topic"
+      );
+    });
+    it("shows the topic start time and duration", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("12:00 PM for 5 minutes")).toBeInTheDocument();
+    });
+
+    it("shows the topic leader if there is one", () => {
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+        leader: { firstName: "Bob", lastName: "Jones" },
+      });
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Lead by Mr. Jones"))
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing the topic title", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Title"));
+      await user.type(screen.getByLabelText("Title"), "New Topic Title");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+        "New Topic Title"
+      );
+    });
+
+    it("allows editing the topic start time", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      fireEvent.change(screen.getByLabelText("Start Time"), {
+        target: { value: "13:00" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("1:00 PM for 5 minutes")).toBeInTheDocument();
+    });
+
+    it("allows editing the topic duration", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Duration (minutes)"));
+      await user.type(screen.getByLabelText("Duration (minutes)"), "10");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("12:00 PM for 10 minutes")).toBeInTheDocument();
+    });
+
+    it("allows editing the topic leader", async () => {
+      expect.assertions(1);
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Leader"), "Bob Jones");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Lead by Mr. Jones"))
+      ).toBeInTheDocument();
+    });
+
+    it("allows removing the topic leader", async () => {
+      expect.assertions(1);
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+        leader: { firstName: "Bob", lastName: "Jones" },
+      });
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Leader"), "");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.queryByText(getByTextContent("Lead by Mr. Jones"))
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not apply changes if cancel is clicked", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Duration (minutes)"));
+      await user.type(screen.getByLabelText("Duration (minutes)"), "10");
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("12:00 PM for 5 minutes")).toBeInTheDocument();
+    });
+
+    it("shows an error if the topic title is empty", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Title"));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Title cannot be empty."
+      );
+    });
+
+    it("shows an error if the topic duration is empty", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Duration (minutes)"));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Duration cannot be empty."
+      );
+    });
+
+    it("allows adding a topic", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      await user.type(screen.getByLabelText("Duration (minutes)"), "5");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+        "Test Topic"
+      );
+    });
+
+    it("automatically sets a new topic's start time to the current time", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      await user.type(screen.getByLabelText("Duration (minutes)"), "5");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      const nowTime = new Date();
+      const nowTimeString = nowTime.toLocaleTimeString([], {
+        timeStyle: "short",
+      });
+      expect(
+        screen.getByText(`${nowTimeString} for 5 minutes`)
+      ).toBeInTheDocument();
+    });
+
+    it("automatically sets the previous topic's duration", async () => {
+      const previousTopicStartTime = new Date(
+        new Date().getTime() - 1000 * 60 * 25
+      );
+      sessionStore.addTopic({
+        title: "Previous Topic",
+        startTime: previousTopicStartTime,
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      await user.type(screen.getByLabelText("Duration (minutes)"), "5");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText("for 25 minutes", { exact: false })
+      ).toBeInTheDocument();
+    });
+
+    it("allows deleting a topic", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await user.hover(screen.getByRole("heading", { level: 3 }));
+      fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
+    });
+
     it.todo("allows reordering topics");
   });
 

@@ -44,7 +44,7 @@ const fakeSession: Session = {
     {
       title: "Call to Order",
       startTime: new Date(),
-      endTime: new Date(),
+      durationMinutes: 5,
       notes: [
         {
           type: "text",
@@ -56,7 +56,7 @@ const fakeSession: Session = {
       title: "Approval of Minutes",
       leader: boardMember2,
       startTime: new Date(),
-      endTime: new Date(),
+      durationMinutes: 5,
       notes: [
         {
           type: "motion",
@@ -73,7 +73,7 @@ const fakeSession: Session = {
     {
       title: "Headmaster's Report",
       startTime: new Date(),
-      endTime: new Date(),
+      durationMinutes: 5,
       leader: headmaster,
       notes: [
         {

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { TopicNode } from "./nodes/topic/TopicNode";
+import { NewTopicNode, TopicNode } from "./nodes/topic/TopicNode";
 import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
 import { StoredSession } from "../store/SessionStore";
@@ -37,8 +37,9 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
       />
       <ul>
         {session.topics.map((topic) => (
-          <TopicNode topic={topic} />
+          <TopicNode key={topic.id} topic={topic} />
         ))}
+        <NewTopicNode />
       </ul>
     </div>
   );
