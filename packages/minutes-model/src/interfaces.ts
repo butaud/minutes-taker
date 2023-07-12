@@ -22,7 +22,7 @@ export type Topic = {
     title: string;
     notes: Note[];
     startTime: Date;
-    endTime: Date;
+    durationMinutes?: number;
     leader?: Person;
 };
 
