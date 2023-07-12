@@ -22,9 +22,6 @@ export const NewTopicNode: React.FC<{}> = () => {
     if (!workingTopic.title) {
       setErrorMessage("Title cannot be empty.");
       return;
-    } else if (!workingTopic.durationMinutes) {
-      setErrorMessage("Duration cannot be empty.");
-      return;
     } else {
       setErrorMessage(undefined);
     }
@@ -80,9 +77,6 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
     if (!workingTopic.title) {
       setErrorMessage("Title cannot be empty.");
       return;
-    } else if (!workingTopic.durationMinutes) {
-      setErrorMessage("Duration cannot be empty.");
-      return;
     } else {
       setErrorMessage(undefined);
     }
@@ -127,7 +121,7 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
       {!isEditing && (
         <p className="topicTime">
           {topic.startTime.toLocaleTimeString("en-US", { timeStyle: "short" })}{" "}
-          for {topic.durationMinutes} minutes
+          {topic.durationMinutes && `for ${topic.durationMinutes} minutes`}
         </p>
       )}
       {!isEditing && topic.leader && (

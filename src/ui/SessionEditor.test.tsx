@@ -469,7 +469,18 @@ describe("SessionEditor", () => {
         "Test Topic"
       );
     });
-    it("shows the topic start time and duration", () => {
+
+    it("shows the topic start time", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date("2020-01-01T12:00:00"),
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("12:00 PM")).toBeInTheDocument();
+    });
+
+    it("shows the topic duration if it exists", () => {
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date("2020-01-01T12:00:00"),
@@ -652,25 +663,6 @@ describe("SessionEditor", () => {
       );
     });
 
-    it("shows an error if the topic duration is empty", async () => {
-      sessionStore.addTopic({
-        title: "Test Topic",
-        startTime: new Date("2020-01-01T12:00:00"),
-        durationMinutes: 5,
-      });
-
-      const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
-
-      await user.hover(screen.getByRole("heading", { level: 3 }));
-      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-      await user.clear(screen.getByLabelText("Duration (minutes)"));
-      fireEvent.click(screen.getByRole("button", { name: "Save" }));
-      expect(await screen.findByRole("alert")).toHaveTextContent(
-        "Duration cannot be empty."
-      );
-    });
-
     it("allows adding a topic", async () => {
       const user = userEvent.setup();
       const { rerender } = render(
@@ -713,7 +705,6 @@ describe("SessionEditor", () => {
       sessionStore.addTopic({
         title: "Previous Topic",
         startTime: previousTopicStartTime,
-        durationMinutes: 5,
       });
 
       const user = userEvent.setup();
@@ -722,7 +713,6 @@ describe("SessionEditor", () => {
       );
       fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
       await user.type(screen.getByLabelText("Title"), "Test Topic");
-      await user.type(screen.getByLabelText("Duration (minutes)"), "5");
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
       rerender(<SessionEditor session={sessionStore.session} />);
