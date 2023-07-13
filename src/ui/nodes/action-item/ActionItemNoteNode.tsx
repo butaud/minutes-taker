@@ -50,12 +50,17 @@ export const ActionItemNoteNode: React.FC<{ note: StoredActionItemNote }> = ({
     setAssignee(note.assignee);
   };
 
+  const handleDelete = () => {
+    sessionStore.removeNote(note);
+  };
+
   return (
     <NodeControls
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={handleCancel}
+      onDelete={handleDelete}
     >
       <div>
         <p>

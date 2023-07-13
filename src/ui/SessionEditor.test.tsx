@@ -742,18 +742,173 @@ describe("SessionEditor", () => {
   });
 
   describe("notes", () => {
-    it.todo("shows the list of notes under a topic");
-    it.todo("allows adding a note");
-    it.todo("allows deleting a note");
+    it("shows the list of notes under their topics", () => {
+      sessionStore.addTopic({
+        title: "Test Topic 1",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note 1",
+      });
+      sessionStore.addTopic({
+        title: "Test Topic 2",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[1].id, {
+        type: "text",
+        text: "Test Note 2",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      const topic1Header = screen.getByRole("heading", {
+        name: "Test Topic 1",
+      });
+      const note1 = screen.getByText("Test Note 1");
+      const topic2Header = screen.getByRole("heading", {
+        name: "Test Topic 2",
+      });
+      const note2 = screen.getByText("Test Note 2");
+
+      expect(topic1Header).toPrecede(note1);
+      expect(note1).toPrecede(topic2Header);
+      expect(topic2Header).toPrecede(note2);
+    });
+    // adding and deleting notes covered by type-specific tests
     it.todo("allows reordering notes");
   });
 
   describe("text notes", () => {
-    it.todo("shows the text of the note");
-    it.todo("allows editing the text of the note");
-    it.todo("does not apply changes if cancel is clicked");
-    it.todo("allows adding a new text note");
-    it.todo("allows cancelling a new text note");
+    it("shows the text of the note", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note",
+      });
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Note")).toBeInTheDocument();
+    });
+
+    it("allows editing the text of the note", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note",
+      });
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await user.hover(screen.getByText("Test Note"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(screen.getByLabelText("Text"), " edited");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Note edited")).toBeInTheDocument();
+    });
+
+    it("does not apply changes if cancel is clicked", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note",
+      });
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await user.hover(screen.getByText("Test Note"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(screen.getByLabelText("Text"), " edited");
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Note")).toBeInTheDocument();
+    });
+
+    it("shows an error if the text is empty", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note",
+      });
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+      await user.hover(screen.getByText("Test Note"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Text"));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Text cannot be empty"
+      );
+    });
+
+    it("allows adding a new text note", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
+      await user.type(screen.getByLabelText("Text"), "Test Note");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Note")).toBeInTheDocument();
+    });
+
+    it("allows cancelling a new text note", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
+      await user.type(screen.getByLabelText("Text"), "Test Note");
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
+    });
+
+    it("allows deleting a text note", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await user.hover(screen.getByText("Test Note"));
+      fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
+    });
   });
 
   describe("action items", () => {

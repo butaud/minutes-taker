@@ -1,0 +1,30 @@
+.newNoteContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  width: 100%;
+  height: 100%;
+}
+
+button.newNote {
+  padding: 5px;
+  margin: 0px 5px;
+  color: black;
+  display: flex;
+  font-size: small;
+}
+
+button.newNote:first-child {
+  margin-left: 0px;
+}
+
+button.newNote:hover {
+  border: 1px solid #000;
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+button.newNote i {
+  font-size: medium;
+}

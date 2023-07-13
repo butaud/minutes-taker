@@ -43,3 +43,8 @@ button.newTopic {
   color: black;
   display: flex;
 }
+
+button.newTopic:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}

@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { StoredPerson, StoredTopic } from "../../../store/SessionStore";
 import { OptionalPersonSelector } from "../../controls/PersonSelector";
+import { NewNoteNode } from "../NewNoteNode";
 
 type TopicDraft = Partial<
   Pick<StoredTopic, "title" | "leader" | "startTime" | "durationMinutes">
@@ -132,6 +133,7 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
       {topic.notes.map((note) => (
         <NoteNode key={note.id} note={note} />
       ))}
+      <NewNoteNode topicId={topic.id} />
     </div>
   );
 };

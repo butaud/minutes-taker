@@ -71,12 +71,17 @@ export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
     setIsEditing(false);
   };
 
+  const handleDelete = () => {
+    sessionStore.removeNote(note);
+  };
+
   return (
     <NodeControls
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={handleCancel}
+      onDelete={handleDelete}
     >
       <div>
         {isEditing ? (
