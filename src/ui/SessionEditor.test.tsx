@@ -890,6 +890,9 @@ describe("SessionEditor", () => {
       expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
     });
 
+    it.todo("submits a new text note when enter is pressed");
+    it.todo("canceles a new text note when escape is pressed");
+
     it("allows deleting a text note", async () => {
       sessionStore.addTopic({
         title: "Test Topic",
@@ -919,6 +922,8 @@ describe("SessionEditor", () => {
     it.todo("allows editing the text of the action item");
     it.todo("allows editing the due date of the action item");
     it.todo("does not apply changes if cancel is clicked");
+    it.todo("submits changes if enter is pressed");
+    it.todo("cancels changes if escape is pressed");
     it.todo("allows adding a new action item");
     it.todo("shows an error message if the new action item does not have text");
     it.todo(
@@ -941,6 +946,8 @@ describe("SessionEditor", () => {
       "allows editing the vote counts of the motion if it is passed or failed"
     );
     it.todo("does not apply changes if cancel is clicked");
+    it.todo("submits changes if enter is pressed");
+    it.todo("cancels changes if escape is pressed");
     it.todo("allows adding a new motion");
     it.todo("shows an error message if the new motion does not have text");
     it.todo("shows an error message if the new motion does not have a mover");
