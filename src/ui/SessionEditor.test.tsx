@@ -908,8 +908,22 @@ describe("SessionEditor", () => {
       expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
     });
 
-    it.todo("submits a new text note when enter is pressed");
-    it.todo("canceles a new text note when escape is pressed");
+    it("submits a new text note when enter is pressed", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
+      await user.type(screen.getByLabelText("Text"), "Test Note");
+      await user.keyboard("{enter}");
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Note")).toBeInTheDocument();
+    });
 
     it("allows deleting a text note", async () => {
       sessionStore.addTopic({
