@@ -1281,14 +1281,22 @@ describe("SessionEditor", () => {
     it.todo("shows the seconder of the motion");
     it.todo("shows the text of the motion");
     it.todo("shows the status of the motion");
-    it.todo("shows the vote counts of the motion if it is passed or failed");
+    it.todo("shows the vote counts of the motion if it is passed");
+    it.todo("shows the vote counts of the motion if it is failed");
+    it.todo("hides the vote counts if the motion is withdrawn");
+    it.todo("hides the vote counts if the motion is tabled");
+    it.todo("hides the vote counts if the motion is active");
     it.todo("allows editing the mover of the motion");
     it.todo("allows editing the seconder of the motion");
     it.todo("allows editing the text of the motion");
     it.todo("allows editing the status of the motion");
+    it.todo("allows editing the vote counts if the motion is passed");
+    it.todo("allows editing the vote counts if the motion is failed");
     it.todo(
-      "allows editing the vote counts of the motion if it is passed or failed"
+      "does not allow editing the vote counts if the motion is withdrawn"
     );
+    it.todo("does not allow editing the vote counts if the motion is tabled");
+    it.todo("does not allow editing the vote counts if the motion is active");
     it.todo("does not apply changes if cancel is clicked");
     it.todo("submits changes if enter is pressed");
     it.todo("cancels changes if escape is pressed");
