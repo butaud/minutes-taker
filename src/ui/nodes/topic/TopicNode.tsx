@@ -151,7 +151,7 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
         <input
           id="topic-title"
           type="text"
-          value={topicDraft.title}
+          value={topicDraft.title ?? ""}
           onChange={(e) => handleTitleChange(e.target.value)}
         />
       </div>
@@ -170,7 +170,7 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
         <input
           id="topic-duration"
           type="number"
-          value={topicDraft.durationMinutes}
+          value={topicDraft.durationMinutes ?? ""}
           onChange={handleDurationChange}
         />
       </div>

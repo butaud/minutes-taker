@@ -87,7 +87,7 @@ export const TextNoteEditor: FunctionComponent<TextNoteEditorProps> = ({
         autoFocus
         className="tnn-input"
         type="text"
-        value={draft.text}
+        value={draft.text ?? ""}
         onChange={handleTextChange}
         aria-label="Text"
       />
