@@ -1,156 +1,55 @@
 import { useState } from "react";
-import { NodeControls } from "../../controls/NodeControls";
+import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { SpeakerReference } from "../../controls/SpeakerReference";
 import { StoredMotionNote, StoredPerson } from "../../../store/SessionStore";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { PersonSelector } from "../../controls/PersonSelector";
+import "./MotionNoteNode.css";
 
 export const MotionNoteNode: React.FC<{ note: StoredMotionNote }> = ({
   note,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [outcome, setOutcome] = useState(note.outcome);
-  const [inFavorCount, setInFavorCount] = useState(note.inFavorCount);
-  const [opposedCount, setOpposedCount] = useState(note.opposedCount);
-  const [abstainedCount, setAbstainedCount] = useState(note.abstainedCount);
-  const [mover, setMover] = useState(note.mover);
-  const [seconder, setSeconder] = useState(note.seconder);
 
+  const stopEditing = () => {
+    setIsEditing(false);
+  };
+
+  const startEditing = () => {
+    setIsEditing(true);
+  };
+
+  return isEditing ? (
+    <MotionNoteEditor existingNote={note} stopEditing={stopEditing} />
+  ) : (
+    <MotionNoteDisplay note={note} onEdit={startEditing} />
+  );
+};
+
+type MotionNoteDisplayProps = {
+  note: StoredMotionNote;
+  onEdit: () => void;
+};
+
+const MotionNoteDisplay: React.FC<MotionNoteDisplayProps> = ({
+  note,
+  onEdit,
+}) => {
   const sessionStore = useSessionStore();
-
-  const handleOutcomeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setOutcome(event.target.value as StoredMotionNote["outcome"]);
-  };
-
-  const handleInFavorCountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setInFavorCount(parseInt(event.target.value));
-  };
-
-  const handleOpposedCountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setOpposedCount(parseInt(event.target.value));
-  };
-
-  const handleAbstainedCountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setAbstainedCount(parseInt(event.target.value));
-  };
-
-  const handleMoverChange = (newMover: StoredPerson) => {
-    setMover(newMover);
-  };
-
-  const handleSeconderChange = (newSeconder: StoredPerson) => {
-    setSeconder(newSeconder);
-  };
-
-  const handleSave = () => {
-    sessionStore.updateNote({
-      ...note,
-      outcome,
-      inFavorCount,
-      opposedCount,
-      abstainedCount,
-      mover,
-      seconder,
-    });
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setOutcome(note.outcome);
-    setInFavorCount(note.inFavorCount);
-    setOpposedCount(note.opposedCount);
-    setAbstainedCount(note.abstainedCount);
-    setMover(note.mover);
-    setSeconder(note.seconder);
-    setIsEditing(false);
-  };
-
-  const handleDelete = () => {
-    sessionStore.removeNote(note);
-  };
 
   return (
     <NodeControls
-      isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
-      onCancel={handleCancel}
-      onDelete={handleDelete}
+      onEdit={onEdit}
+      onDelete={() => sessionStore.removeNote(note)}
+      className="motion"
     >
-      <div>
-        {isEditing ? (
-          <>
-            <label>
-              Mover:
-              <PersonSelector
-                selectedPerson={note.mover}
-                onChange={handleMoverChange}
-              />
-            </label>
-            <label>
-              Seconder:
-              <PersonSelector
-                selectedPerson={note.seconder}
-                onChange={handleSeconderChange}
-              />
-            </label>
-          </>
-        ) : (
-          <>
-            <p>
-              <SpeakerReference speaker={note.mover} emphasis /> moved that{" "}
-              {note.text}.
-            </p>
-            <p>
-              <SpeakerReference speaker={note.seconder} emphasis /> seconded.
-            </p>
-          </>
-        )}
-        {isEditing ? (
-          <select value={outcome} onChange={handleOutcomeChange}>
-            <option value="passed">Motion passed</option>
-            <option value="failed">Motion failed</option>
-            <option value="withdrawn">Motion withdrawn</option>
-            <option value="tabled">Motion tabled</option>
-          </select>
-        ) : (
-          <MotionOutcomeDisplay note={note} />
-        )}
-        {isEditing && (outcome === "passed" || outcome === "failed") && (
-          <>
-            <label>
-              In favor:
-              <input
-                type="number"
-                value={inFavorCount}
-                onChange={handleInFavorCountChange}
-              />
-            </label>
-            <label>
-              Opposed:
-              <input
-                type="number"
-                value={opposedCount}
-                onChange={handleOpposedCountChange}
-              />
-            </label>
-            <label>
-              Abstained:
-              <input
-                type="number"
-                value={abstainedCount}
-                onChange={handleAbstainedCountChange}
-              />
-            </label>
-          </>
-        )}
-      </div>
+      <p>
+        <SpeakerReference speaker={note.mover} emphasis /> moved {note.text}
+      </p>
+      <p>
+        <SpeakerReference speaker={note.seconder} emphasis /> seconded.
+      </p>
+      <MotionOutcomeDisplay note={note} />
     </NodeControls>
   );
 };
@@ -186,4 +85,202 @@ const MotionOutcomeDisplay: React.FC<{ note: StoredMotionNote }> = ({
       </>
     );
   }
+};
+
+type MotionNoteEditorProps = {
+  existingNote?: StoredMotionNote;
+  topicId?: number;
+  stopEditing: () => void;
+};
+
+export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
+  existingNote,
+  topicId,
+  stopEditing,
+}) => {
+  const [text, setText] = useState(existingNote?.text);
+  const [mover, setMover] = useState(existingNote?.mover);
+  const [seconder, setSeconder] = useState(existingNote?.seconder);
+  const [outcome, setOutcome] = useState(existingNote?.outcome);
+  const [inFavorCount, setInFavorCount] = useState(existingNote?.inFavorCount);
+  const [opposedCount, setOpposedCount] = useState(existingNote?.opposedCount);
+  const [abstainedCount, setAbstainedCount] = useState(
+    existingNote?.abstainedCount
+  );
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+
+  const sessionStore = useSessionStore();
+
+  if (!existingNote && topicId === undefined) {
+    throw new Error("Must provide topicId when creating a new motion note.");
+  }
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setText(event.target.value);
+  };
+
+  const handleMoverChange = (newMover: StoredPerson) => {
+    setMover(newMover);
+  };
+
+  const handleSeconderChange = (newSeconder: StoredPerson) => {
+    setSeconder(newSeconder);
+  };
+
+  const handleOutcomeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setOutcome(event.target.value as StoredMotionNote["outcome"]);
+    if (event.target.value === "withdrawn" || event.target.value === "tabled") {
+      setInFavorCount(undefined);
+      setOpposedCount(undefined);
+      setAbstainedCount(undefined);
+    }
+  };
+
+  const handleInFavorCountChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setInFavorCount(parseInt(event.target.value));
+  };
+
+  const handleOpposedCountChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setOpposedCount(parseInt(event.target.value));
+  };
+
+  const handleAbstainedCountChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAbstainedCount(parseInt(event.target.value));
+  };
+
+  const handleSubmit = () => {
+    if (!text) {
+      setErrorMessage("Text is required.");
+      return;
+    }
+    if (!mover) {
+      setErrorMessage("Mover is required.");
+      return;
+    }
+    if (!seconder) {
+      setErrorMessage("Seconder is required.");
+      return;
+    }
+    if (!outcome) {
+      setErrorMessage("Outcome is required.");
+      return;
+    }
+    setErrorMessage(undefined);
+
+    if (existingNote) {
+      sessionStore.updateNote({
+        ...existingNote,
+        mover,
+        seconder,
+        text,
+        outcome,
+        inFavorCount,
+        opposedCount,
+        abstainedCount,
+      });
+    } else {
+      sessionStore.addNote(topicId!, {
+        type: "motion",
+        mover,
+        seconder,
+        text,
+        outcome,
+        inFavorCount,
+        opposedCount,
+        abstainedCount,
+      });
+    }
+    stopEditing();
+  };
+
+  const handleCancel = () => {
+    setText(existingNote?.text);
+    setMover(existingNote?.mover);
+    setSeconder(existingNote?.seconder);
+    setOutcome(existingNote?.outcome);
+    setInFavorCount(existingNote?.inFavorCount);
+    setOpposedCount(existingNote?.opposedCount);
+    setAbstainedCount(existingNote?.abstainedCount);
+    setErrorMessage(undefined);
+    stopEditing();
+  };
+
+  return (
+    <FormNodeControls
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      className="motion"
+    >
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+      <p>
+        <label>
+          Mover:
+          <PersonSelector selectedPerson={mover} onChange={handleMoverChange} />
+        </label>
+        <label>
+          Seconder:
+          <PersonSelector
+            selectedPerson={seconder}
+            onChange={handleSeconderChange}
+          />
+        </label>
+      </p>
+      <p>
+        <label>
+          Text:
+          <input
+            className="motionText"
+            type="text"
+            value={text}
+            onChange={handleTextChange}
+          />
+        </label>
+      </p>
+      <p>
+        <label>
+          Outcome:
+          <select value={outcome} onChange={handleOutcomeChange}>
+            <option value="passed">Motion passed</option>
+            <option value="failed">Motion failed</option>
+            <option value="withdrawn">Motion withdrawn</option>
+            <option value="tabled">Motion tabled</option>
+          </select>
+        </label>
+      </p>
+      {(outcome === "passed" || outcome === "failed") && (
+        <>
+          <label>
+            In favor:
+            <input
+              type="number"
+              value={inFavorCount}
+              onChange={handleInFavorCountChange}
+            />
+          </label>
+          <label>
+            Opposed:
+            <input
+              type="number"
+              value={opposedCount}
+              onChange={handleOpposedCountChange}
+            />
+          </label>
+          <label>
+            Abstained:
+            <input
+              type="number"
+              value={abstainedCount}
+              onChange={handleAbstainedCountChange}
+            />
+          </label>
+        </>
+      )}
+    </FormNodeControls>
+  );
 };

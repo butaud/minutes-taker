@@ -2,49 +2,18 @@ import React from "react";
 import "./NodeControls.css";
 
 type NodeControlsProps = {
-  isEditing: boolean;
   onEdit: () => void;
   onDelete?: () => void;
-  onSave?: () => void;
-  onCancel?: () => void;
-  onStopEditing?: () => void;
+  className?: string;
 };
 
 export const NodeControls = ({
-  isEditing,
   onEdit,
   onDelete,
-  onSave,
-  onCancel,
-  onStopEditing,
   children,
+  className,
 }: React.PropsWithChildren<NodeControlsProps>) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="node-container"
-    >
-      {children}
-      {isHovered &&
-        (isEditing ? (
-          <EditingButtons
-            onSave={onSave}
-            onCancel={onCancel}
-            onStopEditing={onStopEditing}
-          />
-        ) : (
-          <NotEditingButtons onEdit={onEdit} onDelete={onDelete} />
-        ))}
-    </div>
-  );
-};
-
-const NotEditingButtons = ({
-  onEdit,
-  onDelete,
-}: Pick<NodeControlsProps, "onEdit" | "onDelete">) => {
   const editCallback = React.useCallback(() => {
     onEdit();
   }, [onEdit]);
@@ -52,35 +21,89 @@ const NotEditingButtons = ({
     onDelete?.();
   }, [onDelete]);
   return (
-    <span className="node-controls">
-      <button onClick={editCallback}>Edit</button>
-      {onDelete && <button onClick={deleteCallback}>Delete</button>}
-    </span>
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`node-container ${className}`}
+    >
+      {children}
+      {isHovered && (
+        <span className="node-controls">
+          <button onClick={editCallback}>Edit</button>
+          {onDelete && <button onClick={deleteCallback}>Delete</button>}
+        </span>
+      )}
+    </div>
   );
 };
 
-const EditingButtons = ({
-  onSave,
-  onCancel,
-  onStopEditing,
-}: Pick<NodeControlsProps, "onSave" | "onCancel" | "onStopEditing">) => {
-  const saveCallback = React.useCallback(() => {
-    onSave?.();
-  }, [onSave]);
-  const cancelCallback = React.useCallback(() => {
-    onCancel?.();
-  }, [onCancel]);
-  const stopEditingCallback = React.useCallback(() => {
-    onStopEditing?.();
-  }, [onStopEditing]);
+export type NonFormNodeControlsProps = {
+  onEdit: () => void;
+  onDelete?: () => void;
+  onStopEditing: () => void;
+  isEditing: boolean;
+};
 
+export const NonFormNodeControls: React.FC<
+  React.PropsWithChildren<NonFormNodeControlsProps>
+> = ({ isEditing, onEdit, onDelete, onStopEditing, children }) => {
+  if (isEditing) {
+    return (
+      <StopEditingControls onStopEditing={onStopEditing}>
+        {children}
+      </StopEditingControls>
+    );
+  } else {
+    return (
+      <NodeControls onEdit={onEdit} onDelete={onDelete}>
+        {children}
+      </NodeControls>
+    );
+  }
+};
+
+export type FormNodeControlsProps = {
+  onCancel: () => void;
+  onSubmit: () => void;
+  className?: string;
+};
+
+export const FormNodeControls: React.FC<
+  React.PropsWithChildren<FormNodeControlsProps>
+> = ({ onCancel, onSubmit, children, className }) => {
+  const submitCallback = React.useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      onSubmit();
+    },
+    [onSubmit]
+  );
   return (
-    <span className="node-controls">
-      {onSave && <button onClick={saveCallback}>Save</button>}
-      {onCancel && <button onClick={cancelCallback}>Cancel</button>}
-      {onStopEditing && (
-        <button onClick={stopEditingCallback}>Stop Editing</button>
-      )}
-    </span>
+    <form className={`node-container ${className}`} onSubmit={submitCallback}>
+      {children}
+      <span className="node-controls">
+        <button type="submit">Save</button>
+        <button onClick={onCancel} type="button">
+          Cancel
+        </button>
+      </span>
+    </form>
+  );
+};
+
+export const StopEditingControls: React.FC<
+  React.PropsWithChildren<{
+    onStopEditing: () => void;
+  }>
+> = ({ onStopEditing, children }) => {
+  return (
+    <div className="node-container">
+      {children}
+      <span className="node-controls">
+        <button onClick={onStopEditing} type="button">
+          Stop Editing
+        </button>
+      </span>
+    </div>
   );
 };

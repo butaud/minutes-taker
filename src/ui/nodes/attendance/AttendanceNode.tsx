@@ -1,7 +1,7 @@
 import { Person } from "minute-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
-import { NodeControls } from "../../controls/NodeControls";
+import { NonFormNodeControls } from "../../controls/NodeControls";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { StoredPerson } from "../../../store/SessionStore";
 
@@ -108,7 +108,7 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
 
   return (
     <div className="attendance-container">
-      <NodeControls
+      <NonFormNodeControls
         isEditing={isEditing}
         onEdit={handleEditClick}
         onStopEditing={handleStopEditingClick}
@@ -134,7 +134,7 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
           removePerson={sessionStore.removeAdministrationPresent}
           isEditing={isEditing}
         />
-      </NodeControls>
+      </NonFormNodeControls>
     </div>
   );
 };

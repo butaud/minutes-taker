@@ -1,4 +1,22 @@
+.motion label {
+  margin-right: 5px;
+}
+
 .motion p {
-  margin: 0;
-  padding: 0;
+  margin: 5px 0;
+}
+
+.motion input,
+.motion select {
+  margin-left: 5px;
+}
+
+.motion input.motionText {
+  width: 80%;
+}
+
+form.motion {
+  border: 1px solid var(--color-tertiary);
+  border-radius: 5px;
+  padding: 5px;
 }
