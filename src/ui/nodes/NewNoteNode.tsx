@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import "./NewNoteNode.css";
 import { TextNoteEditor } from "./text/TextNoteNode";
+import { ActionItemNoteEditor } from "./action-item/ActionItemNoteNode";
 
 export type NewNoteNodeProps = {
   topicId: number;
@@ -35,7 +36,9 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({ topicId }) => {
     case "motion":
       return <>todo</>;
     case "action":
-      return <>todo</>;
+      return (
+        <ActionItemNoteEditor stopEditing={stopAdding} topicId={topicId} />
+      );
   }
 };
 

@@ -141,18 +141,19 @@ export const ActionItemNoteEditor: React.FC<ActionItemNoteEditorProps> = ({
       <PersonSelector
         selectedPerson={assignee}
         onChange={handleAssigneeChange}
+        ariaLabel="Assignee"
       />
       <input
         aria-label="Action item text"
         className="ainn-text-input"
         type="text"
-        value={text}
+        value={text ?? ""}
         onChange={handleTextChange}
       />
       <input
         aria-label="Action item due date"
         type="date"
-        value={dueDate?.toISOString().substr(0, 10)}
+        value={dueDate?.toISOString().substr(0, 10) ?? ""}
         onChange={handleDueDateChange}
       />
     </FormNodeControls>

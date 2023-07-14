@@ -4,11 +4,13 @@ import { usePersonList } from "../context/PersonListContext";
 type PersonSelectorProps = {
   selectedPerson?: StoredPerson;
   onChange: (newSelectedPerson: StoredPerson) => void;
+  ariaLabel?: string;
 };
 
 type OptionalPersonSelectorProps = {
   selectedPerson: StoredPerson | undefined;
   onChange: (newSelectedPerson: StoredPerson | undefined) => void;
+  ariaLabel?: string;
 };
 
 type InternalPersonSelectorProps = OptionalPersonSelectorProps & {
@@ -18,6 +20,7 @@ const InternalPersonSelector: React.FC<InternalPersonSelectorProps> = ({
   selectedPerson,
   onChange,
   allowNone,
+  ariaLabel,
 }) => {
   const personList = usePersonList();
 
@@ -39,7 +42,7 @@ const InternalPersonSelector: React.FC<InternalPersonSelectorProps> = ({
     <select
       onChange={handleChange}
       value={selectedPerson?.id ?? -1}
-      aria-label="Person selector"
+      aria-label={ariaLabel}
     >
       {allowNone && <option key={"no-person"} value={-1}></option>}
       {personList.map((person) => (
@@ -54,6 +57,7 @@ const InternalPersonSelector: React.FC<InternalPersonSelectorProps> = ({
 export const PersonSelector: React.FC<PersonSelectorProps> = ({
   selectedPerson,
   onChange,
+  ariaLabel,
 }) => {
   return (
     <InternalPersonSelector
@@ -61,6 +65,7 @@ export const PersonSelector: React.FC<PersonSelectorProps> = ({
       // Null person can't actually be selected in this case
       onChange={(newSelectedPerson) => onChange(newSelectedPerson!!!)}
       allowNone={false}
+      ariaLabel={ariaLabel}
     />
   );
 };
@@ -68,12 +73,14 @@ export const PersonSelector: React.FC<PersonSelectorProps> = ({
 export const OptionalPersonSelector: React.FC<OptionalPersonSelectorProps> = ({
   selectedPerson,
   onChange,
+  ariaLabel,
 }) => {
   return (
     <InternalPersonSelector
       selectedPerson={selectedPerson}
       onChange={onChange}
       allowNone={true}
+      ariaLabel={ariaLabel}
     />
   );
 };
