@@ -1,4 +1,4 @@
-import { Note, TextNote, ActionItemNote, MotionNote } from "minute-model";
+import { Note, TextNote, ActionItemNote, MotionNote } from "minutes-model";
 import {
   StoredActionItemNote,
   StoredMotionNote,

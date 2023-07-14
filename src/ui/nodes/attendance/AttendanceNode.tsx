@@ -1,4 +1,4 @@
-import { Person } from "minute-model";
+import { Person } from "minutes-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
 import { NonFormNodeControls } from "../../controls/NodeControls";

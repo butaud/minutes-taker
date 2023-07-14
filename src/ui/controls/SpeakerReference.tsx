@@ -1,4 +1,4 @@
-import { Person } from "minute-model";
+import { Person } from "minutes-model";
 import "./SpeakerReference.css";
 
 type SpeakerReferenceProps = {

@@ -1,5 +1,5 @@
 import "./App.css";
-import { Person, Session } from "minute-model";
+import { Person, Session } from "minutes-model";
 import { SessionEditor } from "./ui/SessionEditor";
 import { useEffect, useState } from "react";
 import {

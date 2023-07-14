@@ -7,7 +7,7 @@ import {
   ActionItemNote,
   MotionNote,
   TextNote,
-} from "minute-model";
+} from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
 type WithId<T> = T & { id: number };

@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Session } from "minute-model";
+import { Session } from "minutes-model";
 import { ReactElement } from "react";
 import { SessionProvider } from "./context/SessionStoreContext";
 import { getByTextContent } from "../test/matchers";
