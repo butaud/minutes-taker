@@ -32,7 +32,7 @@ describe("ActionItemNoteNode", () => {
     render(<ActionItemNoteNode note={note} />);
     await userEvent.hover(screen.getByText("Mr. Smith"));
     fireEvent.click(screen.getByText("Edit"));
-    expect(screen.getByLabelText("Person selector")).toBeInTheDocument();
+    expect(screen.getByLabelText("Assignee")).toBeInTheDocument();
     expect(screen.getByLabelText("Action item text")).toBeInTheDocument();
     expect(screen.getByLabelText("Action item due date")).toBeInTheDocument();
   });
