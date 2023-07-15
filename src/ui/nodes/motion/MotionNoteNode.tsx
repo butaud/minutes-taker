@@ -57,8 +57,10 @@ const MotionNoteDisplay: React.FC<MotionNoteDisplayProps> = ({
 const MotionOutcomeDisplay: React.FC<{ note: StoredMotionNote }> = ({
   note,
 }) => {
-  if (note.outcome === "withdrawn") {
-    return <p>The motion was abandoned.</p>;
+  if (note.outcome === "active") {
+    return <p>The motion is under discussion.</p>;
+  } else if (note.outcome === "withdrawn") {
+    return <p>The motion was withdrawn.</p>;
   } else if (note.outcome === "tabled") {
     return <p>The motion was tabled.</p>;
   } else {
@@ -101,7 +103,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
   const [text, setText] = useState(existingNote?.text);
   const [mover, setMover] = useState(existingNote?.mover);
   const [seconder, setSeconder] = useState(existingNote?.seconder);
-  const [outcome, setOutcome] = useState(existingNote?.outcome);
+  const [outcome, setOutcome] = useState(existingNote?.outcome ?? "active");
   const [inFavorCount, setInFavorCount] = useState(existingNote?.inFavorCount);
   const [opposedCount, setOpposedCount] = useState(existingNote?.opposedCount);
   const [abstainedCount, setAbstainedCount] = useState(
@@ -203,7 +205,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
     setText(existingNote?.text);
     setMover(existingNote?.mover);
     setSeconder(existingNote?.seconder);
-    setOutcome(existingNote?.outcome);
+    setOutcome(existingNote?.outcome ?? "active");
     setInFavorCount(existingNote?.inFavorCount);
     setOpposedCount(existingNote?.opposedCount);
     setAbstainedCount(existingNote?.abstainedCount);
@@ -246,6 +248,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
         <label>
           Outcome:
           <select value={outcome} onChange={handleOutcomeChange}>
+            <option value="active">Motion active</option>
             <option value="passed">Motion passed</option>
             <option value="failed">Motion failed</option>
             <option value="withdrawn">Motion withdrawn</option>

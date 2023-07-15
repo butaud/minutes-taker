@@ -1276,16 +1276,209 @@ describe("SessionEditor", () => {
     });
   });
 
-  describe("motions", () => {
-    it.todo("shows the mover of the motion");
-    it.todo("shows the seconder of the motion");
-    it.todo("shows the text of the motion");
-    it.todo("shows the status of the motion");
-    it.todo("shows the vote counts of the motion if it is passed");
-    it.todo("shows the vote counts of the motion if it is failed");
-    it.todo("hides the vote counts if the motion is withdrawn");
-    it.todo("hides the vote counts if the motion is tabled");
-    it.todo("hides the vote counts if the motion is active");
+  describe.only("motions", () => {
+    it("shows the mover and text of the motion", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "withdrawn",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved Test Motion"))
+      ).toBeInTheDocument();
+    });
+
+    it("shows the seconder of the motion", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "withdrawn",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("Mr. Smith seconded."))
+      ).toBeInTheDocument();
+    });
+
+    it("shows the status of the motion", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "withdrawn",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("The motion was withdrawn."))
+      ).toBeInTheDocument();
+    });
+
+    it("shows the vote counts of the motion if it is passed", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "passed",
+        inFavorCount: 2,
+        opposedCount: 1,
+        abstainedCount: 1,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent("Vote: 2 in favor, 1 opposed, 1 abstained")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("shows the vote counts of the motion if it is failed", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "failed",
+        inFavorCount: 1,
+        opposedCount: 2,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("Vote: 1 in favor, 2 opposed"))
+      ).toBeInTheDocument();
+    });
+
+    it("hides the vote counts if the motion is withdrawn", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "withdrawn",
+        inFavorCount: 2,
+        opposedCount: 1,
+        abstainedCount: 1,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
+    });
+
+    it("hides the vote counts if the motion is tabled", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "tabled",
+        inFavorCount: 2,
+        opposedCount: 1,
+        abstainedCount: 1,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
+    });
+
+    it("hides the vote counts if the motion is active", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+        inFavorCount: 2,
+        opposedCount: 1,
+        abstainedCount: 1,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
+    });
+
     it.todo("allows editing the mover of the motion");
     it.todo("allows editing the seconder of the motion");
     it.todo("allows editing the text of the motion");
@@ -1301,6 +1494,7 @@ describe("SessionEditor", () => {
     it.todo("submits changes if enter is pressed");
     it.todo("cancels changes if escape is pressed");
     it.todo("allows adding a new motion");
+    it.todo("has a default outcome of active when adding a new motion");
     it.todo("shows an error message if the new motion does not have text");
     it.todo("shows an error message if the new motion does not have a mover");
     it.todo(
