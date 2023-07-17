@@ -14,24 +14,8 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   beforeIndex,
   alwaysExpanded,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setExpanded] = useState(alwaysExpanded);
   const [addingType, setAddingType] = useState<"text" | "motion" | "action">();
-  const [delayHandler, setDelayHandler] = useState<
-    ReturnType<typeof setTimeout> | undefined
-  >();
-
-  const isExpanded = alwaysExpanded || isHovered;
-
-  const onMouseEnterPlaceholder = () => {
-    setDelayHandler(setTimeout(() => setIsHovered(true), 500));
-  };
-
-  const onMouseLeavePlaceholder = () => {
-    if (delayHandler) {
-      clearTimeout(delayHandler);
-    }
-    setDelayHandler(undefined);
-  };
 
   const onAddTextNote = () => {
     setAddingType("text");
@@ -48,21 +32,28 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   if (!isExpanded) {
     return (
       <div className="newNotePlaceholderContainer">
-        <hr
-          className="material-icons newNotePlaceholder"
+        <button
+          className="newNotePlaceholder expandClose"
           aria-label="Add Note Placeholder"
-          onMouseEnter={onMouseEnterPlaceholder}
-          onMouseLeave={onMouseLeavePlaceholder}
-        />
+          onClick={() => setExpanded(true)}
+        >
+          +
+        </button>
       </div>
     );
   }
   if (!addingType) {
     return (
-      <div
-        className="newNoteContainer"
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      <div className="newNoteContainer">
+        {!alwaysExpanded && (
+          <button
+            className="expandClose"
+            onClick={() => setExpanded(false)}
+            aria-label="Close"
+          >
+            -
+          </button>
+        )}
         <NewNoteButton onClick={onAddTextNote} label="Add Text Note" />
         <NewNoteButton onClick={onAddMotion} label="Add Motion" />
         <NewNoteButton onClick={onAddActionItem} label="Add Action Item" />

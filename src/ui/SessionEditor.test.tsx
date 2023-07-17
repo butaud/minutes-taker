@@ -760,7 +760,7 @@ describe("SessionEditor", () => {
     it.todo("allows reordering topics");
   });
 
-  describe.only("notes", () => {
+  describe("notes", () => {
     it("shows the list of notes under their topics", () => {
       sessionStore.addTopic({
         title: "Test Topic 1",
@@ -810,22 +810,14 @@ describe("SessionEditor", () => {
         <SessionEditor session={sessionStore.session} />
       );
 
-      await user.hover(screen.getByLabelText("Add Note Placeholder"));
+      fireEvent.click(screen.getByLabelText("Add Note Placeholder"));
 
-      // to avoid making the screen too jumpy the hover effect delays by 500ms, so we need to
-      // wait for it to happen
-      await waitFor(
-        () =>
-          expect(
-            screen.getAllByRole("button", { name: "Add Text Note" })
-          ).toHaveLength(2),
-        { timeout: 600 }
-      );
       fireEvent.click(
         screen.getAllByRole("button", { name: "Add Text Note" })[0]
       );
       await user.type(screen.getByLabelText("Text"), "Test Note 2");
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
       rerender(<SessionEditor session={sessionStore.session} />);
 
       const note1 = screen.getByText("Test Note 1");
