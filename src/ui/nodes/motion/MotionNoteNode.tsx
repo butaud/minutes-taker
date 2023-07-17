@@ -239,7 +239,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
           <input
             className="motionText"
             type="text"
-            value={text}
+            value={text ?? ""}
             onChange={handleTextChange}
           />
         </label>
@@ -262,7 +262,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
             In favor:
             <input
               type="number"
-              value={inFavorCount}
+              value={inFavorCount ?? 0}
               onChange={handleInFavorCountChange}
             />
           </label>
@@ -270,7 +270,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
             Opposed:
             <input
               type="number"
-              value={opposedCount}
+              value={opposedCount ?? 0}
               onChange={handleOpposedCountChange}
             />
           </label>
@@ -278,7 +278,7 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
             Abstained:
             <input
               type="number"
-              value={abstainedCount}
+              value={abstainedCount ?? 0}
               onChange={handleAbstainedCountChange}
             />
           </label>

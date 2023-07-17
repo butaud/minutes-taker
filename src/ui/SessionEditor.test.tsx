@@ -1276,7 +1276,7 @@ describe("SessionEditor", () => {
     });
   });
 
-  describe.only("motions", () => {
+  describe("motions", () => {
     it("shows the mover and text of the motion", () => {
       sessionStore.addTopic({
         title: "Test Topic",
@@ -1375,6 +1375,33 @@ describe("SessionEditor", () => {
         screen.getByText(
           getByTextContent("Vote: 2 in favor, 1 opposed, 1 abstained")
         )
+      ).toBeInTheDocument();
+    });
+
+    it("omits empty vote count categories", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "passed",
+        inFavorCount: 2,
+        opposedCount: 0,
+        abstainedCount: 1,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("Vote: 2 in favor, 1 abstained"))
       ).toBeInTheDocument();
     });
 
@@ -1479,32 +1506,669 @@ describe("SessionEditor", () => {
       expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
     });
 
-    it.todo("allows editing the mover of the motion");
-    it.todo("allows editing the seconder of the motion");
-    it.todo("allows editing the text of the motion");
-    it.todo("allows editing the status of the motion");
-    it.todo("allows editing the vote counts if the motion is passed");
-    it.todo("allows editing the vote counts if the motion is failed");
-    it.todo(
-      "does not allow editing the vote counts if the motion is withdrawn"
-    );
-    it.todo("does not allow editing the vote counts if the motion is tabled");
-    it.todo("does not allow editing the vote counts if the motion is active");
-    it.todo("does not apply changes if cancel is clicked");
-    it.todo("submits changes if enter is pressed");
-    it.todo("cancels changes if escape is pressed");
-    it.todo("allows adding a new motion");
-    it.todo("has a default outcome of active when adding a new motion");
-    it.todo("shows an error message if the new motion does not have text");
-    it.todo("shows an error message if the new motion does not have a mover");
-    it.todo(
-      "shows an error message if the new motion does not have a seconder"
-    );
-    it.todo("allows cancelling a new motion");
+    it("allows editing the mover of the motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({ firstName: "Joe", lastName: "Brown" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Joe Brown");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Mr. Brown")).toBeInTheDocument();
+    });
+
+    it("allows editing the seconder of the motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({ firstName: "Joe", lastName: "Brown" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Joe Brown");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Brown seconded."))
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing the text of the motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Text:"));
+      await user.type(screen.getByLabelText("Text:"), "Updated Motion");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved Updated Motion"))
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing the outcome of the motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Outcome:"), "passed");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Motion passed.")).toBeInTheDocument();
+    });
+
+    it("allows editing the vote counts if the motion is passed", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "passed",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(screen.getByLabelText("In favor:"), "10");
+      await user.type(screen.getByLabelText("Opposed:"), "5");
+      await user.type(screen.getByLabelText("Abstained:"), "1");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(
+          getByTextContent("Vote: 10 in favor, 5 opposed, 1 abstained")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing the vote counts if the motion is failed", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "failed",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(screen.getByLabelText("In favor:"), "5");
+      await user.type(screen.getByLabelText("Opposed:"), "7");
+      await user.type(screen.getByLabelText("Abstained:"), "2");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(
+          getByTextContent("Vote: 5 in favor, 7 opposed, 2 abstained")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("does not allow editing the vote counts if the motion is withdrawn", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "withdrawn",
+      });
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      expect(screen.queryByLabelText("In favor:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Opposed:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Abstained:")).not.toBeInTheDocument();
+    });
+
+    it("does not allow editing the vote counts if the motion is tabled", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "tabled",
+      });
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      expect(screen.queryByLabelText("In favor:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Opposed:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Abstained:")).not.toBeInTheDocument();
+    });
+
+    it("does not allow editing the vote counts if the motion is active", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      expect(screen.queryByLabelText("In favor:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Opposed:")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Abstained:")).not.toBeInTheDocument();
+    });
+
+    it("does not apply changes if cancel is clicked", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Text:"));
+      await user.type(screen.getByLabelText("Text:"), "Updated Motion");
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved Test Motion"))
+      ).toBeInTheDocument();
+    });
+
+    it("submits changes if enter is pressed", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        mover: { firstName: "Bob", lastName: "Jones" },
+        seconder: { firstName: "Tom", lastName: "Smith" },
+        text: "Test Motion",
+        outcome: "active",
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Mr. Jones"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Text:"));
+      await user.type(screen.getByLabelText("Text:"), "Updated Motion");
+      await user.keyboard("{enter}");
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved Updated Motion"))
+      ).toBeInTheDocument();
+    });
+
+    it("allows adding a new motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.type(screen.getByLabelText("Text:"), "New Motion");
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Bob Jones");
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
+      await user.selectOptions(screen.getByLabelText("Outcome:"), "tabled");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
+      ).toBeInTheDocument();
+      expect(screen.getByText("The motion was tabled.")).toBeInTheDocument();
+    });
+
+    it("has a default outcome of active when adding a new motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.type(screen.getByLabelText("Text:"), "New Motion");
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Bob Jones");
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("The motion is under discussion.")
+      ).toBeInTheDocument();
+    });
+
+    it("shows an error message if the new motion does not have text", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Bob Jones");
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent("Text is required.");
+    });
+
+    it("shows an error message if the new motion does not have a mover", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.type(screen.getByLabelText("Text:"), "New Motion");
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent("Mover is required.");
+    });
+
+    it("shows an error message if the new motion does not have a seconder", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.type(screen.getByLabelText("Text:"), "New Motion");
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Seconder is required."
+      );
+    });
+
+    it("allows cancelling a new motion", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await user.click(screen.getByRole("button", { name: "Add Motion" }));
+      await user.type(screen.getByLabelText("Text:"), "New Motion");
+      await user.selectOptions(screen.getByLabelText("Mover:"), "Bob Jones");
+      await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+      expect(
+        screen.queryByText("Mr. Jones moved New Motion")
+      ).not.toBeInTheDocument();
+    });
   });
+
   describe("overall", () => {
-    it.todo("allows undoing changes");
-    it.todo("allows redoing undone changes");
-    it.todo("clears redo history when a new change is made");
+    it("allows undoing changes", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Topic")).toBeInTheDocument();
+
+      await user.hover(screen.getByText("Members in attendance:"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(
+        screen.getByLabelText("Add member to members in attendance list:"),
+        "Bob Jones"
+      );
+      await user.keyboard("{enter}");
+      await user.type(
+        screen.getByLabelText("Add member to members in attendance list:"),
+        "Tom Smith"
+      );
+      await user.keyboard("{enter}");
+
+      fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+
+      personList = sessionStore.allPeople;
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Jones, Smith")).toBeInTheDocument();
+
+      await user.hover(screen.getByText("Test Topic"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Leader"), "Bob Jones");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(getByTextContent("Lead by Mr. Jones"))
+      ).toBeInTheDocument();
+
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.queryByText(getByTextContent("Lead by Mr. Jones"))
+      ).not.toBeInTheDocument();
+
+      // undo each member add
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Jones, Smith")).not.toBeInTheDocument();
+
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
+    });
+
+    it("allows redoing undone changes", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Topic")).toBeInTheDocument();
+
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
+
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "y",
+        ctrlKey: true,
+      });
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Topic")).toBeInTheDocument();
+    });
+
+    it("clears redo history when a new change is made", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      // create a topic
+      await user.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByText("Test Topic")).toBeInTheDocument();
+
+      // undo creating the topic
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "z",
+        ctrlKey: true,
+      });
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
+
+      // create a new topic
+      await user.click(screen.getByRole("button", { name: "Add Topic" }));
+      await user.type(screen.getByLabelText("Title"), "Test Topic 2");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      // try to redo creating the first topic
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "y",
+        ctrlKey: true,
+      });
+
+      // redo should not occur
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
+    });
   });
 });
