@@ -48,3 +48,21 @@ button.newTopic:hover {
   border-color: var(--color-secondary);
   color: var(--color-secondary);
 }
+
+.newTopicPlaceholderContainer {
+  position: relative;
+  height: 0;
+  width: 0;
+}
+
+.newTopicPlaceholder {
+  position: absolute;
+  bottom: -15px;
+  left: -15px;
+}
+
+button.expandClose {
+  font-size: smaller;
+  border: none;
+  background-color: transparent;
+}

@@ -350,23 +350,35 @@ export class SessionStore {
   };
 
   addTopic = (
-    topic: Pick<Topic, "title" | "startTime" | "durationMinutes" | "leader">
+    topic: Pick<Topic, "title" | "startTime" | "durationMinutes" | "leader">,
+    beforeIndex?: number
   ) => {
     this.produceUpdate((draft) => {
       // Update the duration on the previous topic
-      if (draft.topics.length > 0) {
+      if (beforeIndex === undefined && draft.topics.length > 0) {
         const previousTopic = draft.topics[draft.topics.length - 1];
         previousTopic.durationMinutes = Math.round(
           (topic.startTime.getTime() - previousTopic.startTime.getTime()) /
             60000
         );
       }
-      draft.topics.push({
+      const storedTopic = {
         ...topic,
         id: this.topicId++,
         notes: [],
         leader: topic.leader && this.findPerson(topic.leader),
-      });
+      };
+
+      if (beforeIndex === undefined) {
+        draft.topics.push({
+          ...topic,
+          id: this.topicId++,
+          notes: [],
+          leader: topic.leader && this.findPerson(topic.leader),
+        });
+      } else {
+        draft.topics.splice(beforeIndex, 0, storedTopic);
+      }
     });
   };
 

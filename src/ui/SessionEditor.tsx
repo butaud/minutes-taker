@@ -36,10 +36,17 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         administrationPresent={session.metadata.administrationPresent}
       />
       <ul>
-        {session.topics.map((topic) => (
-          <TopicNode key={topic.id} topic={topic} />
+        {session.topics.map((topic, index) => (
+          <>
+            <NewTopicNode
+              key={`newTopic-${index}`}
+              alwaysExpanded={false}
+              beforeIndex={index}
+            />
+            <TopicNode key={topic.id} topic={topic} />
+          </>
         ))}
-        <NewTopicNode />
+        <NewTopicNode alwaysExpanded />
       </ul>
     </div>
   );

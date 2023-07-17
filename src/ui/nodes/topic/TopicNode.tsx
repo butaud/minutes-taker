@@ -8,7 +8,10 @@ import { OptionalPersonSelector } from "../../controls/PersonSelector";
 import { NoteNode } from "../NoteNode";
 import { NewNoteNode } from "../NewNoteNode";
 
-export const NewTopicNode: React.FC<{}> = () => {
+export const NewTopicNode: React.FC<{
+  alwaysExpanded: boolean;
+  beforeIndex?: number;
+}> = ({ alwaysExpanded, beforeIndex }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const stopEditing = useCallback(() => {
@@ -20,12 +23,24 @@ export const NewTopicNode: React.FC<{}> = () => {
   }, []);
 
   if (isEditing) {
-    return <TopicEditor stopEditing={stopEditing} />;
-  } else {
+    return <TopicEditor stopEditing={stopEditing} beforeIndex={beforeIndex} />;
+  } else if (alwaysExpanded) {
     return (
       <button className="newTopic" onClick={onEdit} aria-label="Add Topic">
         <i className="material-icons">add</i>Add Topic
       </button>
+    );
+  } else {
+    return (
+      <div className="newTopicPlaceholderContainer">
+        <button
+          className="newTopicPlaceholder expandClose"
+          onClick={onEdit}
+          aria-label="Add Topic Inline"
+        >
+          +
+        </button>
+      </div>
     );
   }
 };
@@ -52,7 +67,9 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
               {topic.startTime.toLocaleTimeString("en-US", {
                 timeStyle: "short",
               })}{" "}
-              {topic.durationMinutes && `for ${topic.durationMinutes} minutes`}
+              {topic.durationMinutes !== undefined
+                ? `for ${topic.durationMinutes} minutes`
+                : null}
             </p>
             {topic.leader && (
               <p>
@@ -84,6 +101,7 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
 
 type TopicEditorProps = {
   existingTopic?: StoredTopic;
+  beforeIndex?: number;
   stopEditing: () => void;
 };
 
@@ -96,6 +114,7 @@ type TopicDraft = {
 
 export const TopicEditor: React.FC<TopicEditorProps> = ({
   existingTopic,
+  beforeIndex,
   stopEditing,
 }) => {
   const [topicDraft, setTopicDraft] = useState<TopicDraft>(
@@ -145,7 +164,7 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
         id: existingTopic.id,
       });
     } else {
-      sessionStore.addTopic(topicToSave);
+      sessionStore.addTopic(topicToSave, beforeIndex);
     }
     stopEditing();
   };
@@ -173,7 +192,11 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
           id="topic-start-time"
           type="time"
           step={60}
-          value={`${topicDraft.startTime.getHours()}:${topicDraft.startTime.getMinutes()}`}
+          value={topicDraft.startTime.toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
           onChange={handleStartTimeChange}
         />
       </div>

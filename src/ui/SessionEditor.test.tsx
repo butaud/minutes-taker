@@ -696,6 +696,33 @@ describe("SessionEditor", () => {
       );
     });
 
+    it("allows adding a topic before another topic", async () => {
+      sessionStore.addTopic({
+        title: "Existing Topic",
+        startTime: new Date(),
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add Topic Inline" }));
+      await user.type(screen.getByLabelText("Title"), "New Topic");
+      await user.type(screen.getByLabelText("Duration (minutes)"), "5");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      const existingTopic = screen.getByRole("heading", {
+        level: 3,
+        name: "Existing Topic",
+      });
+      const newTopic = screen.getByRole("heading", {
+        level: 3,
+        name: "New Topic",
+      });
+      expect(newTopic).toPrecede(existingTopic);
+    });
+
     it("automatically sets a new topic's start time to the current time", async () => {
       const user = userEvent.setup();
       const { rerender } = render(
