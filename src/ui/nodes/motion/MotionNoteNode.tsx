@@ -92,12 +92,14 @@ const MotionOutcomeDisplay: React.FC<{ note: StoredMotionNote }> = ({
 type MotionNoteEditorProps = {
   existingNote?: StoredMotionNote;
   topicId?: number;
+  beforeIndex?: number;
   stopEditing: () => void;
 };
 
 export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
   existingNote,
   topicId,
+  beforeIndex,
   stopEditing,
 }) => {
   const [text, setText] = useState(existingNote?.text);
@@ -187,16 +189,20 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
         abstainedCount,
       });
     } else {
-      sessionStore.addNote(topicId!, {
-        type: "motion",
-        mover,
-        seconder,
-        text,
-        outcome,
-        inFavorCount,
-        opposedCount,
-        abstainedCount,
-      });
+      sessionStore.addNote(
+        topicId!,
+        {
+          type: "motion",
+          mover,
+          seconder,
+          text,
+          outcome,
+          inFavorCount,
+          opposedCount,
+          abstainedCount,
+        },
+        beforeIndex
+      );
     }
     stopEditing();
   };

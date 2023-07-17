@@ -5,6 +5,7 @@ import {
   screen,
   fireEvent,
   RenderOptions,
+  waitFor,
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -759,7 +760,7 @@ describe("SessionEditor", () => {
     it.todo("allows reordering topics");
   });
 
-  describe("notes", () => {
+  describe.only("notes", () => {
     it("shows the list of notes under their topics", () => {
       sessionStore.addTopic({
         title: "Test Topic 1",
@@ -792,6 +793,44 @@ describe("SessionEditor", () => {
       expect(topic1Header).toPrecede(note1);
       expect(note1).toPrecede(topic2Header);
       expect(topic2Header).toPrecede(note2);
+    });
+
+    it("allows adding notes before other notes", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "Test Note 1",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByLabelText("Add Note Placeholder"));
+
+      // to avoid making the screen too jumpy the hover effect delays by 500ms, so we need to
+      // wait for it to happen
+      await waitFor(
+        () =>
+          expect(
+            screen.getAllByRole("button", { name: "Add Text Note" })
+          ).toHaveLength(2),
+        { timeout: 600 }
+      );
+      fireEvent.click(
+        screen.getAllByRole("button", { name: "Add Text Note" })[0]
+      );
+      await user.type(screen.getByLabelText("Text"), "Test Note 2");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      const note1 = screen.getByText("Test Note 1");
+      const note2 = screen.getByText("Test Note 2");
+      expect(note2).toPrecede(note1);
     });
     // adding and deleting notes covered by type-specific tests
     it.todo("allows reordering notes");

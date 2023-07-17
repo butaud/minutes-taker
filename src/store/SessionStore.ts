@@ -393,10 +393,16 @@ export class SessionStore {
     });
   };
 
-  addNote = (topicId: number, note: Note) => {
+  addNote = (topicId: number, note: Note, beforeIndex?: number) => {
     this.produceUpdate((draft) => {
       const index = draft.topics.findIndex((t) => t.id === topicId);
-      draft.topics[index].notes.push(this.convertNote(note));
+      const topic = draft.topics[index];
+      const storedNote = this.convertNote(note);
+      if (beforeIndex !== undefined) {
+        topic.notes.splice(beforeIndex, 0, storedNote);
+      } else {
+        topic.notes.push(storedNote);
+      }
     });
   };
 

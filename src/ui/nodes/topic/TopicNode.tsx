@@ -60,10 +60,22 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
               </p>
             )}
           </NodeControls>
-          {topic.notes.map((note) => (
-            <NoteNode key={note.id} note={note} />
+          {topic.notes.map((note, index) => (
+            <>
+              <NewNoteNode
+                topicId={topic.id}
+                alwaysExpanded={false}
+                key={`newNote-${topic.id}-${index}`}
+                beforeIndex={index}
+              />
+              <NoteNode key={note.id} note={note} />
+            </>
           ))}
-          <NewNoteNode topicId={topic.id} />
+          <NewNoteNode
+            key={`newNote-${topic.id}-end`}
+            topicId={topic.id}
+            alwaysExpanded
+          />
         </>
       )}
     </div>

@@ -62,12 +62,14 @@ export const ActionItemNoteDisplay: React.FC<ActionItemNoteDisplayProps> = ({
 type ActionItemNoteEditorProps = {
   existingNote?: StoredActionItemNote;
   topicId?: number;
+  beforeIndex?: number;
   stopEditing: () => void;
 };
 
 export const ActionItemNoteEditor: React.FC<ActionItemNoteEditorProps> = ({
   existingNote,
   topicId,
+  beforeIndex,
   stopEditing,
 }) => {
   const [text, setText] = useState(existingNote?.text || "");
@@ -119,12 +121,16 @@ export const ActionItemNoteEditor: React.FC<ActionItemNoteEditorProps> = ({
         assignee,
       });
     } else if (topicId !== undefined) {
-      sessionStore.addNote(topicId, {
-        type: "actionItem",
-        text,
-        dueDate,
-        assignee,
-      });
+      sessionStore.addNote(
+        topicId,
+        {
+          type: "actionItem",
+          text,
+          dueDate,
+          assignee,
+        },
+        beforeIndex
+      );
     }
     stopEditing();
   };

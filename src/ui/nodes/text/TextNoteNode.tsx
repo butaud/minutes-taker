@@ -33,12 +33,14 @@ type TextNoteEditorProps = {
   existingNote?: StoredTextNote;
   stopEditing: () => void;
   topicId?: number;
+  beforeIndex?: number;
 };
 
 export const TextNoteEditor: FunctionComponent<TextNoteEditorProps> = ({
   existingNote,
   stopEditing,
   topicId,
+  beforeIndex,
 }) => {
   const [draft, setDraft] = useState<TextNoteDraft>({ ...existingNote });
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -62,7 +64,11 @@ export const TextNoteEditor: FunctionComponent<TextNoteEditorProps> = ({
         id: existingNote.id,
       });
     } else if (topicId !== undefined) {
-      sessionStore.addNote(topicId, { type: "text", text: draft.text });
+      sessionStore.addNote(
+        topicId,
+        { type: "text", text: draft.text },
+        beforeIndex
+      );
     }
     stopEditing();
   }, [draft]);
