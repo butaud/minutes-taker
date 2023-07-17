@@ -39,15 +39,15 @@ button.newNote i {
   display: block;
   height: 1px;
   border: 0;
-  border-top: 1px solid #000;
+  border-top: 2px solid #000;
   padding: 0;
   width: 5em;
   position: absolute;
-  bottom: -5px;
-  transition: all 500ms ease;
+  bottom: -6px;
+  transition: all 500ms ease-in;
 }
 
 .newNotePlaceholder:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-tertiary);
   width: 15em;
 }
