@@ -3,7 +3,7 @@
   padding: 0;
 }
 
-.attendance-container button {
+.attendance-container form button {
   margin: 0px 5px;
   padding: 0px 5px;
   font-size: 0.8em;
@@ -11,6 +11,10 @@
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s;
+}
+
+.attendance-container li button {
+  padding: 2px;
 }
 
 .attendance-container h4 {

@@ -19,7 +19,11 @@ export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {
       stopEditing={() => setIsEditing(false)}
     />
   ) : (
-    <NodeControls onEdit={() => setIsEditing(true)} onDelete={handleDelete}>
+    <NodeControls
+      as="li"
+      onEdit={() => setIsEditing(true)}
+      onDelete={handleDelete}
+    >
       <p>{note.text}</p>
     </NodeControls>
   );

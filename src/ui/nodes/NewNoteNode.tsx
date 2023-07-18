@@ -31,7 +31,7 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   };
   if (!isExpanded) {
     return (
-      <div className="newNotePlaceholderContainer">
+      <li className="newNotePlaceholderContainer">
         <button
           className="newNotePlaceholder expandClose"
           aria-label="Add Note Placeholder"
@@ -39,12 +39,12 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
         >
           +
         </button>
-      </div>
+      </li>
     );
   }
   if (!addingType) {
     return (
-      <div className="newNoteContainer">
+      <li className="newNoteContainer">
         {!alwaysExpanded && (
           <button
             className="expandClose"
@@ -57,7 +57,7 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
         <NewNoteButton onClick={onAddTextNote} label="Add Text Note" />
         <NewNoteButton onClick={onAddMotion} label="Add Motion" />
         <NewNoteButton onClick={onAddActionItem} label="Add Action Item" />
-      </div>
+      </li>
     );
   }
   switch (addingType) {

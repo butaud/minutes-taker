@@ -33,16 +33,18 @@ export const SessionHeaderDisplay: React.FC<{
   onEdit: () => void;
 }> = ({ metadata, onEdit }) => {
   return (
-    <NodeControls onEdit={onEdit}>
-      <h1>{metadata.organization}</h1>
-      <h2>
+    <>
+      <NodeControls as="h1" onEdit={onEdit}>
+        {metadata.organization}
+      </NodeControls>
+      <NodeControls as="h2" onEdit={onEdit}>
         {metadata.title}: {metadata.location},{" "}
         {metadata.startTime.toLocaleString(navigator.language, {
           timeStyle: "short",
           dateStyle: "short",
         })}
-      </h2>
-    </NodeControls>
+      </NodeControls>
+    </>
   );
 };
 

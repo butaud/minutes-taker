@@ -42,19 +42,17 @@ export const ActionItemNoteDisplay: React.FC<ActionItemNoteDisplayProps> = ({
   const sessionStore = useSessionStore();
   return (
     <NodeControls
+      as="li"
       onEdit={onEdit}
       onDelete={() => sessionStore.removeNote(note)}
     >
-      <div>
-        <p>
-          <em>Action item:</em>{" "}
-          <SpeakerReference speaker={note.assignee} emphasis /> to {note.text}{" "}
-          {note.dueDate &&
-            "by " +
-              note.dueDate.toLocaleDateString("en-US", { timeZone: "UTC" })}
-          .
-        </p>
-      </div>
+      <p>
+        <em>Action item:</em>{" "}
+        <SpeakerReference speaker={note.assignee} emphasis /> to {note.text}{" "}
+        {note.dueDate &&
+          "by " + note.dueDate.toLocaleDateString("en-US", { timeZone: "UTC" })}
+        .
+      </p>
     </NodeControls>
   );
 };

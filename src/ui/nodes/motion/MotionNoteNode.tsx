@@ -39,6 +39,7 @@ const MotionNoteDisplay: React.FC<MotionNoteDisplayProps> = ({
 
   return (
     <NodeControls
+      as="li"
       onEdit={onEdit}
       onDelete={() => sessionStore.removeNote(note)}
       className="motion"

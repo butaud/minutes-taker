@@ -5,6 +5,7 @@ type NodeControlsProps = {
   onEdit: () => void;
   onDelete?: () => void;
   className?: string;
+  as?: "div" | "h1" | "h2" | "h3" | "li";
 };
 
 export const NodeControls = ({
@@ -12,6 +13,7 @@ export const NodeControls = ({
   onDelete,
   children,
   className,
+  as = "div",
 }: React.PropsWithChildren<NodeControlsProps>) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const editCallback = React.useCallback(() => {
@@ -21,10 +23,11 @@ export const NodeControls = ({
     onDelete?.();
   }, [onDelete]);
   return (
-    <div
+    <NodeContainer
+      as={as}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`node-container ${className}`}
+      className={className}
     >
       {children}
       {isHovered && (
@@ -33,7 +36,26 @@ export const NodeControls = ({
           {onDelete && <button onClick={deleteCallback}>Delete</button>}
         </span>
       )}
-    </div>
+    </NodeContainer>
+  );
+};
+
+const NodeContainer: React.FC<
+  React.PropsWithChildren<{
+    className?: string;
+    as: "div" | "h1" | "h2" | "h3" | "li";
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+  }>
+> = ({ className, as, children, onMouseEnter, onMouseLeave }) => {
+  return React.createElement(
+    as,
+    {
+      className: `node-container ${className ?? ""}`,
+      onMouseEnter,
+      onMouseLeave,
+    },
+    children
   );
 };
 
@@ -42,20 +64,21 @@ export type NonFormNodeControlsProps = {
   onDelete?: () => void;
   onStopEditing: () => void;
   isEditing: boolean;
+  className?: string;
 };
 
 export const NonFormNodeControls: React.FC<
   React.PropsWithChildren<NonFormNodeControlsProps>
-> = ({ isEditing, onEdit, onDelete, onStopEditing, children }) => {
+> = ({ isEditing, onEdit, onDelete, onStopEditing, className, children }) => {
   if (isEditing) {
     return (
-      <StopEditingControls onStopEditing={onStopEditing}>
+      <StopEditingControls onStopEditing={onStopEditing} className={className}>
         {children}
       </StopEditingControls>
     );
   } else {
     return (
-      <NodeControls onEdit={onEdit} onDelete={onDelete}>
+      <NodeControls onEdit={onEdit} onDelete={onDelete} className={className}>
         {children}
       </NodeControls>
     );
@@ -94,10 +117,11 @@ export const FormNodeControls: React.FC<
 export const StopEditingControls: React.FC<
   React.PropsWithChildren<{
     onStopEditing: () => void;
+    className?: string;
   }>
-> = ({ onStopEditing, children }) => {
+> = ({ onStopEditing, className, children }) => {
   return (
-    <div className="node-container">
+    <div className={`node-container ${className ?? ""}`}>
       {children}
       <span className="node-controls">
         <button onClick={onStopEditing} type="button">

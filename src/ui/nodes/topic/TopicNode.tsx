@@ -26,13 +26,15 @@ export const NewTopicNode: React.FC<{
     return <TopicEditor stopEditing={stopEditing} beforeIndex={beforeIndex} />;
   } else if (alwaysExpanded) {
     return (
-      <button className="newTopic" onClick={onEdit} aria-label="Add Topic">
-        <i className="material-icons">add</i>Add Topic
-      </button>
+      <li>
+        <button className="newTopic" onClick={onEdit} aria-label="Add Topic">
+          <i className="material-icons">add</i>Add Topic
+        </button>
+      </li>
     );
   } else {
     return (
-      <div className="newTopicPlaceholderContainer">
+      <li className="newTopicPlaceholderContainer">
         <button
           className="newTopicPlaceholder expandClose"
           onClick={onEdit}
@@ -40,7 +42,7 @@ export const NewTopicNode: React.FC<{
         >
           +
         </button>
-      </div>
+      </li>
     );
   }
 };
@@ -53,7 +55,7 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
     sessionStore.removeTopic(topic);
   }, [topic]);
   return (
-    <div>
+    <li>
       {isEditing ? (
         <TopicEditor
           existingTopic={topic}
@@ -77,25 +79,27 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
               </p>
             )}
           </NodeControls>
-          {topic.notes.map((note, index) => (
-            <>
-              <NewNoteNode
-                topicId={topic.id}
-                alwaysExpanded={false}
-                key={`newNote-${topic.id}-${index}`}
-                beforeIndex={index}
-              />
-              <NoteNode key={note.id} note={note} />
-            </>
-          ))}
-          <NewNoteNode
-            key={`newNote-${topic.id}-end`}
-            topicId={topic.id}
-            alwaysExpanded
-          />
+          <ul>
+            {topic.notes.map((note, index) => (
+              <>
+                <NewNoteNode
+                  topicId={topic.id}
+                  alwaysExpanded={false}
+                  key={`newNote-${topic.id}-${index}`}
+                  beforeIndex={index}
+                />
+                <NoteNode key={note.id} note={note} />
+              </>
+            ))}
+            <NewNoteNode
+              key={`newNote-${topic.id}-end`}
+              topicId={topic.id}
+              alwaysExpanded
+            />
+          </ul>
         </>
       )}
-    </div>
+    </li>
   );
 };
 

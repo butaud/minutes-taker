@@ -240,7 +240,7 @@ describe("SessionEditor", () => {
       await user.hover(screen.getByText("Members in attendance:"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.type(
-        screen.getByLabelText("Add member to members in attendance list:"),
+        screen.getByLabelText("Add member to members in attendance:"),
         "Bob Jones"
       );
       await user.keyboard("{enter}");
@@ -261,7 +261,7 @@ describe("SessionEditor", () => {
       await user.hover(screen.getByText("Members in attendance:"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.type(
-        screen.getByLabelText("Add member to members in attendance list:"),
+        screen.getByLabelText("Add member to members in attendance:"),
         "Bob"
       );
       await user.keyboard("{enter}");
@@ -343,7 +343,7 @@ describe("SessionEditor", () => {
       await user.hover(screen.getByText("Members not in attendance:"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.type(
-        screen.getByLabelText("Add member to members not in attendance list:"),
+        screen.getByLabelText("Add member to members not in attendance:"),
         "Bob Jones"
       );
       await user.keyboard("{enter}");
@@ -389,7 +389,7 @@ describe("SessionEditor", () => {
       await user.hover(screen.getByText("Administration:"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.type(
-        screen.getByLabelText("Add member to administration list:"),
+        screen.getByLabelText("Add member to administration:"),
         "Bob Jones"
       );
       await user.keyboard("{enter}");
@@ -2099,12 +2099,12 @@ describe("SessionEditor", () => {
       await user.hover(screen.getByText("Members in attendance:"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.type(
-        screen.getByLabelText("Add member to members in attendance list:"),
+        screen.getByLabelText("Add member to members in attendance:"),
         "Bob Jones"
       );
       await user.keyboard("{enter}");
       await user.type(
-        screen.getByLabelText("Add member to members in attendance list:"),
+        screen.getByLabelText("Add member to members in attendance:"),
         "Tom Smith"
       );
       await user.keyboard("{enter}");

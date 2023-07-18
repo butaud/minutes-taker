@@ -60,16 +60,20 @@ const PersonList: React.FC<PersonListProps> = ({
       ) : (
         <>
           <h4>{title}</h4>
-          {people.map((person) => (
-            <div key={`${person.firstName}-${person.lastName}`}>
-              {person.firstName} {person.lastName}{" "}
-              <button onClick={() => handleRemovePerson(person)}>Remove</button>
-            </div>
-          ))}
+          <ul>
+            {people.map((person) => (
+              <li key={`${person.firstName}-${person.lastName}`}>
+                {person.firstName} {person.lastName}{" "}
+                <button onClick={() => handleRemovePerson(person)}>
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
           <form onSubmit={handleAddPerson}>
             {errorMessage && <p role="alert">{errorMessage}</p>}
             <label>
-              Add member to {title.toLowerCase()} list:
+              Add member to {title.toLowerCase()}:
               <input
                 type="text"
                 value={newPerson}
@@ -107,34 +111,33 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
   };
 
   return (
-    <div className="attendance-container">
-      <NonFormNodeControls
+    <NonFormNodeControls
+      isEditing={isEditing}
+      onEdit={handleEditClick}
+      onStopEditing={handleStopEditingClick}
+      className="attendance-container"
+    >
+      <PersonList
+        title="Members in attendance"
+        people={present}
+        addPerson={sessionStore.addMemberPresent}
+        removePerson={sessionStore.removeMemberPresent}
         isEditing={isEditing}
-        onEdit={handleEditClick}
-        onStopEditing={handleStopEditingClick}
-      >
-        <PersonList
-          title="Members in attendance"
-          people={present}
-          addPerson={sessionStore.addMemberPresent}
-          removePerson={sessionStore.removeMemberPresent}
-          isEditing={isEditing}
-        />
-        <PersonList
-          title="Members not in attendance"
-          people={absent}
-          addPerson={sessionStore.addMemberAbsent}
-          removePerson={sessionStore.removeMemberAbsent}
-          isEditing={isEditing}
-        />
-        <PersonList
-          title="Administration"
-          people={administrationPresent}
-          addPerson={sessionStore.addAdministrationPresent}
-          removePerson={sessionStore.removeAdministrationPresent}
-          isEditing={isEditing}
-        />
-      </NonFormNodeControls>
-    </div>
+      />
+      <PersonList
+        title="Members not in attendance"
+        people={absent}
+        addPerson={sessionStore.addMemberAbsent}
+        removePerson={sessionStore.removeMemberAbsent}
+        isEditing={isEditing}
+      />
+      <PersonList
+        title="Administration"
+        people={administrationPresent}
+        addPerson={sessionStore.addAdministrationPresent}
+        removePerson={sessionStore.removeAdministrationPresent}
+        isEditing={isEditing}
+      />
+    </NonFormNodeControls>
   );
 };
