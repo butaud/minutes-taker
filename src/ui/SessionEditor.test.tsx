@@ -706,6 +706,12 @@ describe("SessionEditor", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
+
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "i",
+        ctrlKey: true,
+      });
+
       fireEvent.click(screen.getByRole("button", { name: "Add Topic Inline" }));
       await user.type(screen.getByLabelText("Title"), "New Topic");
       await user.type(screen.getByLabelText("Duration (minutes)"), "5");
@@ -826,7 +832,11 @@ describe("SessionEditor", () => {
         <SessionEditor session={sessionStore.session} />
       );
 
-      fireEvent.click(screen.getByLabelText("Add Note Placeholder"));
+      fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+        key: "i",
+        ctrlKey: true,
+      });
+      fireEvent.click(screen.getByLabelText("Add Note Inline"));
 
       fireEvent.click(
         screen.getAllByRole("button", { name: "Add Text Note" })[0]

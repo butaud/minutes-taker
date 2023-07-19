@@ -47,14 +47,14 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
               {isInserting && (
                 <NewTopicNode
                   key={`newTopic-${index}`}
-                  alwaysExpanded={false}
+                  miniature
                   beforeIndex={index}
                 />
               )}
               <TopicNode key={topic.id} topic={topic} />
             </>
           ))}
-          <NewTopicNode alwaysExpanded />
+          <NewTopicNode miniature={false} />
         </ul>
       </div>
     </InsertingContext.Provider>

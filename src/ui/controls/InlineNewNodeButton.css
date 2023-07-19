@@ -1,11 +1,8 @@
 .inlineNewButtonContainer {
-  position: relative;
-  height: 0;
   width: 100%;
 }
 
 button.inlineNewButton {
-  position: absolute;
   width: 100%;
   display: flex;
   align-items: center;
@@ -13,13 +10,7 @@ button.inlineNewButton {
   font-size: smaller;
   border: none;
   background-color: transparent;
-  height: 0;
-  top: 7px;
-  padding: 0;
-}
-
-button.inlineNewButton {
-  color: transparent;
+  color: #000;
 }
 
 button.inlineNewButton:hover {
@@ -39,4 +30,8 @@ button.inlineNewButton:not(:empty)::before {
 
 button.inlineNewButton:not(:empty)::after {
   margin-left: 10px;
+}
+
+button.inlineNewButton i {
+  font-size: 18px;
 }

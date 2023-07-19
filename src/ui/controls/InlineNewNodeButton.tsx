@@ -15,10 +15,11 @@ export const InlineNewNodeButton: React.FC<{
       <button
         className="inlineNewButton"
         onClick={onClick}
+        title={label}
         aria-label={label}
         aria-describedby={descriptionId}
       >
-        <i className="material-icons">arrow_drop_up</i>
+        <i className="material-icons md-18">add</i>
       </button>
       <p id={descriptionId} style={{ display: "none" }}>
         {index && <>Insert at position {index}</>}

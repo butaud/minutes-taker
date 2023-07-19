@@ -8,11 +8,12 @@ import { OptionalPersonSelector } from "../../controls/PersonSelector";
 import { NoteNode } from "../NoteNode";
 import { NewNoteNode } from "../NewNoteNode";
 import { InlineNewNodeButton } from "../../controls/InlineNewNodeButton";
+import { useInserting } from "../../context/InsertingContext";
 
 export const NewTopicNode: React.FC<{
-  alwaysExpanded: boolean;
+  miniature: boolean;
   beforeIndex?: number;
-}> = ({ alwaysExpanded, beforeIndex }) => {
+}> = ({ miniature, beforeIndex }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const stopEditing = useCallback(() => {
@@ -25,7 +26,7 @@ export const NewTopicNode: React.FC<{
 
   if (isEditing) {
     return <TopicEditor stopEditing={stopEditing} beforeIndex={beforeIndex} />;
-  } else if (alwaysExpanded) {
+  } else if (!miniature) {
     return (
       <li>
         <button className="newTopic" onClick={onEdit} aria-label="Add Topic">
@@ -38,7 +39,7 @@ export const NewTopicNode: React.FC<{
       <InlineNewNodeButton
         index={beforeIndex}
         onClick={onEdit}
-        label="Add Topic"
+        label="Add Topic Inline"
       />
     );
   }
@@ -80,18 +81,21 @@ const TopicDisplay: React.FC<TopicDisplayProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const isInserting = useInserting();
   return (
     <>
       <TopicHeaderDisplay topic={topic} onEdit={onEdit} onDelete={onDelete} />
       <ul>
         {topic.notes.map((note, index) => (
           <>
-            <NewNoteNode
-              topicId={topic.id}
-              alwaysExpanded={false}
-              key={`newNote-${topic.id}-${index}`}
-              beforeIndex={index}
-            />
+            {isInserting && (
+              <NewNoteNode
+                topicId={topic.id}
+                alwaysExpanded={false}
+                key={`newNote-${topic.id}-${index}`}
+                beforeIndex={index}
+              />
+            )}
             <NoteNode key={note.id} note={note} />
           </>
         ))}
