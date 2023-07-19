@@ -6,7 +6,7 @@ import { StoredSession } from "../store/SessionStore";
 import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
-import { loadSession, saveSession } from "../fs/io";
+import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -32,6 +32,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         loadSession().then((session) => {
           sessionStore.loadSession(session);
         });
+      } else if (event.ctrlKey && event.key === "e") {
+        event.preventDefault();
+        const session = sessionStore.export();
+        saveSessionAsDocx(session);
       }
     };
 

@@ -1,4 +1,5 @@
 import { Session } from "minutes-model";
+import { exportSessionToDocx } from "./doc";
 
 export const saveSession: (session: Session) => Promise<void> = async (
   session
@@ -22,6 +23,32 @@ export const saveSession: (session: Session) => Promise<void> = async (
 
   const writable = await handle.createWritable();
   await writable.write(json);
+  await writable.close();
+};
+
+export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
+  session
+) => {
+  const filename = `${session.metadata.organization}-${
+    session.metadata.title
+  }-${session.metadata.startTime.toDateString()}.docx`;
+  const blob = await exportSessionToDocx(session);
+
+  const handle = await window.showSaveFilePicker({
+    types: [
+      {
+        description: "Word Document",
+        accept: {
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            [".docx"],
+        },
+      },
+    ],
+    suggestedName: filename,
+  });
+
+  const writable = await handle.createWritable();
+  await writable.write(blob);
   await writable.close();
 };
 
