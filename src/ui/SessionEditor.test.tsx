@@ -712,14 +712,8 @@ describe("SessionEditor", () => {
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
       rerender(<SessionEditor session={sessionStore.session} />);
 
-      const existingTopic = screen.getByRole("heading", {
-        level: 3,
-        name: "Existing Topic",
-      });
-      const newTopic = screen.getByRole("heading", {
-        level: 3,
-        name: "New Topic",
-      });
+      const existingTopic = screen.getByText("Existing Topic");
+      const newTopic = screen.getByText("New Topic");
       expect(newTopic).toPrecede(existingTopic);
     });
 
@@ -807,13 +801,9 @@ describe("SessionEditor", () => {
 
       render(<SessionEditor session={sessionStore.session} />);
 
-      const topic1Header = screen.getByRole("heading", {
-        name: "Test Topic 1",
-      });
+      const topic1Header = screen.getByText("Test Topic 1");
       const note1 = screen.getByText("Test Note 1");
-      const topic2Header = screen.getByRole("heading", {
-        name: "Test Topic 2",
-      });
+      const topic2Header = screen.getByText("Test Topic 2");
       const note2 = screen.getByText("Test Note 2");
 
       expect(topic1Header).toPrecede(note1);

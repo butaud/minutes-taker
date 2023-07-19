@@ -1,0 +1,42 @@
+.inlineNewButtonContainer {
+  position: relative;
+  height: 0;
+  width: 100%;
+}
+
+button.inlineNewButton {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-size: smaller;
+  border: none;
+  background-color: transparent;
+  height: 0;
+  top: 7px;
+  padding: 0;
+}
+
+button.inlineNewButton {
+  color: transparent;
+}
+
+button.inlineNewButton:hover {
+  color: var(--color-tertiary);
+}
+
+button.inlineNewButton::before,
+button.inlineNewButton::after {
+  content: "";
+  flex: 1 1;
+  border-bottom: 1px solid;
+}
+
+button.inlineNewButton:not(:empty)::before {
+  margin-right: 10px;
+}
+
+button.inlineNewButton:not(:empty)::after {
+  margin-left: 10px;
+}

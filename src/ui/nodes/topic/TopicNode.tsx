@@ -7,6 +7,7 @@ import { StoredPerson, StoredTopic } from "../../../store/SessionStore";
 import { OptionalPersonSelector } from "../../controls/PersonSelector";
 import { NoteNode } from "../NoteNode";
 import { NewNoteNode } from "../NewNoteNode";
+import { InlineNewNodeButton } from "../../controls/InlineNewNodeButton";
 
 export const NewTopicNode: React.FC<{
   alwaysExpanded: boolean;
@@ -34,15 +35,11 @@ export const NewTopicNode: React.FC<{
     );
   } else {
     return (
-      <li className="newTopicPlaceholderContainer">
-        <button
-          className="newTopicPlaceholder expandClose"
-          onClick={onEdit}
-          aria-label="Add Topic Inline"
-        >
-          +
-        </button>
-      </li>
+      <InlineNewNodeButton
+        index={beforeIndex}
+        onClick={onEdit}
+        label="Add Topic"
+      />
     );
   }
 };
@@ -55,51 +52,94 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
     sessionStore.removeTopic(topic);
   }, [topic]);
   return (
-    <li>
+    <>
       {isEditing ? (
         <TopicEditor
           existingTopic={topic}
           stopEditing={() => setIsEditing(false)}
         />
       ) : (
-        <>
-          <NodeControls onEdit={() => setIsEditing(true)} onDelete={onDelete}>
-            <h3>{topic.title}</h3>
-            <p className="topicTime">
-              {topic.startTime.toLocaleTimeString("en-US", {
-                timeStyle: "short",
-              })}{" "}
-              {topic.durationMinutes !== undefined
-                ? `for ${topic.durationMinutes} minutes`
-                : null}
-            </p>
-            {topic.leader && (
-              <p>
-                Lead by <SpeakerReference speaker={topic.leader} emphasis />
-              </p>
-            )}
-          </NodeControls>
-          <ul>
-            {topic.notes.map((note, index) => (
-              <>
-                <NewNoteNode
-                  topicId={topic.id}
-                  alwaysExpanded={false}
-                  key={`newNote-${topic.id}-${index}`}
-                  beforeIndex={index}
-                />
-                <NoteNode key={note.id} note={note} />
-              </>
-            ))}
-            <NewNoteNode
-              key={`newNote-${topic.id}-end`}
-              topicId={topic.id}
-              alwaysExpanded
-            />
-          </ul>
-        </>
+        <TopicDisplay
+          topic={topic}
+          onEdit={() => setIsEditing(true)}
+          onDelete={onDelete}
+        />
       )}
-    </li>
+    </>
+  );
+};
+
+type TopicDisplayProps = {
+  topic: StoredTopic;
+  onEdit: () => void;
+  onDelete: () => void;
+};
+
+const TopicDisplay: React.FC<TopicDisplayProps> = ({
+  topic,
+  onEdit,
+  onDelete,
+}) => {
+  return (
+    <>
+      <TopicHeaderDisplay topic={topic} onEdit={onEdit} onDelete={onDelete} />
+      <ul>
+        {topic.notes.map((note, index) => (
+          <>
+            <NewNoteNode
+              topicId={topic.id}
+              alwaysExpanded={false}
+              key={`newNote-${topic.id}-${index}`}
+              beforeIndex={index}
+            />
+            <NoteNode key={note.id} note={note} />
+          </>
+        ))}
+        <NewNoteNode
+          key={`newNote-${topic.id}-end`}
+          topicId={topic.id}
+          alwaysExpanded
+        />
+      </ul>
+    </>
+  );
+};
+
+type TopicHeaderDisplayProps = {
+  topic: StoredTopic;
+  onEdit: () => void;
+  onDelete: () => void;
+};
+
+const TopicHeaderDisplay: React.FC<TopicHeaderDisplayProps> = ({
+  topic,
+  onEdit,
+  onDelete,
+}) => {
+  return (
+    <NodeControls
+      as="h3"
+      onEdit={onEdit}
+      onDelete={onDelete}
+      className="topicHeader"
+    >
+      <div className="topicTitle">{topic.title}</div>
+      <div className="topicMetadata">
+        <span className="topicTime">
+          {topic.startTime.toLocaleTimeString("en-US", {
+            timeStyle: "short",
+          })}{" "}
+          {topic.durationMinutes !== undefined
+            ? `for ${topic.durationMinutes} minutes`
+            : null}
+        </span>
+        {topic.leader && (
+          <span>
+            Lead by <SpeakerReference speaker={topic.leader} emphasis />
+          </span>
+        )}
+      </div>
+    </NodeControls>
   );
 };
 

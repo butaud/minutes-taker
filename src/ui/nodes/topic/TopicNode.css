@@ -49,20 +49,25 @@ button.newTopic:hover {
   color: var(--color-secondary);
 }
 
-.newTopicPlaceholderContainer {
-  position: relative;
-  height: 0;
-  width: 0;
+h3.topicHeader {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
-.newTopicPlaceholder {
-  position: absolute;
-  bottom: -15px;
-  left: -15px;
+.topicMetadata {
+  font-weight: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
 }
 
-button.expandClose {
-  font-size: smaller;
-  border: none;
-  background-color: transparent;
+.topicMetadata > span {
+  padding-right: 10px;
+  margin-right: 10px;
+  border-right: 1px solid #000;
+}
+
+.topicMetadata > span:last-child {
+  border-right: none;
 }

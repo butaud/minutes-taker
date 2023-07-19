@@ -3,6 +3,7 @@ import "./NewNoteNode.css";
 import { TextNoteEditor } from "./text/TextNoteNode";
 import { ActionItemNoteEditor } from "./action-item/ActionItemNoteNode";
 import { MotionNoteEditor } from "./motion/MotionNoteNode";
+import { InlineNewNodeButton } from "../controls/InlineNewNodeButton";
 
 export type NewNoteNodeProps = {
   topicId: number;
@@ -31,15 +32,11 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   };
   if (!isExpanded) {
     return (
-      <li className="newNotePlaceholderContainer">
-        <button
-          className="newNotePlaceholder expandClose"
-          aria-label="Add Note Placeholder"
-          onClick={() => setExpanded(true)}
-        >
-          +
-        </button>
-      </li>
+      <InlineNewNodeButton
+        onClick={() => setExpanded(true)}
+        label="Add Note Inline"
+        index={beforeIndex}
+      />
     );
   }
   if (!addingType) {
