@@ -74,6 +74,13 @@ export class SessionStore {
     this._session = this.convertSession(session);
   }
 
+  loadSession(session: Session) {
+    this._history = [];
+    this._undoHistory = [];
+    this._session = this.convertSession(session);
+    this.callbacks.forEach((callback) => callback(this._session));
+  }
+
   private convertSession(session: Session): StoredSession {
     const sessionMetadata = this.convertSessionMetadata(session.metadata);
 
@@ -438,5 +445,61 @@ export class SessionStore {
         }
       });
     });
+  };
+
+  private exportPerson = (person: StoredPerson): Person => ({
+    firstName: person.firstName,
+    lastName: person.lastName,
+  });
+
+  private exportNote = (note: StoredNote): Note => {
+    if (note.type === "text") {
+      return {
+        type: "text",
+        text: note.text,
+      };
+    } else if (note.type === "actionItem") {
+      return {
+        type: "actionItem",
+        text: note.text,
+        assignee: this.exportPerson(note.assignee),
+        dueDate: note.dueDate,
+      };
+    } else {
+      return {
+        type: "motion",
+        text: note.text,
+        mover: this.exportPerson(note.mover),
+        seconder: this.exportPerson(note.seconder),
+        outcome: note.outcome,
+        inFavorCount: note.inFavorCount,
+        opposedCount: note.opposedCount,
+        abstainedCount: note.abstainedCount,
+      };
+    }
+  };
+
+  private exportTopic = (topic: StoredTopic): Topic => ({
+    title: topic.title,
+    startTime: topic.startTime,
+    durationMinutes: topic.durationMinutes,
+    leader: topic.leader && this.exportPerson(topic.leader),
+    notes: topic.notes.map(this.exportNote),
+  });
+
+  export = (): Session => {
+    const metadata = this._session.metadata;
+    const topics = this._session.topics;
+    return {
+      metadata: {
+        ...metadata,
+        membersPresent: metadata.membersPresent.map(this.exportPerson),
+        membersAbsent: metadata.membersAbsent.map(this.exportPerson),
+        administrationPresent: metadata.administrationPresent.map(
+          this.exportPerson
+        ),
+      },
+      topics: topics.map(this.exportTopic),
+    };
   };
 }
