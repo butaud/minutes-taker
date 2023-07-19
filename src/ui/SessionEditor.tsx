@@ -6,6 +6,7 @@ import { StoredSession } from "../store/SessionStore";
 import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
+import { loadSession, saveSession } from "../fs/io";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -24,58 +25,13 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         setIsInserting((isInserting) => !isInserting);
       } else if (event.ctrlKey && event.key === "s") {
         event.preventDefault();
-        const json = JSON.stringify(sessionStore.export());
-        (async () => {
-          const filename = `${session.metadata.organization}-${
-            session.metadata.title
-          }-${session.metadata.startTime.toDateString()}.json`;
-
-          const handle = await window.showSaveFilePicker({
-            types: [
-              {
-                description: "JSON File",
-                accept: {
-                  "application/json": [".json"],
-                },
-              },
-            ],
-            suggestedName: filename,
-          });
-
-          const writable = await handle.createWritable();
-          await writable.write(json);
-          await writable.close();
-        })();
+        const session = sessionStore.export();
+        saveSession(session);
       } else if (event.ctrlKey && event.key === "o") {
         event.preventDefault();
-        (async () => {
-          const handle = await window.showOpenFilePicker({
-            types: [
-              {
-                description: "JSON File",
-                accept: {
-                  "application/json": [".json"],
-                },
-              },
-            ],
-          });
-
-          const file = await handle[0].getFile();
-          const json = await file.text();
-          const dateTimeReviver = (_: string, value: string) => {
-            if (typeof value === "string") {
-              const match =
-                /[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/.exec(
-                  value
-                );
-              if (match) {
-                return new Date(match[0]);
-              }
-            }
-            return value;
-          };
-          sessionStore.loadSession(JSON.parse(json, dateTimeReviver));
-        })();
+        loadSession().then((session) => {
+          sessionStore.loadSession(session);
+        });
       }
     };
 
