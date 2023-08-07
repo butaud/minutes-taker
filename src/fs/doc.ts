@@ -7,11 +7,29 @@ import {
   Table,
   TableCell,
   TableRow,
+  WidthType,
 } from "docx";
-import { Person, Session, SessionMetadata, Topic } from "minutes-model";
+import {
+  ActionItemNote,
+  MotionNote,
+  Person,
+  Session,
+  SessionMetadata,
+  TextNote,
+  Topic,
+} from "minutes-model";
+import {
+  Styles,
+  TopicHeaderCellMargins,
+  TopicHeaderCellShading,
+} from "./style";
+import { isActionItemNote, isTextNote } from "../util/types";
 
-const THEME = {
-  warning: "c0504d",
+const makeSpeakerReference = (person: Person): TextRun => {
+  return new TextRun({
+    text: `Mr. ${person.lastName}`,
+    style: "SpeakerReference",
+  });
 };
 
 const sessionHeader = (metadata: SessionMetadata): Paragraph[] => {
@@ -30,7 +48,7 @@ const sessionHeader = (metadata: SessionMetadata): Paragraph[] => {
     new Paragraph({
       children: [
         new TextRun({ text: "Minutes: ", bold: true }),
-        new TextRun({ text: "DRAFT", color: THEME.warning }),
+        new TextRun({ text: "DRAFT", style: "MinuteStateDraft" }),
       ],
       heading: HeadingLevel.HEADING_2,
     }),
@@ -62,24 +80,167 @@ const makeTopicHeader = (topic: Topic): Table => {
           topic.startTime.toLocaleTimeString(undefined, { timeStyle: "short" })
         ),
       ],
+      shading: TopicHeaderCellShading,
+      width: {
+        size: 15,
+        type: WidthType.PERCENTAGE,
+      },
+      margins: TopicHeaderCellMargins,
     }),
   ];
   if (topic.durationMinutes) {
     cells.push(
       new TableCell({
         children: [new Paragraph(topic.durationMinutes.toString())],
+        shading: TopicHeaderCellShading,
+        width: {
+          size: 5,
+          type: WidthType.PERCENTAGE,
+        },
+        margins: TopicHeaderCellMargins,
       })
     );
   }
-  cells.push(new TableCell({ children: [new Paragraph(topic.title)] }));
+  cells.push(
+    new TableCell({
+      children: [new Paragraph(topic.title)],
+      shading: TopicHeaderCellShading,
+      margins: TopicHeaderCellMargins,
+    })
+  );
   return new Table({
     rows: [
       new TableRow({
         children: cells,
       }),
     ],
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
   });
 };
+
+const makeTextNoteParagraphs = (note: TextNote): Paragraph[] => [
+  new Paragraph({
+    children: [new TextRun(note.text)],
+    style: "NoteFinalLine",
+  }),
+];
+
+const makeActionItemParagraphs = (note: ActionItemNote): Paragraph[] => [
+  new Paragraph({
+    children: [
+      new TextRun({
+        text: "Action item: ",
+        style: "ActionItemPrefix",
+      }),
+      makeSpeakerReference(note.assignee),
+      new TextRun({
+        text: ` ${note.text}`,
+      }),
+    ],
+    style: "NoteFinalLine",
+  }),
+];
+
+const makeMoverParagraph = (note: MotionNote): Paragraph =>
+  new Paragraph({
+    children: [
+      makeSpeakerReference(note.mover),
+      new TextRun({
+        text: ` moved ${note.text}`,
+      }),
+    ],
+    style: "MotionInternal",
+  });
+
+const makeSeconderParagraph = (note: MotionNote): Paragraph =>
+  new Paragraph({
+    children: [
+      makeSpeakerReference(note.seconder),
+      new TextRun({
+        text: " seconded.",
+      }),
+    ],
+    style: "MotionInternal",
+  });
+
+const makeVoteParagraph = (note: MotionNote): Paragraph => {
+  const voteTallies = [];
+  if (note.inFavorCount) {
+    voteTallies.push(`${note.inFavorCount} in favor`);
+  }
+  if (note.opposedCount) {
+    voteTallies.push(`${note.opposedCount} opposed`);
+  }
+  if (note.abstainedCount) {
+    voteTallies.push(`${note.abstainedCount} abstained`);
+  }
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text: "Vote:",
+        style: "MotionVotePrefix",
+      }),
+      new TextRun({
+        text: ` ${voteTallies.join(", ")}`,
+      }),
+    ],
+    style: "MotionInternal",
+  });
+};
+
+const makeOutcomeParagraph = (note: MotionNote): Paragraph => {
+  let outcomeText: string;
+  switch (note.outcome) {
+    case "active":
+      outcomeText = "Motion is under discussion.";
+      break;
+    case "passed":
+      outcomeText = "Motion passes.";
+      break;
+    case "failed":
+      outcomeText = "Motion fails.";
+      break;
+    case "withdrawn":
+      outcomeText = "Motion is withdrawn.";
+      break;
+    case "tabled":
+      outcomeText = "Motion is tabled.";
+      break;
+  }
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text: outcomeText,
+      }),
+    ],
+    style: "MotionOutcome",
+  });
+};
+
+const makeMotionParagraphs = (note: MotionNote): Paragraph[] => {
+  const motionParagraphs: Paragraph[] = [];
+  motionParagraphs.push(makeMoverParagraph(note));
+  motionParagraphs.push(makeSeconderParagraph(note));
+  if (note.outcome === "failed" || note.outcome === "passed") {
+    motionParagraphs.push(makeVoteParagraph(note));
+  }
+  motionParagraphs.push(makeOutcomeParagraph(note));
+  return motionParagraphs;
+};
+
+const makeTopicBody = (topic: Topic): Paragraph[] =>
+  topic.notes.flatMap((note) => {
+    if (isTextNote(note)) {
+      return makeTextNoteParagraphs(note);
+    } else if (isActionItemNote(note)) {
+      return makeActionItemParagraphs(note);
+    } else {
+      return makeMotionParagraphs(note);
+    }
+  });
 
 const emptyLine = () => new Paragraph({ children: [new TextRun("")] });
 
@@ -94,14 +255,14 @@ export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
           ...sessionHeader(session.metadata),
           emptyLine(),
           ...attendanceSection(session.metadata),
-          emptyLine(),
           ...session.topics.flatMap((topic) => [
             makeTopicHeader(topic),
-            emptyLine(),
+            ...makeTopicBody(topic),
           ]),
         ],
       },
     ],
+    styles: Styles,
   });
   return Packer.toBlob(doc);
 };
