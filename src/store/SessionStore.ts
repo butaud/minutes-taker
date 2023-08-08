@@ -52,12 +52,16 @@ type StoredSessionAfterCalendarHack = Omit<
   StoredSessionAfterTopicLeaderHack,
   "calendar"
 > & {
-  calendar: Partial<Record<CalendarMonth, StoredCalendarItem[]>>;
+  calendar: StoredCalendarMonthEntry[];
 };
 export type StoredSession = Immutable<StoredSessionAfterCalendarHack>;
 export type StoredSessionMetadata = StoredSession["metadata"];
 export type StoredCalendar = StoredSession["calendar"];
 export type StoredCalendarItem = WithId<CalendarItem>;
+export type StoredCalendarMonthEntry = {
+  month: CalendarMonth;
+  items: StoredCalendarItem[];
+};
 export type StoredCaller = StoredSessionMetadata["caller"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
@@ -100,7 +104,7 @@ export class SessionStore {
     // Hack so that we can access the full list of persons when we are converting the rest of the schema.
     this._session = {
       metadata: attendanceLists as any,
-      calendar: {},
+      calendar: [],
       topics: [],
     };
 
@@ -169,12 +173,12 @@ export class SessionStore {
         id: this.calendarItemId++,
       }));
     };
-    return Object.fromEntries(
-      Object.entries(calendar).map(([month, items]) => [
-        month as CalendarMonth,
-        calendarItemConverter(items),
-      ])
-    );
+    return calendar.map((monthEntry) => {
+      return {
+        month: monthEntry.month,
+        items: calendarItemConverter(monthEntry.items),
+      };
+    });
   }
 
   private convertTextNote = (note: TextNote): StoredTextNote => {
@@ -545,12 +549,10 @@ export class SessionStore {
   };
 
   private exportCalendar = (calendar: StoredCalendar): Calendar => {
-    return Object.fromEntries(
-      Object.entries(calendar).map(([month, items]) => [
-        month as CalendarMonth,
-        items.map(this.exportCalendarItem),
-      ])
-    );
+    return calendar.map((monthEntry) => ({
+      month: monthEntry.month,
+      items: monthEntry.items.map(this.exportCalendarItem),
+    }));
   };
 
   private exportTopic = (topic: StoredTopic): Topic => ({

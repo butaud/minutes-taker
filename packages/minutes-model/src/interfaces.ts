@@ -30,7 +30,12 @@ export type CalendarMonth =
   | "November"
   | "December";
 
-export type Calendar = Partial<Record<CalendarMonth, CalendarItem[]>>;
+export type Calendar = CalendarMonthEntry[];
+
+export type CalendarMonthEntry = {
+  month: CalendarMonth;
+  items: CalendarItem[];
+};
 
 export type CalendarItem = {
   text: string;
