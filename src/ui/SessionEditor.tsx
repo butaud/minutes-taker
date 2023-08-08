@@ -8,6 +8,7 @@ import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
 import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
 import { CallerNode } from "./nodes/caller/CallerNode";
+import { useAsyncReporter } from "./async-reporter-hook";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -15,9 +16,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   const sessionStore = useSessionStore();
 
   const [isInserting, setIsInserting] = React.useState(false);
+  const { report, tryAsyncOperation } = useAsyncReporter();
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "z") {
         sessionStore.undo();
       } else if (event.ctrlKey && event.key === "y") {
@@ -26,17 +28,28 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         setIsInserting((isInserting) => !isInserting);
       } else if (event.ctrlKey && event.key === "s") {
         event.preventDefault();
-        const session = sessionStore.export();
-        saveSession(session);
+        tryAsyncOperation({
+          perform: () => saveSession(sessionStore.export()),
+          successMessage: "Session saved to JSON.",
+          failureMessage: "Error saving session to JSON.",
+        });
       } else if (event.ctrlKey && event.key === "o") {
         event.preventDefault();
-        loadSession().then((session) => {
-          sessionStore.loadSession(session);
+        tryAsyncOperation({
+          perform: async () => {
+            const session = await loadSession();
+            sessionStore.loadSession(session);
+          },
+          successMessage: "Loaded session from JSON.",
+          failureMessage: "Error loading session.",
         });
       } else if (event.ctrlKey && event.key === "e") {
         event.preventDefault();
-        const session = sessionStore.export();
-        saveSessionAsDocx(session);
+        tryAsyncOperation({
+          perform: () => saveSessionAsDocx(sessionStore.export()),
+          successMessage: "Session exported as docx.",
+          failureMessage: "Error saving as docx.",
+        });
       }
     };
 
@@ -49,6 +62,11 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
 
   return (
     <InsertingContext.Provider value={isInserting}>
+      {report && (
+        <p className={"message " + report.type} role="alert">
+          {report.message}
+        </p>
+      )}
       <div>
         <SessionHeaderNode metadata={session.metadata} />
         <AttendanceNode
