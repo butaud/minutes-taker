@@ -13,6 +13,7 @@ export const CalendarNode: FC<{ calendar: StoredCalendar }> = ({
   calendar,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const stopEditing = () => {
     setIsEditing(false);
@@ -20,6 +21,10 @@ export const CalendarNode: FC<{ calendar: StoredCalendar }> = ({
 
   const startEditing = () => {
     setIsEditing(true);
+  };
+
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   const firstMonth = calendar[0]?.month;
@@ -33,14 +38,29 @@ export const CalendarNode: FC<{ calendar: StoredCalendar }> = ({
       className="calendar"
     >
       <EditingContext.Provider value={isEditing}>
-        <h3>Board Calendar Items</h3>
-        <ul>
-          {isEditing && <NewMonthNode nextMonth={firstMonth} />}
-          {calendar.map(({ month, items }) => (
-            <CalendarMonthNode month={month as CalendarMonth} items={items} />
-          ))}
-          {isEditing && lastMonth && <NewMonthNode previousMonth={lastMonth} />}
-        </ul>
+        <h3>
+          <button
+            className="collapse"
+            onClick={toggleCollapsed}
+            aria-label={isCollapsed ? "Expand calendar" : "Collapse calendar"}
+          >
+            {isCollapsed ? "+" : "-"}
+          </button>
+          Board Calendar Items
+        </h3>
+        {isCollapsed ? (
+          <div className="placeholder" />
+        ) : (
+          <ul>
+            {isEditing && <NewMonthNode nextMonth={firstMonth} />}
+            {calendar.map(({ month, items }) => (
+              <CalendarMonthNode month={month as CalendarMonth} items={items} />
+            ))}
+            {isEditing && lastMonth && (
+              <NewMonthNode previousMonth={lastMonth} />
+            )}
+          </ul>
+        )}
       </EditingContext.Provider>
     </NonFormNodeControls>
   );
@@ -161,7 +181,8 @@ export const CalendarMonthNode: FC<CalendarMonthNodeProps> = ({
           <button
             className="delete"
             onClick={onDeleteMonth}
-            aria-label="Delete Month"
+            aria-label={`Delete ${month}`}
+            title={`Delete ${month}`}
           >
             <i className="material-icons">delete</i>
           </button>
@@ -201,12 +222,19 @@ export const NewCalendarItemNode: FC<{ month: CalendarMonth }> = ({
   };
 
   return (
-    <li>
+    <li className="itemEditor">
       <form onSubmit={handleAddClick}>
+        <button type="submit">
+          <i className="material-icons">add</i>Add
+        </button>
         {errorMessage && <p role="alert">{errorMessage}</p>}
-        <label htmlFor="text">Add Item: </label>
-        <input id="text" type="text" value={text} onChange={handleTextChange} />
-        <button type="submit">Add</button>
+        <input
+          id="text"
+          type="text"
+          aria-label="New Item Text"
+          value={text}
+          onChange={handleTextChange}
+        />
       </form>
     </li>
   );
@@ -228,9 +256,9 @@ export const CalendarItemNodeDisplay: FC<{ item: StoredCalendarItem }> = ({
 }) => {
   return (
     <li>
-      <p className={"calendarItem" + (item.completed ? " completed" : "")}>
+      <span className={"calendarItem" + (item.completed ? " completed" : "")}>
         {item.text}
-      </p>
+      </span>
     </li>
   );
 };
@@ -276,6 +304,7 @@ export const CalendarItemNodeEditor: FC<{
           className="delete"
           onClick={handleDeleteClick}
           aria-label="Delete Item"
+          title="Delete Item"
         >
           <i className="material-icons">delete</i>
         </button>
