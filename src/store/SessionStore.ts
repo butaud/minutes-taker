@@ -418,6 +418,60 @@ export class SessionStore {
     });
   };
 
+  addCalendarMonth = (month: CalendarMonth, beforeIndex: number) => {
+    if (this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month already exists in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      draft.calendar.splice(beforeIndex, 0, {
+        month,
+        items: [],
+      });
+    });
+  };
+
+  removeCalendarMonth = (month: CalendarMonth) => {
+    if (!this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month does not exist in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      draft.calendar = draft.calendar.filter((m) => m.month !== month);
+    });
+  };
+
+  addCalendarItem = (month: CalendarMonth, item: CalendarItem) => {
+    if (!this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month does not exist in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      const index = draft.calendar.findIndex((m) => m.month === month);
+      draft.calendar[index].items.push({
+        ...item,
+        id: this.calendarItemId++,
+      });
+    });
+  };
+
+  updateCalendarItem = (item: StoredCalendarItem) => {
+    this.produceUpdate((draft) => {
+      draft.calendar.forEach((month) => {
+        const existingItem = month.items.find((i) => i.id === item.id);
+        if (existingItem) {
+          existingItem.completed = item.completed;
+          existingItem.text = item.text;
+        }
+      });
+    });
+  };
+
+  removeCalendarItem = (item: StoredCalendarItem) => {
+    this.produceUpdate((draft) => {
+      draft.calendar.forEach((month) => {
+        month.items = month.items.filter((i) => i.id !== item.id);
+      });
+    });
+  };
+
   addTopic = (
     topic: Pick<Topic, "title" | "startTime" | "durationMinutes" | "leader">,
     beforeIndex?: number
