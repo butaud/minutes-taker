@@ -139,7 +139,11 @@ export const ActionItemNoteEditor: React.FC<ActionItemNoteEditorProps> = ({
   };
 
   return (
-    <FormNodeControls onSubmit={handleSubmit} onCancel={handleCancel}>
+    <FormNodeControls
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      className="actionItem"
+    >
       {errorMessage && <p role="alert">{errorMessage}</p>}
       <em>Action item:</em>{" "}
       <PersonSelector

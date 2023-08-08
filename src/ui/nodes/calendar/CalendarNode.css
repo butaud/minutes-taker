@@ -70,7 +70,7 @@ button.collapse {
 }
 
 div.placeholder {
-  border: 1px solid #000;
+  border: 1px solid black;
   padding: 5px;
   margin: 5px;
 }

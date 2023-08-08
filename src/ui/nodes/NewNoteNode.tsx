@@ -51,9 +51,21 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
             -
           </button>
         )}
-        <NewNoteButton onClick={onAddTextNote} label="Add Text Note" />
-        <NewNoteButton onClick={onAddMotion} label="Add Motion" />
-        <NewNoteButton onClick={onAddActionItem} label="Add Action Item" />
+        <NewNoteButton
+          onClick={onAddTextNote}
+          label="Add Text Note"
+          className="text"
+        />
+        <NewNoteButton
+          onClick={onAddMotion}
+          label="Add Motion"
+          className="motion"
+        />
+        <NewNoteButton
+          onClick={onAddActionItem}
+          label="Add Action Item"
+          className="actionItem"
+        />
       </li>
     );
   }
@@ -85,12 +97,17 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   }
 };
 
-const NewNoteButton: FC<{ onClick: () => void; label: string }> = ({
-  onClick,
-  label,
-}) => {
+const NewNoteButton: FC<{
+  onClick: () => void;
+  label: string;
+  className?: string;
+}> = ({ onClick, label, className }) => {
   return (
-    <button className="newNote" onClick={onClick} aria-label={label}>
+    <button
+      className={"newNote " + className ?? ""}
+      onClick={onClick}
+      aria-label={label}
+    >
       <i className="material-icons">add</i>
       {label}
     </button>
