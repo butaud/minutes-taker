@@ -31,6 +31,7 @@ const session: Session = {
     membersAbsent: [],
     administrationPresent: [],
   },
+  calendar: {},
   topics: [],
 };
 

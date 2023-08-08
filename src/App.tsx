@@ -41,6 +41,24 @@ const fakeSession: Session = {
     title: "Board Meeting",
     subtitle: "Executive Session",
   },
+  calendar: {
+    June: [
+      {
+        text: "Attend Graduation Ceremony",
+        completed: true,
+      },
+      {
+        text: "Review Annual Performance",
+        completed: false,
+      },
+    ],
+    July: [
+      {
+        text: "Plan Board Retreat",
+        completed: false,
+      },
+    ],
+  },
   topics: [
     {
       title: "Call to Order",

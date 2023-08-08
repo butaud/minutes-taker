@@ -8,6 +8,9 @@ import {
   MotionNote,
   TextNote,
   Caller,
+  CalendarMonth,
+  Calendar,
+  CalendarItem,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -45,8 +48,16 @@ type StoredSessionAfterTopicLeaderHack = Omit<
     leader?: StoredPerson;
   })[];
 };
-export type StoredSession = Immutable<StoredSessionAfterTopicLeaderHack>;
+type StoredSessionAfterCalendarHack = Omit<
+  StoredSessionAfterTopicLeaderHack,
+  "calendar"
+> & {
+  calendar: Partial<Record<CalendarMonth, StoredCalendarItem[]>>;
+};
+export type StoredSession = Immutable<StoredSessionAfterCalendarHack>;
 export type StoredSessionMetadata = StoredSession["metadata"];
+export type StoredCalendar = StoredSession["calendar"];
+export type StoredCalendarItem = WithId<CalendarItem>;
 export type StoredCaller = StoredSessionMetadata["caller"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
@@ -71,6 +82,7 @@ export class SessionStore {
   private personId = 0;
   private topicId = 0;
   private noteId = 0;
+  private calendarItemId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -88,13 +100,16 @@ export class SessionStore {
     // Hack so that we can access the full list of persons when we are converting the rest of the schema.
     this._session = {
       metadata: attendanceLists as any,
+      calendar: {},
       topics: [],
     };
 
     const sessionMetadata = this.convertSessionMetadata(session.metadata);
+    const calendar = this.convertSessionCalendar(session.calendar);
 
     return {
       metadata: sessionMetadata,
+      calendar,
       topics: this.convertTopics(session.topics),
     };
   }
@@ -145,6 +160,21 @@ export class SessionStore {
         person: this.findPerson(metadata.caller.person),
       },
     };
+  }
+
+  private convertSessionCalendar(calendar: Calendar): StoredCalendar {
+    const calendarItemConverter = (items: CalendarItem[]) => {
+      return items.map((item) => ({
+        ...item,
+        id: this.calendarItemId++,
+      }));
+    };
+    return Object.fromEntries(
+      Object.entries(calendar).map(([month, items]) => [
+        month as CalendarMonth,
+        calendarItemConverter(items),
+      ])
+    );
   }
 
   private convertTextNote = (note: TextNote): StoredTextNote => {
@@ -507,6 +537,22 @@ export class SessionStore {
     }
   };
 
+  private exportCalendarItem = (item: StoredCalendarItem): CalendarItem => {
+    return {
+      text: item.text,
+      completed: item.completed,
+    };
+  };
+
+  private exportCalendar = (calendar: StoredCalendar): Calendar => {
+    return Object.fromEntries(
+      Object.entries(calendar).map(([month, items]) => [
+        month as CalendarMonth,
+        items.map(this.exportCalendarItem),
+      ])
+    );
+  };
+
   private exportTopic = (topic: StoredTopic): Topic => ({
     title: topic.title,
     startTime: topic.startTime,
@@ -527,6 +573,7 @@ export class SessionStore {
           this.exportPerson
         ),
       },
+      calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
     };
   };

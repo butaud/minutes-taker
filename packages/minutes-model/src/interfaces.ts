@@ -1,5 +1,6 @@
 export type Session = {
   metadata: SessionMetadata;
+  calendar: Calendar;
   topics: Topic[];
 };
 
@@ -13,6 +14,27 @@ export type SessionMetadata = {
   title: string;
   subtitle: string;
   caller?: Caller;
+};
+
+export type CalendarMonth =
+  | "January"
+  | "February"
+  | "March"
+  | "April"
+  | "May"
+  | "June"
+  | "July"
+  | "August"
+  | "September"
+  | "October"
+  | "November"
+  | "December";
+
+export type Calendar = Partial<Record<CalendarMonth, CalendarItem[]>>;
+
+export type CalendarItem = {
+  text: string;
+  completed: boolean;
 };
 
 export type Person = {
