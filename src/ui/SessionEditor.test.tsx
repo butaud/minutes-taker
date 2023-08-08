@@ -17,12 +17,14 @@ import { PersonListContext } from "./context/PersonListContext";
 const INITIAL_START_TIME = new Date(2000, 0, 1, 12, 0, 0);
 const INITIAL_ORG_NAME = "Test Organization";
 const INITIAL_MEETING_TITLE = "Test Meeting";
+const INTITIAL_MEETING_SUBTITLE = "Test Subtitle";
 const INITIAL_MEETING_LOCATION = "Test Location";
 
 const session: Session = {
   metadata: {
     organization: INITIAL_ORG_NAME,
     title: INITIAL_MEETING_TITLE,
+    subtitle: INTITIAL_MEETING_SUBTITLE,
     location: INITIAL_MEETING_LOCATION,
     startTime: INITIAL_START_TIME,
     membersPresent: [],
@@ -57,10 +59,10 @@ describe("SessionEditor", () => {
       );
     });
 
-    it("shows the meeting title, location, and date/time", () => {
+    it("shows the meeting title, subtitle, location, and date/time", () => {
       render(<SessionEditor session={sessionStore.session} />);
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-        `Test Meeting: Test Location, 1/1/00, 12:00 PM`
+        `Test Meeting - Test Subtitle: Test Location, 1/1/00, 12:00 PM`
       );
     });
 
@@ -97,7 +99,27 @@ describe("SessionEditor", () => {
       await fireEvent.click(screen.getByRole("button", { name: "Save" }));
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-        "New Meeting Title: Test Location, 1/1/00, 12:00 PM"
+        "New Meeting Title - Test Subtitle: Test Location, 1/1/00, 12:00 PM"
+      );
+    });
+
+    it("allows editing the meeting subtitle", async () => {
+      expect.assertions(1);
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await user.hover(screen.getByRole("heading", { level: 2 }));
+      await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Subtitle"));
+      await user.type(
+        screen.getByLabelText("Subtitle"),
+        "New Meeting Subtitle"
+      );
+      await fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+        "Test Meeting - New Meeting Subtitle: Test Location, 1/1/00, 12:00 PM"
       );
     });
 
@@ -114,7 +136,7 @@ describe("SessionEditor", () => {
       await fireEvent.click(screen.getByRole("button", { name: "Save" }));
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-        "Test Meeting: New Location, 1/1/00, 12:00 PM"
+        "Test Meeting - Test Subtitle: New Location, 1/1/00, 12:00 PM"
       );
     });
 
@@ -132,7 +154,7 @@ describe("SessionEditor", () => {
       await fireEvent.click(screen.getByRole("button", { name: "Save" }));
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-        "Test Meeting: Test Location, 1/1/20, 8:00 AM"
+        "Test Meeting - Test Subtitle: Test Location, 1/1/20, 8:00 AM"
       );
     });
 
@@ -149,7 +171,7 @@ describe("SessionEditor", () => {
       await fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-        "Test Meeting: Test Location, 1/1/00, 12:00 PM"
+        "Test Meeting - Test Subtitle: Test Location, 1/1/00, 12:00 PM"
       );
     });
   });
@@ -426,6 +448,79 @@ describe("SessionEditor", () => {
       expect(
         screen.queryByText(getByTextContent("Administration: Jones"))
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("caller", () => {
+    it("shows the caller", () => {
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.updateCaller({
+        person: { firstName: "Bob", lastName: "Jones" },
+        role: "Test Role",
+      });
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(
+          getByTextContent("Mr. Jones, Test Role, called the meeting to order.")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("shows default text if there is no caller", () => {
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText("The meeting was called to order.")
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing the caller", async () => {
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+
+      personList = sessionStore.allPeople;
+
+      expect.assertions(1);
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("The meeting was called to order."));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Caller"), "Bob Jones");
+      await user.type(screen.getByLabelText("Role"), "Test Role");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(
+          getByTextContent("Mr. Jones, Test Role, called the meeting to order.")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows removing the caller", async () => {
+      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.updateCaller({
+        person: { firstName: "Bob", lastName: "Jones" },
+        role: "Test Role",
+      });
+      expect.assertions(1);
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent("Mr. Jones, Test Role, called the meeting to order.")
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Caller"), "");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText("The meeting was called to order.")
+      ).toBeInTheDocument();
     });
   });
 

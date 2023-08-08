@@ -11,11 +11,18 @@ export type SessionMetadata = {
   startTime: Date;
   organization: string;
   title: string;
+  subtitle: string;
+  caller?: Caller;
 };
 
 export type Person = {
   firstName: string;
   lastName: string;
+};
+
+export type Caller = {
+  person: Person;
+  role: string;
 };
 
 export type Topic = {

@@ -33,7 +33,7 @@ const makeSpeakerReference = (person: Person): TextRun => {
 };
 
 const sessionHeader = (metadata: SessionMetadata): Paragraph[] => {
-  const titleLine = `${metadata.title}: ${
+  const titleLine = `${metadata.title} - ${metadata.subtitle}: ${
     metadata.location
   }, ${metadata.startTime.toLocaleDateString()}`;
   return [
@@ -70,6 +70,47 @@ const attendanceSection = (metadata: SessionMetadata): Paragraph[] => {
     makeAttendanceLine("Members absent", metadata.membersAbsent),
     makeAttendanceLine("Administration", metadata.administrationPresent),
   ];
+};
+
+const makeCallToOrderParagraph = (session: Session): Paragraph[] => {
+  const actualStartTime = session.topics[0].startTime;
+  const formattedStartTime = actualStartTime.toLocaleTimeString(undefined, {
+    timeStyle: "short",
+  });
+  const locationTextRun = new TextRun({
+    text: `The meeting was held at the ${session.metadata.location}. `,
+  });
+  const paragraphTitle = new Paragraph({
+    children: [
+      new TextRun({
+        text: session.metadata.subtitle,
+      }),
+    ],
+    heading: HeadingLevel.HEADING_1,
+  });
+  const paragraphText = session.metadata.caller
+    ? new Paragraph({
+        children: [
+          new TextRun({
+            text: `The meeting was called by ${session.metadata.caller.role}. `,
+          }),
+          locationTextRun,
+          makeSpeakerReference(session.metadata.caller.person),
+          new TextRun({
+            text: ` called the session to order at ${formattedStartTime}.`,
+          }),
+        ],
+      })
+    : new Paragraph({
+        children: [
+          locationTextRun,
+          new TextRun({
+            text: `The session was called to order at ${formattedStartTime}.`,
+          }),
+        ],
+      });
+
+  return [paragraphTitle, paragraphText];
 };
 
 const makeTopicHeader = (topic: Topic): Table => {
@@ -255,6 +296,7 @@ export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
           ...sessionHeader(session.metadata),
           emptyLine(),
           ...attendanceSection(session.metadata),
+          ...makeCallToOrderParagraph(session),
           ...session.topics.flatMap((topic) => [
             makeTopicHeader(topic),
             ...makeTopicBody(topic),

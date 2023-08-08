@@ -5,7 +5,7 @@ type NodeControlsProps = {
   onEdit: () => void;
   onDelete?: () => void;
   className?: string;
-  as?: "div" | "h1" | "h2" | "h3" | "li";
+  as?: "div" | "h1" | "h2" | "h3" | "li" | "p";
 };
 
 export const NodeControls = ({
@@ -43,7 +43,7 @@ export const NodeControls = ({
 const NodeContainer: React.FC<
   React.PropsWithChildren<{
     className?: string;
-    as: "div" | "h1" | "h2" | "h3" | "li";
+    as: "div" | "h1" | "h2" | "h3" | "li" | "p";
     onMouseEnter: () => void;
     onMouseLeave: () => void;
   }>

@@ -7,6 +7,7 @@ import {
   ActionItemNote,
   MotionNote,
   TextNote,
+  Caller,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -46,6 +47,7 @@ type StoredSessionAfterTopicLeaderHack = Omit<
 };
 export type StoredSession = Immutable<StoredSessionAfterTopicLeaderHack>;
 export type StoredSessionMetadata = StoredSession["metadata"];
+export type StoredCaller = StoredSessionMetadata["caller"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
 export type StoredNote = StoredTopic["notes"][number];
@@ -82,18 +84,39 @@ export class SessionStore {
   }
 
   private convertSession(session: Session): StoredSession {
-    const sessionMetadata = this.convertSessionMetadata(session.metadata);
-
-    // Kind of a hack so that we can access the full list of persons when we are creating
-    // the topics.
+    const attendanceLists = this.convertAttendanceLists(session.metadata);
+    // Hack so that we can access the full list of persons when we are converting the rest of the schema.
     this._session = {
-      metadata: sessionMetadata,
+      metadata: attendanceLists as any,
       topics: [],
     };
+
+    const sessionMetadata = this.convertSessionMetadata(session.metadata);
 
     return {
       metadata: sessionMetadata,
       topics: this.convertTopics(session.topics),
+    };
+  }
+
+  private convertAttendanceLists(
+    sessionMetadata: SessionMetadata
+  ): Pick<
+    StoredSessionMetadata,
+    "membersPresent" | "membersAbsent" | "administrationPresent"
+  > {
+    const personListConverter = (people: Person[]) => {
+      return people.map((person) => ({
+        ...person,
+        id: this.personId++,
+      }));
+    };
+    return {
+      membersPresent: personListConverter(sessionMetadata.membersPresent),
+      membersAbsent: personListConverter(sessionMetadata.membersAbsent),
+      administrationPresent: personListConverter(
+        sessionMetadata.administrationPresent
+      ),
     };
   }
 
@@ -112,19 +135,15 @@ export class SessionStore {
   private convertSessionMetadata(
     metadata: SessionMetadata
   ): StoredSessionMetadata {
-    const personListConverter = (people: Person[]) => {
-      return people.map((person) => ({
-        ...person,
-        id: this.personId++,
-      }));
-    };
     return {
       ...metadata,
-      membersPresent: personListConverter(metadata.membersPresent),
-      membersAbsent: personListConverter(metadata.membersAbsent),
-      administrationPresent: personListConverter(
-        metadata.administrationPresent
-      ),
+      membersPresent: this.session.metadata.membersPresent,
+      membersAbsent: this.session.metadata.membersAbsent,
+      administrationPresent: this.session.metadata.administrationPresent,
+      caller: metadata.caller && {
+        ...metadata.caller,
+        person: this.findPerson(metadata.caller.person),
+      },
     };
   }
 
@@ -262,13 +281,22 @@ export class SessionStore {
   updateMetadata = (
     metadata: Omit<
       SessionMetadata,
-      "membersPresent" | "membersAbsent" | "administrationPresent"
+      "membersPresent" | "membersAbsent" | "administrationPresent" | "caller"
     >
   ) => {
     this.produceUpdate((draft) => {
       draft.metadata = {
         ...draft.metadata,
         ...metadata,
+      };
+    });
+  };
+
+  updateCaller = (caller: Caller | undefined) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.caller = caller && {
+        ...caller,
+        person: this.findPerson(caller.person),
       };
     });
   };

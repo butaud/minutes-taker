@@ -38,7 +38,8 @@ const fakeSession: Session = {
     membersAbsent: [boardMember3],
     location: "School Boardroom",
     organization: "School School",
-    title: "Board Meeting - Executive Session",
+    title: "Board Meeting",
+    subtitle: "Executive Session",
   },
   topics: [
     {

@@ -38,7 +38,7 @@ export const SessionHeaderDisplay: React.FC<{
         {metadata.organization}
       </NodeControls>
       <NodeControls as="h2" onEdit={onEdit}>
-        {metadata.title}: {metadata.location},{" "}
+        {metadata.title} - {metadata.subtitle}: {metadata.location},{" "}
         {metadata.startTime.toLocaleString(navigator.language, {
           timeStyle: "short",
           dateStyle: "short",
@@ -73,6 +73,10 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
       setErrorMessage("Title cannot be empty.");
       return;
     }
+    if (!sessionHeaderDraft.subtitle) {
+      setErrorMessage("Subtitle cannot be empty.");
+      return;
+    }
     if (!sessionHeaderDraft.location) {
       setErrorMessage("Location cannot be empty.");
       return;
@@ -85,6 +89,7 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
     sessionStore.updateMetadata({
       organization: sessionHeaderDraft.organization,
       title: sessionHeaderDraft.title,
+      subtitle: sessionHeaderDraft.subtitle,
       location: sessionHeaderDraft.location,
       startTime: sessionHeaderDraft.startTime,
     });
@@ -107,6 +112,13 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSessionHeaderDraft({ ...sessionHeaderDraft, title: event.target.value });
+  };
+
+  const handleSubtitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSessionHeaderDraft({
+      ...sessionHeaderDraft,
+      subtitle: event.target.value,
+    });
   };
 
   const handleLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +154,12 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
           aria-label="Title"
           value={sessionHeaderDraft.title}
           onChange={handleTitleChange}
+        />{" "}
+        <input
+          type="text"
+          aria-label="Subtitle"
+          value={sessionHeaderDraft.subtitle}
+          onChange={handleSubtitleChange}
         />{" "}
         <input
           type="text"

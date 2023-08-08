@@ -7,6 +7,7 @@ import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
 import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
+import { CallerNode } from "./nodes/caller/CallerNode";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -55,6 +56,7 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           absent={session.metadata.membersAbsent}
           administrationPresent={session.metadata.administrationPresent}
         />
+        <CallerNode caller={session.metadata.caller} />
         <ul>
           {session.topics.map((topic, index) => (
             <>
