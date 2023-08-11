@@ -2484,7 +2484,7 @@ describe("SessionEditor", () => {
     });
   });
 
-  describe.only("committees", () => {
+  describe("committees", () => {
     it("shows the list of committees", () => {
       sessionStore.addCommittee({
         name: "Test Committee",
@@ -2504,7 +2504,7 @@ describe("SessionEditor", () => {
       render(<SessionEditor session={sessionStore.session} />);
 
       expect(
-        screen.getByRole("link", { name: "Committee Details" })
+        screen.getByRole("link", { name: "(Committee Details)" })
       ).toHaveAttribute("href", "https://example.com");
     });
 
@@ -2514,6 +2514,29 @@ describe("SessionEditor", () => {
       expect(
         screen.queryByRole("link", { name: "Committee Details" })
       ).not.toBeInTheDocument();
+    });
+
+    it("allows editing the committee doc url", async () => {
+      expect.assertions(1);
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(screen.getByText("Active Committees"));
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Committee Details URL:"));
+      await user.type(
+        screen.getByLabelText("Committee Details URL:"),
+        "https://example.com"
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByRole("link", { name: "(Committee Details)" })
+      ).toHaveAttribute("href", "https://example.com");
     });
 
     it("allows adding a new committee", async () => {
