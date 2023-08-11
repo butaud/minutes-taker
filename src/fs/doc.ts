@@ -8,11 +8,13 @@ import {
   TableCell,
   TableRow,
   WidthType,
+  ExternalHyperlink,
 } from "docx";
 import {
   ActionItemNote,
   Calendar,
   CalendarMonthEntry,
+  Committee,
   MotionNote,
   Person,
   Session,
@@ -334,6 +336,41 @@ const makeTopicBody = (topic: Topic): Paragraph[] =>
     }
   });
 
+const makeCommitteeBulletPoint = (committee: Committee): Paragraph => {
+  return new Paragraph({
+    children: [new TextRun(`${committee.name} (${committee.type})`)],
+    bullet: {
+      level: 0,
+    },
+  });
+};
+
+const makeCommitteesSection = (
+  committees: Committee[],
+  committeeDocUrl?: string
+): Paragraph[] => {
+  const headerChildren: (TextRun | ExternalHyperlink)[] = [
+    new TextRun("Active Committees: "),
+  ];
+  if (committeeDocUrl) {
+    headerChildren.push(
+      new ExternalHyperlink({
+        children: [
+          new TextRun({ text: "(Committees.docx)", style: "Hyperlink" }),
+        ],
+        link: committeeDocUrl,
+      })
+    );
+  }
+  return [
+    new Paragraph({
+      children: headerChildren,
+      style: "CommitteeHeader",
+    }),
+    ...committees.map(makeCommitteeBulletPoint),
+  ];
+};
+
 const emptyLine = () => new Paragraph({ children: [new TextRun("")] });
 
 export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
@@ -354,6 +391,10 @@ export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
             makeTopicHeader(topic),
             ...makeTopicBody(topic),
           ]),
+          ...makeCommitteesSection(
+            session.committees,
+            session.metadata.committeeDocUrl
+          ),
         ],
       },
     ],

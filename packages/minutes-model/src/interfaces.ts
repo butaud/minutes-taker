@@ -2,6 +2,7 @@ export type Session = {
   metadata: SessionMetadata;
   calendar: Calendar;
   topics: Topic[];
+  committees: Committee[];
 };
 
 export type SessionMetadata = {
@@ -14,6 +15,14 @@ export type SessionMetadata = {
   title: string;
   subtitle: string;
   caller?: Caller;
+  committeeDocUrl?: string;
+};
+
+export type CommitteeType = "Board" | "Headmaster";
+
+export type Committee = {
+  name: string;
+  type: CommitteeType;
 };
 
 export type CalendarMonth =

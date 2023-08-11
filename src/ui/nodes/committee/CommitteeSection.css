@@ -1,0 +1,53 @@
+h3.committee {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+form h3.committee label {
+  margin: 0 10px;
+  font-weight: initial;
+}
+
+form h3.committee input[type="text"] {
+  margin-left: 6px;
+  width: 25%;
+}
+
+a.committee {
+  font-size: smaller;
+  margin-left: 10px;
+}
+
+.committee li {
+  list-style-type: disc;
+  list-style-position: inside;
+  padding-left: 10px;
+  overflow: hidden;
+}
+
+.committee li:last-child {
+  list-style-type: none;
+}
+
+.committee li:last-child button {
+  padding: 5px;
+  margin-left: 10px;
+  color: black;
+  display: inline-flex;
+  font-size: small;
+  transition: border-color 0.25s, color 0.25s;
+}
+
+.committee li:last-child button i {
+  font-size: medium;
+}
+
+.committee form {
+  display: flex;
+}
+
+.committee form input[type="text"] {
+  margin-left: 8px;
+}

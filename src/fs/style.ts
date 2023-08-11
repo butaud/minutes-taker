@@ -76,6 +76,17 @@ export const Styles: IStylesOptions = {
         bold: true,
       },
     },
+    {
+      id: "CommitteeHeader",
+      name: "Committee Header",
+      basedOn: "Normal",
+      run: {
+        bold: true,
+        underline: {
+          color: "000000",
+        },
+      },
+    },
   ],
   characterStyles: [
     {
