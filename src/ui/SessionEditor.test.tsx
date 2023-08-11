@@ -34,7 +34,7 @@ const session: Session = {
   calendar: [],
   topics: [],
   committees: [],
-  deferredActionItems: [],
+  pastActionItems: [],
 };
 
 let sessionStore = new SessionStore(session);
@@ -3028,19 +3028,19 @@ describe("SessionEditor", () => {
   });
 
   describe.only("listed action items", () => {
-    it("lists deferred action items", () => {
+    it("lists past action items", () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item 1",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
         completed: true,
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item 2",
         dueDate: new Date("2021-02-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
@@ -3090,7 +3090,7 @@ describe("SessionEditor", () => {
       expect(actionItem).toPrecede(topicNote);
     });
 
-    it("allows adding a new deferred action item", async () => {
+    it("allows adding a new past action item", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Test",
@@ -3121,19 +3121,19 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
     });
 
-    it("allows removing a deferred action item", async () => {
+    it("allows removing a past action item", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item 1",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
         completed: true,
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item 2",
         dueDate: new Date("2021-02-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
@@ -3202,7 +3202,7 @@ describe("SessionEditor", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("allows editing a deferred action item assignee", async () => {
+    it("allows editing a past action item assignee", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
@@ -3213,7 +3213,7 @@ describe("SessionEditor", () => {
         firstName: "Tom",
         lastName: "Smith",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
@@ -3249,13 +3249,13 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
     });
 
-    it("allows editing a deferred action item due date", async () => {
+    it("allows editing a past action item due date", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
@@ -3289,13 +3289,13 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
     });
 
-    it("allows editing a deferred action item text", async () => {
+    it("allows editing a past action item text", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
@@ -3333,13 +3333,13 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
     });
 
-    it("allows editing a deferred action item status", async () => {
+    it("allows editing a past action item status", async () => {
       sessionStore.addMemberPresent({
         title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
-      sessionStore.addDeferredActionItem({
+      sessionStore.addPastActionItem({
         text: "Test Action Item",
         dueDate: new Date("2021-01-01"),
         assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },

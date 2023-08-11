@@ -129,7 +129,7 @@ const fakeSession: Session = {
       type: "Headmaster",
     },
   ],
-  deferredActionItems: [
+  pastActionItems: [
     {
       text: "clean up the board calendar",
       assignee: boardMember1,

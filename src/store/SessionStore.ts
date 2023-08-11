@@ -12,7 +12,7 @@ import {
   Calendar,
   CalendarItem,
   Committee,
-  DeferredActionItem,
+  PastActionItem,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -80,8 +80,7 @@ export type StoredMotionNote = Omit<
   seconder: StoredPerson;
 };
 export type StoredCommittee = StoredSession["committees"][number];
-export type StoredDeferredActionItem =
-  StoredSession["deferredActionItems"][number];
+export type StoredPastActionItem = StoredSession["pastActionItems"][number];
 
 export class SessionStore {
   private _history: StoredSession[] = [];
@@ -93,7 +92,7 @@ export class SessionStore {
   private noteId = 0;
   private calendarItemId = 0;
   private committeeId = 0;
-  private deferredActionItemId = 0;
+  private pastActionItemId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -114,15 +113,15 @@ export class SessionStore {
       calendar: [],
       topics: [],
       committees: [],
-      deferredActionItems: [],
+      pastActionItems: [],
     };
 
     const metadata = this.convertSessionMetadata(session.metadata);
     const calendar = this.convertSessionCalendar(session.calendar);
     const topics = this.convertTopics(session.topics);
     const committees = this.convertCommittees(session.committees);
-    const deferredActionItems = this.convertDeferredActionItems(
-      session.deferredActionItems
+    const pastActionItems = this.convertPastActionItems(
+      session.pastActionItems
     );
 
     return {
@@ -130,7 +129,7 @@ export class SessionStore {
       calendar,
       topics,
       committees,
-      deferredActionItems,
+      pastActionItems,
     };
   }
 
@@ -252,13 +251,13 @@ export class SessionStore {
     }));
   }
 
-  private convertDeferredActionItems(
-    deferredActionItems: DeferredActionItem[]
-  ): StoredDeferredActionItem[] {
-    return deferredActionItems.map((deferredActionItem) => ({
-      ...deferredActionItem,
-      id: this.deferredActionItemId++,
-      assignee: this.findPerson(deferredActionItem.assignee),
+  private convertPastActionItems(
+    pastActionItems: PastActionItem[]
+  ): StoredPastActionItem[] {
+    return pastActionItems.map((pastActionItem) => ({
+      ...pastActionItem,
+      id: this.pastActionItemId++,
+      assignee: this.findPerson(pastActionItem.assignee),
     }));
   }
 
@@ -627,27 +626,27 @@ export class SessionStore {
     });
   };
 
-  addDeferredActionItem = (item: DeferredActionItem) => {
+  addPastActionItem = (item: PastActionItem) => {
     this.produceUpdate((draft) => {
-      draft.deferredActionItems.push({
+      draft.pastActionItems.push({
         ...item,
-        id: this.deferredActionItemId++,
+        id: this.pastActionItemId++,
         assignee: this.findPerson(item.assignee),
       });
     });
   };
 
-  removeDeferredActionItem = (item: StoredDeferredActionItem) => {
+  removePastActionItem = (item: StoredPastActionItem) => {
     this.produceUpdate((draft) => {
-      draft.deferredActionItems = draft.deferredActionItems.filter(
+      draft.pastActionItems = draft.pastActionItems.filter(
         (i) => i.id !== item.id
       );
     });
   };
 
-  updateDeferredActionItem = (item: StoredDeferredActionItem) => {
+  updatePastActionItem = (item: StoredPastActionItem) => {
     this.produceUpdate((draft) => {
-      const existing = draft.deferredActionItems.find((i) => i.id === item.id);
+      const existing = draft.pastActionItems.find((i) => i.id === item.id);
       if (existing) {
         existing.text = item.text;
         existing.assignee = item.assignee;
@@ -717,20 +716,20 @@ export class SessionStore {
     type: committee.type,
   });
 
-  private exportDeferredActionItem = (
-    deferredActionItem: StoredDeferredActionItem
-  ): DeferredActionItem => ({
-    text: deferredActionItem.text,
-    assignee: this.exportPerson(deferredActionItem.assignee),
-    dueDate: deferredActionItem.dueDate,
-    completed: deferredActionItem.completed,
+  private exportPastActionItem = (
+    pastActionItem: StoredPastActionItem
+  ): PastActionItem => ({
+    text: pastActionItem.text,
+    assignee: this.exportPerson(pastActionItem.assignee),
+    dueDate: pastActionItem.dueDate,
+    completed: pastActionItem.completed,
   });
 
   export = (): Session => {
     const metadata = this._session.metadata;
     const topics = this._session.topics;
     const committees = this._session.committees;
-    const deferredActionItems = this._session.deferredActionItems;
+    const pastActionItems = this._session.pastActionItems;
     return {
       metadata: {
         ...metadata,
@@ -743,9 +742,7 @@ export class SessionStore {
       calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
       committees: committees.map(this.exportCommittee),
-      deferredActionItems: deferredActionItems.map(
-        this.exportDeferredActionItem
-      ),
+      pastActionItems: pastActionItems.map(this.exportPastActionItem),
     };
   };
 }

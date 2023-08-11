@@ -20,7 +20,7 @@ const SessionContext = createContext<SessionContextType>({
     calendar: [],
     topics: [],
     committees: [],
-    deferredActionItems: [],
+    pastActionItems: [],
   }),
 });
 
