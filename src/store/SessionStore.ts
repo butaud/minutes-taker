@@ -627,6 +627,36 @@ export class SessionStore {
     });
   };
 
+  addDeferredActionItem = (item: DeferredActionItem) => {
+    this.produceUpdate((draft) => {
+      draft.deferredActionItems.push({
+        ...item,
+        id: this.deferredActionItemId++,
+        assignee: this.findPerson(item.assignee),
+      });
+    });
+  };
+
+  removeDeferredActionItem = (item: StoredDeferredActionItem) => {
+    this.produceUpdate((draft) => {
+      draft.deferredActionItems = draft.deferredActionItems.filter(
+        (i) => i.id !== item.id
+      );
+    });
+  };
+
+  updateDeferredActionItem = (item: StoredDeferredActionItem) => {
+    this.produceUpdate((draft) => {
+      const existing = draft.deferredActionItems.find((i) => i.id === item.id);
+      if (existing) {
+        existing.text = item.text;
+        existing.assignee = item.assignee;
+        existing.dueDate = item.dueDate;
+        existing.completed = item.completed;
+      }
+    });
+  };
+
   private exportPerson = (person: StoredPerson): Person => ({
     title: person.title,
     firstName: person.firstName,
