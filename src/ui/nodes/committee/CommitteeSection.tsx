@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { StoredCommittee } from "../../../store/SessionStore";
+import { CommitteeEditor } from "./CommitteeEditor";
 import { CommitteeNode } from "./CommitteeNode";
 
 export type CommitteeSectionProps = {
@@ -22,7 +24,20 @@ export const CommitteeSection: React.FC<CommitteeSectionProps> = ({
         {committees.map((committee) => (
           <CommitteeNode committee={committee} key={committee.id} />
         ))}
+        <NewCommitteeNode />
       </ul>
     </>
+  );
+};
+
+const NewCommitteeNode: React.FC = () => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  return isEditing ? (
+    <CommitteeEditor stopEditing={() => setIsEditing(false)} />
+  ) : (
+    <li>
+      <button onClick={() => setIsEditing(true)}>Add Committee</button>
+    </li>
   );
 };

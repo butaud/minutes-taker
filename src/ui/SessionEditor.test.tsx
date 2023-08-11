@@ -2519,18 +2519,21 @@ describe("SessionEditor", () => {
     it("allows adding a new committee", async () => {
       expect.assertions(1);
       const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       fireEvent.click(screen.getByRole("button", { name: "Add Committee" }));
-      await user.type(
-        screen.getByLabelText("New Committee Name:"),
-        "Test Committee"
-      );
       await user.selectOptions(
-        screen.getByLabelText("New Committee Type:"),
+        screen.getByLabelText("Committee Type"),
         "Board"
       );
-      await user.keyboard("{enter}");
+      await user.type(
+        screen.getByLabelText("Committee Name"),
+        "Test Committee"
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.getByText("Test Committee (Board)")).toBeInTheDocument();
     });
@@ -2543,10 +2546,13 @@ describe("SessionEditor", () => {
       });
 
       const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       await user.hover(screen.getByText("Test Committee (Board)"));
       fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.queryByText("Test Committee")).not.toBeInTheDocument();
     });
@@ -2559,16 +2565,20 @@ describe("SessionEditor", () => {
       });
 
       const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       await user.hover(screen.getByText("Test Committee (Board)"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-      await user.clear(screen.getByLabelText("Committee Name:"));
+      await user.clear(screen.getByLabelText("Committee Name"));
       await user.type(
-        screen.getByLabelText("Committee Name:"),
+        screen.getByLabelText("Committee Name"),
         "Updated Committee"
       );
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.getByText("Updated Committee (Board)")).toBeInTheDocument();
     });
@@ -2581,15 +2591,19 @@ describe("SessionEditor", () => {
       });
 
       const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       await user.hover(screen.getByText("Test Committee (Board)"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
       await user.selectOptions(
-        screen.getByLabelText("Committee Type:"),
+        screen.getByLabelText("Committee Type"),
         "Headmaster"
       );
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(
         screen.getByText("Test Committee (Headmaster)")
@@ -2603,16 +2617,19 @@ describe("SessionEditor", () => {
         type: "Board",
       });
 
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       await userEvent.hover(screen.getByText("Test Committee (Board)"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-      await userEvent.clear(screen.getByLabelText("Committee Name:"));
+      await userEvent.clear(screen.getByLabelText("Committee Name"));
       await userEvent.type(
-        screen.getByLabelText("Committee Name:"),
+        screen.getByLabelText("Committee Name"),
         "Updated Committee"
       );
       fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.getByText("Test Committee (Board)")).toBeInTheDocument();
     });
@@ -2625,16 +2642,19 @@ describe("SessionEditor", () => {
       });
 
       const user = userEvent.setup();
-      render(<SessionEditor session={sessionStore.session} />);
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
 
       await user.hover(screen.getByText("Test Committee (Board)"));
       fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-      await user.clear(screen.getByLabelText("Committee Name:"));
+      await user.clear(screen.getByLabelText("Committee Name"));
       await user.type(
-        screen.getByLabelText("Committee Name:"),
+        screen.getByLabelText("Committee Name"),
         "Updated Committee"
       );
       await user.keyboard("{enter}");
+      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.getByText("Updated Committee (Board)")).toBeInTheDocument();
     });
@@ -2646,7 +2666,9 @@ describe("SessionEditor", () => {
       fireEvent.click(screen.getByRole("button", { name: "Add Committee" }));
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-      expect(screen.getByRole("alert")).toHaveTextContent("Name is required.");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Name cannot be empty."
+      );
     });
   });
 
