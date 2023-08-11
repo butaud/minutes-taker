@@ -116,6 +116,13 @@ const fakeSession: Session = {
   ],
 };
 const store = new SessionStore(fakeSession);
+
+// make this available in JS console for HAX
+declare global {
+  var __sessionStore: SessionStore;
+}
+globalThis.__sessionStore = store;
+
 function App() {
   const [session, setSession] = useState<StoredSession | undefined>(undefined);
   const [personList, setPersonList] = useState<readonly StoredPerson[]>([]);
