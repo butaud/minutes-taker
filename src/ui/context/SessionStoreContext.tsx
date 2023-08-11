@@ -19,6 +19,7 @@ const SessionContext = createContext<SessionContextType>({
     },
     calendar: [],
     topics: [],
+    committees: [],
   }),
 });
 

@@ -11,6 +11,7 @@ import {
   CalendarMonth,
   Calendar,
   CalendarItem,
+  Committee,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -77,6 +78,7 @@ export type StoredMotionNote = Omit<
   mover: StoredPerson;
   seconder: StoredPerson;
 };
+export type StoredCommittee = StoredSession["committees"][number];
 
 export class SessionStore {
   private _history: StoredSession[] = [];
@@ -87,6 +89,7 @@ export class SessionStore {
   private topicId = 0;
   private noteId = 0;
   private calendarItemId = 0;
+  private committeeId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -106,15 +109,19 @@ export class SessionStore {
       metadata: attendanceLists as any,
       calendar: [],
       topics: [],
+      committees: [],
     };
 
-    const sessionMetadata = this.convertSessionMetadata(session.metadata);
+    const metadata = this.convertSessionMetadata(session.metadata);
     const calendar = this.convertSessionCalendar(session.calendar);
+    const topics = this.convertTopics(session.topics);
+    const committees = this.convertCommittees(session.committees);
 
     return {
-      metadata: sessionMetadata,
+      metadata,
       calendar,
-      topics: this.convertTopics(session.topics),
+      topics,
+      committees,
     };
   }
 
@@ -226,6 +233,13 @@ export class SessionStore {
       id: this.topicId++,
       notes: noteListConverter(topic.notes),
       leader: topic.leader && this.findPerson(topic.leader),
+    }));
+  }
+
+  private convertCommittees(committees: Committee[]): StoredCommittee[] {
+    return committees.map((committee) => ({
+      ...committee,
+      id: this.committeeId++,
     }));
   }
 
@@ -563,6 +577,31 @@ export class SessionStore {
     });
   };
 
+  addCommittee = (committee: Committee) => {
+    this.produceUpdate((draft) => {
+      draft.committees.push({
+        ...committee,
+        id: this.committeeId++,
+      });
+    });
+  };
+
+  removeCommittee = (committee: StoredCommittee) => {
+    this.produceUpdate((draft) => {
+      draft.committees = draft.committees.filter((c) => c.id !== committee.id);
+    });
+  };
+
+  updateCommittee = (committee: StoredCommittee) => {
+    this.produceUpdate((draft) => {
+      const existing = draft.committees.find((c) => c.id === committee.id);
+      if (existing) {
+        existing.name = committee.name;
+        existing.type = committee.type;
+      }
+    });
+  };
+
   private exportPerson = (person: StoredPerson): Person => ({
     firstName: person.firstName,
     lastName: person.lastName,
@@ -617,9 +656,15 @@ export class SessionStore {
     notes: topic.notes.map(this.exportNote),
   });
 
+  private exportCommittee = (committee: StoredCommittee): Committee => ({
+    name: committee.name,
+    type: committee.type,
+  });
+
   export = (): Session => {
     const metadata = this._session.metadata;
     const topics = this._session.topics;
+    const committees = this._session.committees;
     return {
       metadata: {
         ...metadata,
@@ -631,6 +676,7 @@ export class SessionStore {
       },
       calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
+      committees: committees.map(this.exportCommittee),
     };
   };
 }
