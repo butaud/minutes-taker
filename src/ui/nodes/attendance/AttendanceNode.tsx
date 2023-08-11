@@ -1,4 +1,4 @@
-import { Person } from "minutes-model";
+import { Person, PersonTitle } from "minutes-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
 import { NonFormNodeControls } from "../../controls/NodeControls";
@@ -20,26 +20,7 @@ const PersonList: React.FC<PersonListProps> = ({
   removePerson,
   isEditing,
 }) => {
-  const [newPerson, setNewPerson] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
-
-  const handleNewPersonChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setNewPerson(event.target.value);
-  };
-
-  const handleAddPerson = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const [firstName, lastName] = newPerson.split(" ");
-    if (firstName && lastName) {
-      setErrorMessage(undefined);
-      addPerson({ firstName, lastName });
-      setNewPerson("");
-    } else {
-      setErrorMessage("Please enter a first and last name.");
-    }
-  };
 
   const handleRemovePerson = (person: StoredPerson) => {
     setErrorMessage(undefined);
@@ -60,6 +41,7 @@ const PersonList: React.FC<PersonListProps> = ({
       ) : (
         <>
           <h4>{title}</h4>
+          {errorMessage && <p role="alert">{errorMessage}</p>}
           <ul>
             {people.map((person) => (
               <li key={`${person.firstName}-${person.lastName}`}>
@@ -70,21 +52,68 @@ const PersonList: React.FC<PersonListProps> = ({
               </li>
             ))}
           </ul>
-          <form onSubmit={handleAddPerson}>
-            {errorMessage && <p role="alert">{errorMessage}</p>}
-            <label>
-              Add member to {title.toLowerCase()}:
-              <input
-                type="text"
-                value={newPerson}
-                onChange={handleNewPersonChange}
-              />
-            </label>
-            <button type="submit">Add</button>
-          </form>
+          <NewPerson personListTitle={title} addPerson={addPerson} />
         </>
       )}
     </>
+  );
+};
+
+type NewPersonProps = {
+  personListTitle: string;
+  addPerson: (newPerson: Person) => void;
+};
+
+const NewPerson: React.FC<NewPersonProps> = ({
+  addPerson,
+  personListTitle,
+}) => {
+  const [title, setTitle] = useState("Mr.");
+  const [name, setName] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+
+  const handleTitleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setTitle(event.target.value);
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const [firstName, lastName] = name.split(" ");
+    if (firstName && lastName) {
+      setErrorMessage(undefined);
+      addPerson({ title: title as PersonTitle, firstName, lastName });
+      setTitle("Mr.");
+      setName("");
+    } else {
+      setErrorMessage("Please enter a first and last name.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+      <i className="material-icons">person_add</i>
+      <select
+        value={title}
+        onChange={handleTitleChange}
+        aria-label={`Title to add to ${personListTitle}`}
+      >
+        <option>Mr.</option>
+        <option>Mrs.</option>
+        <option>Miss</option>
+      </select>
+      <input
+        type="text"
+        value={name}
+        onChange={handleNameChange}
+        aria-label={`Name to add to ${personListTitle}`}
+      />
+      <button type="submit">Add</button>
+    </form>
   );
 };
 
