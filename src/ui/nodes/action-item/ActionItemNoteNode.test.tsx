@@ -10,7 +10,7 @@ import * as SessionStoreContext from "../../context/SessionStoreContext";
 
 const note: StoredActionItemNote = {
   id: 1,
-  assignee: { id: 1, firstName: "Bob", lastName: "Smith" },
+  assignee: { id: 1, title: "Mr.", firstName: "Bob", lastName: "Smith" },
   text: "Do the thing",
   dueDate: new Date("2022-01-01"),
   type: "actionItem" as const,
