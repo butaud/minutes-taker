@@ -10,6 +10,7 @@ import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
 import { CallerNode } from "./nodes/caller/CallerNode";
 import { useAsyncReporter } from "./async-reporter-hook";
 import { CalendarNode } from "./nodes/calendar/CalendarNode";
+import { CommitteeSection } from "./nodes/committee/CommitteeSection";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -86,6 +87,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           ))}
           <NewTopicNode miniature={false} />
         </ul>
+        <CommitteeSection
+          committees={session.committees}
+          committeeDocUrl={session.metadata.committeeDocUrl}
+        />
       </div>
     </InsertingContext.Provider>
   );
