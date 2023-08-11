@@ -54,7 +54,11 @@ export const CalendarNode: FC<{ calendar: StoredCalendar }> = ({
           <ul>
             {isEditing && <NewMonthNode nextMonth={firstMonth} />}
             {calendar.map(({ month, items }) => (
-              <CalendarMonthNode month={month as CalendarMonth} items={items} />
+              <CalendarMonthNode
+                month={month as CalendarMonth}
+                items={items}
+                key={month}
+              />
             ))}
             {isEditing && lastMonth && (
               <NewMonthNode previousMonth={lastMonth} />
@@ -120,7 +124,11 @@ const NewDefinedMonthNode: FC<{
 
   return (
     <li>
-      <button className="newMonth" onClick={handleClick} aria-label="Add Month">
+      <button
+        className="newMonth"
+        onClick={handleClick}
+        aria-label={`Add ${month}`}
+      >
         <i className="material-icons">add</i>Add {month}
       </button>
     </li>
@@ -152,7 +160,9 @@ const NewAnyMonthNode: FC = () => {
         <label htmlFor="month">Add Month: </label>
         <select id="month" value={month} onChange={handleMonthChange}>
           {monthArray.map((month) => (
-            <option value={month}>{month}</option>
+            <option key={month} value={month}>
+              {month}
+            </option>
           ))}
         </select>
         <button type="submit">Add</button>
@@ -191,7 +201,7 @@ export const CalendarMonthNode: FC<CalendarMonthNodeProps> = ({
       </span>
       <ul>
         {items.map((item) => (
-          <CalendarItemNode item={item} />
+          <CalendarItemNode item={item} key={item.id} />
         ))}
         {isEditing && <NewCalendarItemNode month={month} />}
       </ul>
@@ -305,6 +315,7 @@ export const CalendarItemNodeEditor: FC<{
           onClick={handleDeleteClick}
           aria-label="Delete Item"
           title="Delete Item"
+          type="button"
         >
           <i className="material-icons">delete</i>
         </button>
