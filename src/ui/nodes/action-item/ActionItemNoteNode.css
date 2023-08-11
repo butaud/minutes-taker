@@ -7,3 +7,8 @@ form.actionItem {
   border-radius: 5px;
   padding: 5px;
 }
+
+form.actionItem input,
+form.actionItem select {
+  margin: 0 5px;
+}
