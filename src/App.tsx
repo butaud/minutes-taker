@@ -40,6 +40,7 @@ const fakeSession: Session = {
     organization: "School School",
     title: "Board Meeting",
     subtitle: "Executive Session",
+    committeeDocUrl: "https://www.google.com",
   },
   calendar: [
     {
@@ -112,6 +113,16 @@ const fakeSession: Session = {
           dueDate: new Date(),
         },
       ],
+    },
+  ],
+  committees: [
+    {
+      name: "Facility",
+      type: "Board",
+    },
+    {
+      name: "Finance",
+      type: "Headmaster",
     },
   ],
 };

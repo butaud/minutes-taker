@@ -33,6 +33,7 @@ const session: Session = {
   },
   calendar: [],
   topics: [],
+  committees: [],
 };
 
 let sessionStore = new SessionStore(session);
