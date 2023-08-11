@@ -104,6 +104,7 @@ const NewPerson: React.FC<NewPersonProps> = ({
       >
         <option>Mr.</option>
         <option>Mrs.</option>
+        <option>Miss</option>
       </select>
       <input
         type="text"
