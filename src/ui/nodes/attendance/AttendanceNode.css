@@ -3,6 +3,13 @@
   padding: 0;
 }
 
+.attendance-container form {
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+}
+
 .attendance-container form button {
   margin: 0px 5px;
   padding: 0px 5px;
