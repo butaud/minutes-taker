@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Fragment, useEffect } from "react";
 import { NewTopicNode, TopicNode } from "./nodes/topic/TopicNode";
 import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
@@ -9,6 +9,7 @@ import { InsertingContext } from "./context/InsertingContext";
 import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
 import { CallerNode } from "./nodes/caller/CallerNode";
 import { useAsyncReporter } from "./async-reporter-hook";
+import { CalendarNode } from "./nodes/calendar/CalendarNode";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -74,19 +75,14 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           absent={session.metadata.membersAbsent}
           administrationPresent={session.metadata.administrationPresent}
         />
+        <CalendarNode calendar={session.calendar} />
         <CallerNode caller={session.metadata.caller} />
         <ul>
           {session.topics.map((topic, index) => (
-            <>
-              {isInserting && (
-                <NewTopicNode
-                  key={`newTopic-${index}`}
-                  miniature
-                  beforeIndex={index}
-                />
-              )}
-              <TopicNode key={topic.id} topic={topic} />
-            </>
+            <Fragment key={topic.id}>
+              {isInserting && <NewTopicNode miniature beforeIndex={index} />}
+              <TopicNode topic={topic} />
+            </Fragment>
           ))}
           <NewTopicNode miniature={false} />
         </ul>

@@ -91,8 +91,13 @@ export const TextNoteEditor: FunctionComponent<TextNoteEditorProps> = ({
   );
 
   return (
-    <FormNodeControls onCancel={handleCancel} onSubmit={handleSubmit}>
+    <FormNodeControls
+      onCancel={handleCancel}
+      onSubmit={handleSubmit}
+      className="text"
+    >
       {errorMessage && <p role="alert">{errorMessage}</p>}
+      <i className="material-icons">add</i>
       <input
         autoFocus
         className="tnn-input"

@@ -8,6 +8,9 @@ import {
   MotionNote,
   TextNote,
   Caller,
+  CalendarMonth,
+  Calendar,
+  CalendarItem,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -45,8 +48,20 @@ type StoredSessionAfterTopicLeaderHack = Omit<
     leader?: StoredPerson;
   })[];
 };
-export type StoredSession = Immutable<StoredSessionAfterTopicLeaderHack>;
+type StoredSessionAfterCalendarHack = Omit<
+  StoredSessionAfterTopicLeaderHack,
+  "calendar"
+> & {
+  calendar: StoredCalendarMonthEntry[];
+};
+export type StoredSession = Immutable<StoredSessionAfterCalendarHack>;
 export type StoredSessionMetadata = StoredSession["metadata"];
+export type StoredCalendar = StoredSession["calendar"];
+export type StoredCalendarItem = WithId<CalendarItem>;
+export type StoredCalendarMonthEntry = {
+  month: CalendarMonth;
+  items: StoredCalendarItem[];
+};
 export type StoredCaller = StoredSessionMetadata["caller"];
 export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
@@ -71,6 +86,7 @@ export class SessionStore {
   private personId = 0;
   private topicId = 0;
   private noteId = 0;
+  private calendarItemId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -88,13 +104,16 @@ export class SessionStore {
     // Hack so that we can access the full list of persons when we are converting the rest of the schema.
     this._session = {
       metadata: attendanceLists as any,
+      calendar: [],
       topics: [],
     };
 
     const sessionMetadata = this.convertSessionMetadata(session.metadata);
+    const calendar = this.convertSessionCalendar(session.calendar);
 
     return {
       metadata: sessionMetadata,
+      calendar,
       topics: this.convertTopics(session.topics),
     };
   }
@@ -145,6 +164,21 @@ export class SessionStore {
         person: this.findPerson(metadata.caller.person),
       },
     };
+  }
+
+  private convertSessionCalendar(calendar: Calendar): StoredCalendar {
+    const calendarItemConverter = (items: CalendarItem[]) => {
+      return items.map((item) => ({
+        ...item,
+        id: this.calendarItemId++,
+      }));
+    };
+    return calendar.map((monthEntry) => {
+      return {
+        month: monthEntry.month,
+        items: calendarItemConverter(monthEntry.items),
+      };
+    });
   }
 
   private convertTextNote = (note: TextNote): StoredTextNote => {
@@ -384,6 +418,60 @@ export class SessionStore {
     });
   };
 
+  addCalendarMonth = (month: CalendarMonth, beforeIndex: number) => {
+    if (this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month already exists in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      draft.calendar.splice(beforeIndex, 0, {
+        month,
+        items: [],
+      });
+    });
+  };
+
+  removeCalendarMonth = (month: CalendarMonth) => {
+    if (!this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month does not exist in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      draft.calendar = draft.calendar.filter((m) => m.month !== month);
+    });
+  };
+
+  addCalendarItem = (month: CalendarMonth, item: CalendarItem) => {
+    if (!this._session.calendar.some((m) => m.month === month)) {
+      throw new Error("This month does not exist in the calendar.");
+    }
+    this.produceUpdate((draft) => {
+      const index = draft.calendar.findIndex((m) => m.month === month);
+      draft.calendar[index].items.push({
+        ...item,
+        id: this.calendarItemId++,
+      });
+    });
+  };
+
+  updateCalendarItem = (item: StoredCalendarItem) => {
+    this.produceUpdate((draft) => {
+      draft.calendar.forEach((month) => {
+        const existingItem = month.items.find((i) => i.id === item.id);
+        if (existingItem) {
+          existingItem.completed = item.completed;
+          existingItem.text = item.text;
+        }
+      });
+    });
+  };
+
+  removeCalendarItem = (item: StoredCalendarItem) => {
+    this.produceUpdate((draft) => {
+      draft.calendar.forEach((month) => {
+        month.items = month.items.filter((i) => i.id !== item.id);
+      });
+    });
+  };
+
   addTopic = (
     topic: Pick<Topic, "title" | "startTime" | "durationMinutes" | "leader">,
     beforeIndex?: number
@@ -507,6 +595,20 @@ export class SessionStore {
     }
   };
 
+  private exportCalendarItem = (item: StoredCalendarItem): CalendarItem => {
+    return {
+      text: item.text,
+      completed: item.completed,
+    };
+  };
+
+  private exportCalendar = (calendar: StoredCalendar): Calendar => {
+    return calendar.map((monthEntry) => ({
+      month: monthEntry.month,
+      items: monthEntry.items.map(this.exportCalendarItem),
+    }));
+  };
+
   private exportTopic = (topic: StoredTopic): Topic => ({
     title: topic.title,
     startTime: topic.startTime,
@@ -527,6 +629,7 @@ export class SessionStore {
           this.exportPerson
         ),
       },
+      calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
     };
   };

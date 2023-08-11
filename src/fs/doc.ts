@@ -11,6 +11,8 @@ import {
 } from "docx";
 import {
   ActionItemNote,
+  Calendar,
+  CalendarMonthEntry,
   MotionNote,
   Person,
   Session,
@@ -19,6 +21,7 @@ import {
   Topic,
 } from "minutes-model";
 import {
+  CalendarCellMargins,
   Styles,
   TopicHeaderCellMargins,
   TopicHeaderCellShading,
@@ -69,6 +72,54 @@ const attendanceSection = (metadata: SessionMetadata): Paragraph[] => {
     makeAttendanceLine("Members in attendance", metadata.membersPresent),
     makeAttendanceLine("Members absent", metadata.membersAbsent),
     makeAttendanceLine("Administration", metadata.administrationPresent),
+  ];
+};
+
+const makeMonthTableRow = (monthEntry: CalendarMonthEntry): TableRow => {
+  return new TableRow({
+    children: [
+      new TableCell({
+        children: [new Paragraph(monthEntry.month)],
+        width: {
+          size: 15,
+          type: WidthType.PERCENTAGE,
+        },
+        margins: CalendarCellMargins,
+      }),
+      new TableCell({
+        children: monthEntry.items.map((item) => {
+          return new Paragraph({
+            children: [
+              new TextRun({
+                text: item.text,
+                strike: item.completed,
+              }),
+            ],
+          });
+        }),
+        width: {
+          size: 85,
+          type: WidthType.PERCENTAGE,
+        },
+        margins: CalendarCellMargins,
+      }),
+    ],
+  });
+};
+
+const makeCalendar = (calendar: Calendar): (Paragraph | Table)[] => {
+  return [
+    new Paragraph({
+      children: [new TextRun("Board Calendar Items")],
+      style: "CalendarHeader",
+    }),
+    new Table({
+      rows: calendar.map(makeMonthTableRow),
+      width: {
+        size: 100,
+        type: WidthType.PERCENTAGE,
+      },
+    }),
   ];
 };
 
@@ -297,6 +348,8 @@ export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
           emptyLine(),
           ...attendanceSection(session.metadata),
           ...makeCallToOrderParagraph(session),
+          ...makeCalendar(session.calendar),
+          emptyLine(),
           ...session.topics.flatMap((topic) => [
             makeTopicHeader(topic),
             ...makeTopicBody(topic),

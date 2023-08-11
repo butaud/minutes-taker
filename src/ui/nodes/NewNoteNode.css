@@ -22,8 +22,21 @@ button.newNote:first-child {
 
 button.newNote:hover {
   border: 1px solid #000;
+}
+
+button.newNote.text:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+button.newNote.motion:hover {
   border-color: var(--color-secondary);
   color: var(--color-secondary);
+}
+
+button.newNote.actionItem:hover {
+  border-color: var(--color-tertiary);
+  color: var(--color-tertiary);
 }
 
 button.newNote i {

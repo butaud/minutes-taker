@@ -38,6 +38,18 @@ export const Styles: IStylesOptions = {
   },
   paragraphStyles: [
     {
+      id: "CalendarHeader",
+      name: "Calendar Header",
+      run: {
+        bold: true,
+      },
+      paragraph: {
+        spacing: {
+          before: 200,
+        },
+      },
+    },
+    {
       id: "MotionInternal",
       name: "Motion Internal Line",
       paragraph: {
@@ -116,4 +128,12 @@ export const TopicHeaderCellMargins: ITableCellOptions["margins"] = {
   bottom: 100,
   left: 200,
   right: 200,
+};
+
+export const CalendarCellMargins: ITableCellOptions["margins"] = {
+  marginUnitType: WidthType.DXA,
+  top: 10,
+  bottom: 10,
+  left: 75,
+  right: 75,
 };

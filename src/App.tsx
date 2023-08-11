@@ -41,6 +41,30 @@ const fakeSession: Session = {
     title: "Board Meeting",
     subtitle: "Executive Session",
   },
+  calendar: [
+    {
+      month: "June",
+      items: [
+        {
+          text: "Attend Graduation Ceremony",
+          completed: true,
+        },
+        {
+          text: "Review Annual Performance",
+          completed: false,
+        },
+      ],
+    },
+    {
+      month: "July",
+      items: [
+        {
+          text: "Plan Board Retreat",
+          completed: false,
+        },
+      ],
+    },
+  ],
   topics: [
     {
       title: "Call to Order",
@@ -92,6 +116,13 @@ const fakeSession: Session = {
   ],
 };
 const store = new SessionStore(fakeSession);
+
+// make this available in JS console for HAX
+declare global {
+  var __sessionStore: SessionStore;
+}
+globalThis.__sessionStore = store;
+
 function App() {
   const [session, setSession] = useState<StoredSession | undefined>(undefined);
   const [personList, setPersonList] = useState<readonly StoredPerson[]>([]);

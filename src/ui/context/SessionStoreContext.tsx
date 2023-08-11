@@ -14,8 +14,10 @@ const SessionContext = createContext<SessionContextType>({
       location: "",
       startTime: new Date(),
       title: "",
+      subtitle: "",
       organization: "",
     },
+    calendar: [],
     topics: [],
   }),
 });

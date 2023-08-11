@@ -1,3 +1,9 @@
 .ainn-text-input {
   width: 40%;
 }
+
+form.actionItem {
+  border: 1px solid var(--color-tertiary);
+  border-radius: 5px;
+  padding: 5px;
+}

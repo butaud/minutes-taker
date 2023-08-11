@@ -1,3 +1,9 @@
 .tnn-input {
   width: 80%;
 }
+
+form.text i {
+  font-size: 20px;
+  vertical-align: middle;
+  color: var(--color-primary);
+}

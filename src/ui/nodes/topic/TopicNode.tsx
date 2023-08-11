@@ -1,7 +1,7 @@
 import "./TopicNode.css";
 import { SpeakerReference } from "../../controls/SpeakerReference";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
-import { useCallback, useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { StoredPerson, StoredTopic } from "../../../store/SessionStore";
 import { OptionalPersonSelector } from "../../controls/PersonSelector";
@@ -87,23 +87,18 @@ const TopicDisplay: React.FC<TopicDisplayProps> = ({
       <TopicHeaderDisplay topic={topic} onEdit={onEdit} onDelete={onDelete} />
       <ul>
         {topic.notes.map((note, index) => (
-          <>
+          <Fragment key={note.id}>
             {isInserting && (
               <NewNoteNode
                 topicId={topic.id}
                 alwaysExpanded={false}
-                key={`newNote-${topic.id}-${index}`}
                 beforeIndex={index}
               />
             )}
             <NoteNode key={note.id} note={note} />
-          </>
+          </Fragment>
         ))}
-        <NewNoteNode
-          key={`newNote-${topic.id}-end`}
-          topicId={topic.id}
-          alwaysExpanded
-        />
+        <NewNoteNode topicId={topic.id} alwaysExpanded />
       </ul>
     </>
   );
