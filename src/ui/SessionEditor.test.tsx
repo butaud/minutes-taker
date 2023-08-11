@@ -2499,10 +2499,7 @@ describe("SessionEditor", () => {
     });
 
     it("links to the committee doc if it exists", () => {
-      sessionStore.updateMetadata({
-        ...session.metadata,
-        committeeDocUrl: "https://example.com",
-      });
+      sessionStore.updateCommitteeDocUrl("https://example.com");
 
       render(<SessionEditor session={sessionStore.session} />);
 

@@ -349,6 +349,12 @@ export class SessionStore {
     });
   };
 
+  updateCommitteeDocUrl = (committeeDocUrl: string | undefined) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.committeeDocUrl = committeeDocUrl;
+    });
+  };
+
   addMemberPresent = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersPresent.push({ ...member, id: this.personId++ });
