@@ -3027,6 +3027,351 @@ describe("SessionEditor", () => {
     });
   });
 
+  describe.only("listed action items", () => {
+    it("lists deferred action items", () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item 1",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: true,
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item 2",
+        dueDate: new Date("2021-02-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      const header = screen.getByText("Carried Forward Action Items");
+      const actionItem1 = screen.getByText(
+        getByTextContent("Mr. Jones to Test Action Item 1 by 1/1/2021. (Done)")
+      );
+      const actionItem2 = screen.getByText(
+        getByTextContent(
+          "Mr. Jones to Test Action Item 2 by 2/1/2021. (Carried Forward)"
+        )
+      );
+      expect(header).toPrecede(actionItem1);
+      expect(actionItem1).toPrecede(actionItem2);
+    });
+
+    it("lists session action items", () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "actionItem",
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
+        dueDate: new Date("2021-01-01"),
+        text: "Test Action Item",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      const header = screen.getByText("New Action Items");
+      const actionItem = screen.getByText(
+        getByTextContent("Test User to Test Action Item by 1/1/2021.")
+      );
+      const topicNote = screen.getByText("see Test Topic");
+      expect(header).toPrecede(actionItem);
+      expect(actionItem).toPrecede(topicNote);
+    });
+
+    it("allows adding a new deferred action item", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+      await user.type(
+        screen.getByLabelText("Action item text"),
+        "Test Action Item"
+      );
+      await user.selectOptions(screen.getByLabelText("Assignee"), "Test User");
+      await user.type(screen.getByLabelText("Due date"), "1/1/2021");
+      fireEvent.click(screen.getByLabelText("Completed"));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent("Mr. User to Test Action Item by 1/1/2021. (Done)")
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows removing a deferred action item", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item 1",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: true,
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item 2",
+        dueDate: new Date("2021-02-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item 1 by 1/1/2021. (Done)"
+          )
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.queryByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item 1 by 1/1/2021. (Done)"
+          )
+        )
+      ).not.toBeInTheDocument();
+
+      expect(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item 2 by 2/1/2021. (Carried Forward)"
+          )
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("does not allow editing a session action item", async () => {
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "actionItem",
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
+        dueDate: new Date("2021-01-01"),
+        text: "Test Action Item",
+      });
+
+      render(<SessionEditor session={sessionStore.session} />);
+
+      await userEvent.hover(
+        screen.getByText(
+          getByTextContent("Test User to Test Action Item by 1/1/2021.")
+        )
+      );
+
+      expect(
+        screen.queryByRole("button", { name: "Edit" })
+      ).not.toBeInTheDocument();
+    });
+
+    it("allows editing a deferred action item assignee", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      personList = sessionStore.allPeople;
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.selectOptions(screen.getByLabelText("Assignee"), "Tom Smith");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Smith to Test Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing a deferred action item due date", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.type(screen.getByLabelText("Due date"), "2/1/2021");
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item by 2/1/2021. (Carried Forward)"
+          )
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing a deferred action item text", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await user.clear(screen.getByLabelText("Action item text"));
+      await user.type(
+        screen.getByLabelText("Action item text"),
+        "Updated Action Item"
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Updated Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("allows editing a deferred action item status", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addDeferredActionItem({
+        text: "Test Action Item",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      await user.hover(
+        screen.getByText(
+          getByTextContent(
+            "Mr. Jones to Test Action Item by 1/1/2021. (Carried Forward)"
+          )
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+      fireEvent.click(screen.getByLabelText("Completed"));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(
+        screen.getByText(
+          getByTextContent("Mr. Jones to Test Action Item by 1/1/2021. (Done)")
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
   describe("overall", () => {
     it("allows undoing changes", async () => {
       const user = userEvent.setup();
