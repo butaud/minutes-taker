@@ -39,6 +39,12 @@ jobs:
         with:
           node-version: 18
           cache: 'yarn'
+      - name: Install submodule
+        run: yarn
+        working-directory: ./packages/minutes-model
+      - name: Build submodule
+        run: yarn build
+        working-directory: ./packages/minutes-model
       - name: Install dependencies
         run: yarn
       - name: Build
