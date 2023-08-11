@@ -1,4 +1,4 @@
-import { Person } from "minutes-model";
+import { Person, PersonTitle } from "minutes-model";
 import "./AttendanceNode.css";
 import { useState } from "react";
 import { NonFormNodeControls } from "../../controls/NodeControls";
@@ -85,7 +85,7 @@ const NewPerson: React.FC<NewPersonProps> = ({
     const [firstName, lastName] = name.split(" ");
     if (firstName && lastName) {
       setErrorMessage(undefined);
-      addPerson({ firstName, lastName });
+      addPerson({ title: title as PersonTitle, firstName, lastName });
       setTitle("Mr.");
       setName("");
     } else {

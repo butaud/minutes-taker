@@ -12,7 +12,7 @@ export const SpeakerReference: React.FC<SpeakerReferenceProps> = ({
 }) => {
   return (
     <span className={emphasis ? "speaker-em" : "speaker"}>
-      Mr. {speaker.lastName}
+      {speaker.title} {speaker.lastName}
     </span>
   );
 };

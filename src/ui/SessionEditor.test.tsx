@@ -185,13 +185,21 @@ describe("SessionEditor", () => {
       );
       expect(screen.getByText("Members in attendance:")).toBeInTheDocument();
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Smith",
+      });
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(
         screen.getByText(getByTextContent("Members in attendance: Smith"))
       ).toBeInTheDocument();
 
-      sessionStore.addMemberPresent({ firstName: "Joe", lastName: "Williams" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Williams",
+      });
       rerender(<SessionEditor session={sessionStore.session} />);
       expect(
         screen.getByText(
@@ -209,6 +217,7 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
 
       sessionStore.addMemberAbsent({
+        title: "Mr.",
         firstName: "Bob",
         lastName: "Smith",
       });
@@ -218,6 +227,7 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
 
       sessionStore.addMemberAbsent({
+        title: "Mr.",
         firstName: "Joe",
         lastName: "Williams",
       });
@@ -236,6 +246,7 @@ describe("SessionEditor", () => {
       expect(screen.getByText("Administration:")).toBeInTheDocument();
 
       sessionStore.addAdministrationPresent({
+        title: "Mr.",
         firstName: "Bob",
         lastName: "Smith",
       });
@@ -245,6 +256,7 @@ describe("SessionEditor", () => {
       ).toBeInTheDocument();
 
       sessionStore.addAdministrationPresent({
+        title: "Mr.",
         firstName: "Joe",
         lastName: "Williams",
       });
@@ -299,7 +311,11 @@ describe("SessionEditor", () => {
     it("allows removing members from attendance", async () => {
       expect.assertions(1);
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
 
       const user = userEvent.setup();
       const { rerender } = render(
@@ -324,7 +340,11 @@ describe("SessionEditor", () => {
     it("doesn't allow removing members from attendance if they are referenced in a note", async () => {
       expect.assertions(1);
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date(),
@@ -333,7 +353,7 @@ describe("SessionEditor", () => {
       const testTopicId = sessionStore.session.topics[0].id;
       sessionStore.addNote(testTopicId, {
         type: "actionItem",
-        assignee: { firstName: "Bob", lastName: "Jones" },
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
         text: "Test Note",
         dueDate: new Date(),
       });
@@ -381,7 +401,11 @@ describe("SessionEditor", () => {
     it("allows removing members from not in attendance", async () => {
       expect.assertions(1);
 
-      sessionStore.addMemberAbsent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberAbsent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
 
       const user = userEvent.setup();
       const { rerender } = render(
@@ -428,6 +452,7 @@ describe("SessionEditor", () => {
       expect.assertions(1);
 
       sessionStore.addAdministrationPresent({
+        title: "Mr.",
         firstName: "Bob",
         lastName: "Jones",
       });
@@ -764,9 +789,13 @@ describe("SessionEditor", () => {
 
   describe("caller", () => {
     it("shows the caller", () => {
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.updateCaller({
-        person: { firstName: "Bob", lastName: "Jones" },
+        person: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
         role: "Test Role",
       });
       render(<SessionEditor session={sessionStore.session} />);
@@ -785,7 +814,11 @@ describe("SessionEditor", () => {
     });
 
     it("allows editing the caller", async () => {
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -809,9 +842,13 @@ describe("SessionEditor", () => {
     });
 
     it("allows removing the caller", async () => {
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.updateCaller({
-        person: { firstName: "Bob", lastName: "Jones" },
+        person: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
         role: "Test Role",
       });
       expect.assertions(1);
@@ -900,16 +937,38 @@ describe("SessionEditor", () => {
     });
 
     it("shows the topic leader if there is one", () => {
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date(),
         durationMinutes: 5,
-        leader: { firstName: "Bob", lastName: "Jones" },
+        leader: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
       });
       render(<SessionEditor session={sessionStore.session} />);
       expect(
         screen.getByText(getByTextContent("Lead by Mr. Jones"))
+      ).toBeInTheDocument();
+    });
+
+    it("shows the correct topic leader title", () => {
+      sessionStore.addMemberPresent({
+        title: "Mrs.",
+        firstName: "Mary",
+        lastName: "Jones",
+      });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+        durationMinutes: 5,
+        leader: { title: "Mrs.", firstName: "Mary", lastName: "Jones" },
+      });
+      render(<SessionEditor session={sessionStore.session} />);
+      expect(
+        screen.getByText(getByTextContent("Lead by Mrs. Jones"))
       ).toBeInTheDocument();
     });
 
@@ -979,7 +1038,11 @@ describe("SessionEditor", () => {
 
     it("allows editing the topic leader", async () => {
       expect.assertions(1);
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date("2020-01-01T12:00:00"),
@@ -1005,12 +1068,16 @@ describe("SessionEditor", () => {
 
     it("allows removing the topic leader", async () => {
       expect.assertions(1);
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
       sessionStore.addTopic({
         title: "Test Topic",
         startTime: new Date("2020-01-01T12:00:00"),
         durationMinutes: 5,
-        leader: { firstName: "Bob", lastName: "Jones" },
+        leader: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
       });
       personList = sessionStore.allPeople;
 
@@ -1411,10 +1478,14 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1434,11 +1505,19 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User2" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User2",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1468,10 +1547,14 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1503,10 +1586,14 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1537,10 +1624,14 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1572,10 +1663,14 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "actionItem",
-        assignee: { firstName: "Test", lastName: "User" },
+        assignee: { title: "Mr.", firstName: "Test", lastName: "User" },
         dueDate: new Date("2021-01-01"),
         text: "Test Action Item",
       });
@@ -1607,7 +1702,11 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
 
       const user = userEvent.setup();
       const { rerender } = render(
@@ -1640,7 +1739,11 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
 
       const user = userEvent.setup();
       render(<SessionEditor session={sessionStore.session} />);
@@ -1662,7 +1765,11 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
 
       const user = userEvent.setup();
       render(<SessionEditor session={sessionStore.session} />);
@@ -1687,7 +1794,11 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
 
       const user = userEvent.setup();
       render(<SessionEditor session={sessionStore.session} />);
@@ -1710,7 +1821,11 @@ describe("SessionEditor", () => {
         title: "Test Topic",
         startTime: new Date(),
       });
-      sessionStore.addMemberPresent({ firstName: "Test", lastName: "User" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Test",
+        lastName: "User",
+      });
 
       const user = userEvent.setup();
       const { rerender } = render(
@@ -1742,13 +1857,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "withdrawn",
       });
@@ -1766,13 +1889,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "withdrawn",
       });
@@ -1790,13 +1921,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "withdrawn",
       });
@@ -1814,13 +1953,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "passed",
         inFavorCount: 2,
@@ -1843,13 +1990,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "passed",
         inFavorCount: 2,
@@ -1870,13 +2025,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "failed",
         inFavorCount: 1,
@@ -1896,13 +2059,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "withdrawn",
         inFavorCount: 2,
@@ -1921,13 +2092,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "tabled",
         inFavorCount: 2,
@@ -1946,13 +2125,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
         inFavorCount: 2,
@@ -1971,14 +2158,26 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
-      sessionStore.addMemberPresent({ firstName: "Joe", lastName: "Brown" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Brown",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2005,14 +2204,26 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
-      sessionStore.addMemberPresent({ firstName: "Joe", lastName: "Brown" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Brown",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2041,13 +2252,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2077,13 +2296,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2108,13 +2335,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "passed",
       });
@@ -2145,13 +2380,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "failed",
       });
@@ -2182,13 +2425,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "withdrawn",
       });
@@ -2209,13 +2460,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "tabled",
       });
@@ -2236,13 +2495,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2263,13 +2530,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2299,13 +2574,21 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       sessionStore.addNote(sessionStore.session.topics[0].id, {
         type: "motion",
-        mover: { firstName: "Bob", lastName: "Jones" },
-        seconder: { firstName: "Tom", lastName: "Smith" },
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mr.", firstName: "Tom", lastName: "Smith" },
         text: "Test Motion",
         outcome: "active",
       });
@@ -2335,8 +2618,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -2365,8 +2656,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -2396,8 +2695,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -2418,8 +2725,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -2440,8 +2755,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 
@@ -2464,8 +2787,16 @@ describe("SessionEditor", () => {
         startTime: new Date(),
       });
 
-      sessionStore.addMemberPresent({ firstName: "Bob", lastName: "Jones" });
-      sessionStore.addMemberPresent({ firstName: "Tom", lastName: "Smith" });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Tom",
+        lastName: "Smith",
+      });
 
       personList = sessionStore.allPeople;
 

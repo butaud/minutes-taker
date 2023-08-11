@@ -609,6 +609,7 @@ export class SessionStore {
   };
 
   private exportPerson = (person: StoredPerson): Person => ({
+    title: person.title,
     firstName: person.firstName,
     lastName: person.lastName,
   });

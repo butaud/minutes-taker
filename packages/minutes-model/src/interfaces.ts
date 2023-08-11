@@ -51,7 +51,10 @@ export type CalendarItem = {
   completed: boolean;
 };
 
+export type PersonTitle = "Mr." | "Mrs." | "Miss";
+
 export type Person = {
+  title: PersonTitle;
   firstName: string;
   lastName: string;
 };

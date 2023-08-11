@@ -11,21 +11,25 @@ import { SessionProvider } from "./ui/context/SessionStoreContext";
 import { PersonListContext } from "./ui/context/PersonListContext";
 
 const boardMember1: Person = {
+  title: "Mr.",
   firstName: "Joe",
   lastName: "Smith",
 };
 
 const boardMember2: Person = {
+  title: "Mr.",
   firstName: "Tom",
   lastName: "Jones",
 };
 
 const boardMember3: Person = {
+  title: "Mr.",
   firstName: "Sam",
   lastName: "Adams",
 };
 
 const headmaster: Person = {
+  title: "Mr.",
   firstName: "Bob",
   lastName: "Baker",
 };

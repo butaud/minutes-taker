@@ -32,7 +32,7 @@ import { isActionItemNote, isTextNote } from "../util/types";
 
 const makeSpeakerReference = (person: Person): TextRun => {
   return new TextRun({
-    text: `Mr. ${person.lastName}`,
+    text: `${person.title} ${person.lastName}`,
     style: "SpeakerReference",
   });
 };
