@@ -34,6 +34,7 @@ const session: Session = {
   calendar: [],
   topics: [],
   committees: [],
+  deferredActionItems: [],
 };
 
 let sessionStore = new SessionStore(session);

@@ -113,7 +113,7 @@ const fakeSession: Session = {
         {
           type: "actionItem",
           assignee: boardMember1,
-          text: "to follow up with the headmaster about the report",
+          text: "follow up with the headmaster about the report",
           dueDate: new Date(),
         },
       ],
@@ -127,6 +127,20 @@ const fakeSession: Session = {
     {
       name: "Finance",
       type: "Headmaster",
+    },
+  ],
+  deferredActionItems: [
+    {
+      text: "clean up the board calendar",
+      assignee: boardMember1,
+      dueDate: new Date(),
+      completed: false,
+    },
+    {
+      text: "clean up the board calendar",
+      assignee: boardMember1,
+      dueDate: new Date(),
+      completed: false,
     },
   ],
 };

@@ -12,6 +12,7 @@ import {
   Calendar,
   CalendarItem,
   Committee,
+  DeferredActionItem,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -79,6 +80,8 @@ export type StoredMotionNote = Omit<
   seconder: StoredPerson;
 };
 export type StoredCommittee = StoredSession["committees"][number];
+export type StoredDeferredActionItem =
+  StoredSession["deferredActionItems"][number];
 
 export class SessionStore {
   private _history: StoredSession[] = [];
@@ -90,6 +93,7 @@ export class SessionStore {
   private noteId = 0;
   private calendarItemId = 0;
   private committeeId = 0;
+  private deferredActionItemId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -110,18 +114,23 @@ export class SessionStore {
       calendar: [],
       topics: [],
       committees: [],
+      deferredActionItems: [],
     };
 
     const metadata = this.convertSessionMetadata(session.metadata);
     const calendar = this.convertSessionCalendar(session.calendar);
     const topics = this.convertTopics(session.topics);
     const committees = this.convertCommittees(session.committees);
+    const deferredActionItems = this.convertDeferredActionItems(
+      session.deferredActionItems
+    );
 
     return {
       metadata,
       calendar,
       topics,
       committees,
+      deferredActionItems,
     };
   }
 
@@ -240,6 +249,16 @@ export class SessionStore {
     return committees.map((committee) => ({
       ...committee,
       id: this.committeeId++,
+    }));
+  }
+
+  private convertDeferredActionItems(
+    deferredActionItems: DeferredActionItem[]
+  ): StoredDeferredActionItem[] {
+    return deferredActionItems.map((deferredActionItem) => ({
+      ...deferredActionItem,
+      id: this.deferredActionItemId++,
+      assignee: this.findPerson(deferredActionItem.assignee),
     }));
   }
 
@@ -668,10 +687,20 @@ export class SessionStore {
     type: committee.type,
   });
 
+  private exportDeferredActionItem = (
+    deferredActionItem: StoredDeferredActionItem
+  ): DeferredActionItem => ({
+    text: deferredActionItem.text,
+    assignee: this.exportPerson(deferredActionItem.assignee),
+    dueDate: deferredActionItem.dueDate,
+    completed: deferredActionItem.completed,
+  });
+
   export = (): Session => {
     const metadata = this._session.metadata;
     const topics = this._session.topics;
     const committees = this._session.committees;
+    const deferredActionItems = this._session.deferredActionItems;
     return {
       metadata: {
         ...metadata,
@@ -684,6 +713,9 @@ export class SessionStore {
       calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
       committees: committees.map(this.exportCommittee),
+      deferredActionItems: deferredActionItems.map(
+        this.exportDeferredActionItem
+      ),
     };
   };
 }

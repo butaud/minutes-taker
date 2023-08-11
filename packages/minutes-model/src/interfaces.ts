@@ -3,6 +3,7 @@ export type Session = {
   calendar: Calendar;
   topics: Topic[];
   committees: Committee[];
+  deferredActionItems: DeferredActionItem[];
 };
 
 export type SessionMetadata = {
@@ -23,6 +24,13 @@ export type CommitteeType = "Board" | "Headmaster";
 export type Committee = {
   name: string;
   type: CommitteeType;
+};
+
+export type DeferredActionItem = {
+  text: string;
+  assignee: Person;
+  dueDate: Date;
+  completed: boolean;
 };
 
 export type CalendarMonth =
