@@ -324,7 +324,14 @@ describe("topics", () => {
     expect(newTopic).toPrecede(existingTopic);
   });
 
-  it("automatically sets a new topic's start time to the current time", async () => {
+  it("automatically sets a new topic's start time to the previous topic's start + duration", async () => {
+    const previousTopicStartTime = new Date("2020-01-01T12:00:00");
+    sessionStore.addTopic({
+      title: "Previous Topic",
+      startTime: previousTopicStartTime,
+      durationMinutes: 5,
+    });
+
     const user = userEvent.setup();
     const { rerender } = render(
       <SessionEditor session={sessionStore.session} />
@@ -335,35 +342,12 @@ describe("topics", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     rerender(<SessionEditor session={sessionStore.session} />);
 
-    const nowTime = new Date();
-    const nowTimeString = nowTime.toLocaleTimeString([], {
+    const expectedStartTime = new Date("2020-01-01T12:05:00");
+    const thisTopicTimeString = expectedStartTime.toLocaleTimeString([], {
       timeStyle: "short",
     });
     expect(
-      screen.getByText(`${nowTimeString} for 5 minutes`)
-    ).toBeInTheDocument();
-  });
-
-  it("automatically sets the previous topic's duration", async () => {
-    const previousTopicStartTime = new Date(
-      new Date().getTime() - 1000 * 60 * 25
-    );
-    sessionStore.addTopic({
-      title: "Previous Topic",
-      startTime: previousTopicStartTime,
-    });
-
-    const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
-    await user.type(screen.getByLabelText("Title"), "Test Topic");
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
-    expect(
-      screen.getByText("for 25 minutes", { exact: false })
+      screen.getByText(`${thisTopicTimeString} for 5 minutes`)
     ).toBeInTheDocument();
   });
 

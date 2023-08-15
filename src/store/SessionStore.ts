@@ -491,14 +491,6 @@ export class SessionStore {
     beforeIndex?: number
   ) => {
     this.produceUpdate((draft) => {
-      // Update the duration on the previous topic
-      if (beforeIndex === undefined && draft.topics.length > 0) {
-        const previousTopic = draft.topics[draft.topics.length - 1];
-        previousTopic.durationMinutes = Math.round(
-          (topic.startTime.getTime() - previousTopic.startTime.getTime()) /
-            60000
-        );
-      }
       const storedTopic = {
         ...topic,
         id: this.db.topicId++,
@@ -540,6 +532,19 @@ export class SessionStore {
         leader: topic.leader,
       };
     });
+  };
+
+  getLastTopicEndTime = () => {
+    const lastTopic =
+      this.db.currentSession.topics[this.db.currentSession.topics.length - 1];
+    if (lastTopic) {
+      const lastTopicDuration = lastTopic.durationMinutes ?? 0;
+      return new Date(
+        lastTopic.startTime.getTime() + lastTopicDuration * 60 * 1000
+      );
+    } else {
+      return undefined;
+    }
   };
 
   addNote = (topicId: number, note: Note, beforeIndex?: number) => {

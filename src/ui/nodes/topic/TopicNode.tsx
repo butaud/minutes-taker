@@ -160,11 +160,15 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
   beforeIndex,
   stopEditing,
 }) => {
+  const sessionStore = useSessionStore();
+  const initialStartTime =
+    sessionStore.getLastTopicEndTime() ??
+    sessionStore.session.metadata.startTime;
+
   const [topicDraft, setTopicDraft] = useState<TopicDraft>(
-    existingTopic ?? { startTime: new Date() }
+    existingTopic ?? { startTime: initialStartTime }
   );
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const sessionStore = useSessionStore();
 
   const handleTitleChange = (newTitle: string) => {
     setTopicDraft({ ...topicDraft, title: newTitle });
