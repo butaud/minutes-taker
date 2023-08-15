@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { SpeakerReference } from "../../controls/SpeakerReference";
-import { StoredMotionNote, StoredPerson } from "../../../store/SessionStore";
+import { StoredMotionNote, StoredPerson } from "../../../store/types";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { PersonSelector } from "../../controls/PersonSelector";
 import "./MotionNoteNode.css";

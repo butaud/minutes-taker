@@ -23,7 +23,7 @@ export const makeEmptySession: () => Session = () => ({
 });
 
 const renderContext = {
-  sessionStore: new SessionStore(makeEmptySession()),
+  sessionStore: new SessionStore(),
 };
 
 const AllProviders = ({ children }: { children: ReactElement }) => (
@@ -38,7 +38,8 @@ export const render = (ui: ReactElement, options?: RenderOptions) =>
   origRender(ui, { wrapper: AllProviders, ...options });
 
 export const resetSessionStore = (overrides?: Partial<Session>) => {
-  const newStore = new SessionStore({ ...makeEmptySession(), ...overrides });
+  const newStore = new SessionStore();
+  newStore.loadSession({ ...makeEmptySession(), ...overrides });
   renderContext.sessionStore = newStore;
   return newStore;
 };

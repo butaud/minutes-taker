@@ -1,4 +1,4 @@
-import { StoredPerson } from "../../store/SessionStore";
+import { StoredPerson } from "../../store/types";
 import { usePersonList } from "../context/PersonListContext";
 
 type PersonSelectorProps = {

@@ -2,7 +2,7 @@ import React, { Fragment, useEffect } from "react";
 import { NewTopicNode, TopicNode } from "./nodes/topic/TopicNode";
 import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
-import { StoredSession } from "../store/SessionStore";
+import { StoredSession } from "../store/types";
 import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
@@ -12,6 +12,7 @@ import { useAsyncReporter } from "./async-reporter-hook";
 import { CalendarNode } from "./nodes/calendar/CalendarNode";
 import { CommitteeSection } from "./nodes/committee/CommitteeSection";
 import { ActionItemsSection } from "./nodes/listed-action-items/ActionItemsSection";
+import { fakeSession } from "./fake-session";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -53,6 +54,9 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           successMessage: "Session exported as docx.",
           failureMessage: "Error saving as docx.",
         });
+      } else if (event.ctrlKey && event.shiftKey && event.key === "F") {
+        event.preventDefault();
+        sessionStore.loadSession(fakeSession);
       }
     };
 

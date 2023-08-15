@@ -3,7 +3,7 @@ import {
   StoredActionItemNote,
   StoredPastActionItem,
   StoredTopic,
-} from "../../../store/SessionStore";
+} from "../../../store/types";
 import "./ActionItemsSection.css";
 import {
   NewPastActionItemNode,

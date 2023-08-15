@@ -1,8 +1,5 @@
 import { FC, useState } from "react";
-import {
-  StoredPastActionItem,
-  StoredPerson,
-} from "../../../store/SessionStore";
+import { StoredPastActionItem, StoredPerson } from "../../../store/types";
 import { SpeakerReference } from "../../controls/SpeakerReference";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";

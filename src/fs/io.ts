@@ -66,18 +66,19 @@ export const loadSession: () => Promise<Session> = async () => {
 
   const file = await handle[0].getFile();
   const json = await file.text();
-  const dateTimeReviver = (_: string, value: string) => {
-    if (typeof value === "string") {
-      const match =
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/.exec(
-          value
-        );
-      if (match) {
-        return new Date(match[0]);
-      }
-    }
-    return value;
-  };
   const session = JSON.parse(json, dateTimeReviver);
   return session;
+};
+
+export const dateTimeReviver = (_: string, value: string) => {
+  if (typeof value === "string") {
+    const match =
+      /[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/.exec(
+        value
+      );
+    if (match) {
+      return new Date(match[0]);
+    }
+  }
+  return value;
 };

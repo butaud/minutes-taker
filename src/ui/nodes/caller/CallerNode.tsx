@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StoredCaller, StoredPerson } from "../../../store/SessionStore";
+import { StoredCaller, StoredPerson } from "../../../store/types";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { SpeakerReference } from "../../controls/SpeakerReference";

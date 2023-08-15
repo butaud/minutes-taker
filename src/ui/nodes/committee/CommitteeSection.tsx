@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StoredCommittee } from "../../../store/SessionStore";
+import { StoredCommittee } from "../../../store/types";
 import { CommitteeEditor } from "./CommitteeEditor";
 import { CommitteeNode } from "./CommitteeNode";
 import "./CommitteeSection.css";

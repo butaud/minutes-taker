@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { StoredActionItemNote } from "../../../store/SessionStore";
+import { StoredActionItemNote } from "../../../store/types";
 import { SpeakerReference } from "../../controls/SpeakerReference";
 
 export const SessionActionItemNode: FC<{

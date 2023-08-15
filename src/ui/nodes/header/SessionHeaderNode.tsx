@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StoredSessionMetadata } from "../../../store/SessionStore";
+import { StoredSessionMetadata } from "../../../store/types";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { useSessionStore } from "../../context/SessionStoreContext";
 

@@ -3,7 +3,7 @@ import "./AttendanceNode.css";
 import { useState } from "react";
 import { NonFormNodeControls } from "../../controls/NodeControls";
 import { useSessionStore } from "../../context/SessionStoreContext";
-import { StoredPerson } from "../../../store/SessionStore";
+import { StoredPerson } from "../../../store/types";
 
 type PersonListProps = {
   title: string;
