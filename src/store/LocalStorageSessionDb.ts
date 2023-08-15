@@ -36,7 +36,7 @@ export class LocalStorageSessionDb implements ISessionDb {
   }
 
   get initialized(): boolean {
-    return parseDefiniteLocalStorageValue("initialized");
+    return !!localStorage.getItem("initialized");
   }
 
   set currentSession(session: StoredSession) {
