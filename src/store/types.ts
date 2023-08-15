@@ -74,3 +74,20 @@ export type StoredMotionNote = Omit<
 };
 export type StoredCommittee = StoredSession["committees"][number];
 export type StoredPastActionItem = StoredSession["pastActionItems"][number];
+
+export const emptySession: StoredSession = {
+  metadata: {
+    startTime: new Date(),
+    membersPresent: [],
+    membersAbsent: [],
+    administrationPresent: [],
+    location: "",
+    organization: "",
+    subtitle: "",
+    title: "",
+  },
+  calendar: [],
+  topics: [],
+  committees: [],
+  pastActionItems: [],
+};

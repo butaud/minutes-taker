@@ -6,22 +6,7 @@ type SessionContextType = {
 };
 
 const SessionContext = createContext<SessionContextType>({
-  sessionStore: new SessionStore({
-    metadata: {
-      membersPresent: [],
-      membersAbsent: [],
-      administrationPresent: [],
-      location: "",
-      startTime: new Date(),
-      title: "",
-      subtitle: "",
-      organization: "",
-    },
-    calendar: [],
-    topics: [],
-    committees: [],
-    pastActionItems: [],
-  }),
+  sessionStore: new SessionStore(),
 });
 
 export const useSessionStore = () => useContext(SessionContext).sessionStore;

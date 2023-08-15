@@ -30,37 +30,19 @@ import {
   StoredTextNote,
   StoredTopic,
 } from "./types";
-import { MemorySessionDb } from "./MemorySessionDb";
+import { LocalStorageSessionDb } from "./LocalStorageSessionDb";
 
 type AttendanceLists = Pick<
   StoredSessionMetadata,
   "membersPresent" | "membersAbsent" | "administrationPresent"
 >;
 
-const emptySession: StoredSession = {
-  metadata: {
-    startTime: new Date(),
-    membersPresent: [],
-    membersAbsent: [],
-    administrationPresent: [],
-    location: "",
-    organization: "",
-    subtitle: "",
-    title: "",
-  },
-  calendar: [],
-  topics: [],
-  committees: [],
-  pastActionItems: [],
-};
-
 export class SessionStore {
   private callbacks: ((session: StoredSession) => void)[] = [];
   private db: ISessionDb;
 
-  constructor(session: Session) {
-    this.db = new MemorySessionDb(emptySession);
-    this.db.currentSession = this.convertSession(session);
+  constructor() {
+    this.db = new LocalStorageSessionDb();
   }
 
   loadSession(session: Session) {
@@ -257,12 +239,12 @@ export class SessionStore {
     isRedo: boolean = false
   ) {
     if (isUndo) {
-      this.db.undoHistory.push(this.db.currentSession);
-      this.db.history.pop();
+      this.db.pushUndoHistory(this.db.currentSession);
+      this.db.popHistory();
     } else {
-      this.db.history.push(this.db.currentSession);
+      this.db.pushHistory(this.db.currentSession);
       if (isRedo) {
-        this.db.undoHistory.pop();
+        this.db.popUndoHistory();
       } else {
         this.db.undoHistory = [];
       }

@@ -1,9 +1,9 @@
 import { ISessionDb } from "./ISessionDb";
-import { StoredSession } from "./types";
+import { StoredSession, emptySession } from "./types";
 
 export class MemorySessionDb implements ISessionDb {
-  history = [];
-  undoHistory = [];
+  history: StoredSession[] = [];
+  undoHistory: StoredSession[] = [];
   currentSession: StoredSession;
   personId = 0;
   topicId = 0;
@@ -12,7 +12,23 @@ export class MemorySessionDb implements ISessionDb {
   committeeId = 0;
   pastActionItemId = 0;
 
-  constructor(session: StoredSession) {
-    this.currentSession = session;
+  constructor() {
+    this.currentSession = emptySession;
+  }
+
+  pushHistory(session: StoredSession) {
+    this.history.push(session);
+  }
+
+  popHistory() {
+    this.history.pop();
+  }
+
+  pushUndoHistory(session: StoredSession) {
+    this.undoHistory.push(session);
+  }
+
+  popUndoHistory() {
+    this.undoHistory.pop();
   }
 }
