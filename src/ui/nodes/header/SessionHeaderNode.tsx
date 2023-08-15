@@ -131,11 +131,19 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
   const handleStartTimeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    const startTime = new Date(event.target.value);
     setSessionHeaderDraft({
       ...sessionHeaderDraft,
-      startTime: new Date(event.target.value),
+      startTime: startTime,
     });
   };
+
+  const adjustedDisplayTime = sessionHeaderDraft.startTime
+    ? new Date(
+        sessionHeaderDraft.startTime.getTime() -
+          sessionHeaderDraft.startTime.getTimezoneOffset() * 60 * 1000
+      )
+    : undefined;
 
   return (
     <FormNodeControls onCancel={handleCancel} onSubmit={handleSubmit}>
@@ -170,7 +178,7 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
         <input
           type="datetime-local"
           aria-label="Start time"
-          value={sessionHeaderDraft.startTime?.toISOString().slice(0, -8)}
+          value={adjustedDisplayTime?.toISOString().slice(0, -8)}
           onChange={handleStartTimeChange}
         />
       </h2>
