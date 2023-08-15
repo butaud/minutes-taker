@@ -118,12 +118,54 @@ export const Styles: IStylesOptions = {
       },
     },
     {
+      id: "ActionItemCarried",
+      name: "Action Item Carried",
+      basedOn: "Normal",
+      quickFormat: true,
+      run: {
+        bold: true,
+        color: "000000",
+      },
+    },
+    {
+      id: "ActionItemDone",
+      name: "Action Item Done",
+      basedOn: "Normal",
+      quickFormat: true,
+      run: {
+        bold: true,
+        color: "9bbb59",
+      },
+    },
+    {
+      id: "ActionItemAdded",
+      name: "Action Item Added",
+      basedOn: "Normal",
+      quickFormat: true,
+      run: {
+        bold: true,
+        color: "4f81bd",
+      },
+    },
+    {
       id: "MotionVotePrefix",
       name: "Motion Vote Prefix",
       basedOn: "Normal",
       quickFormat: true,
       run: {
         bold: true,
+      },
+    },
+    {
+      id: "ActionItemHeader",
+      name: "Action Item Header",
+      basedOn: "Normal",
+      quickFormat: true,
+      run: {
+        bold: true,
+        underline: {
+          color: "000000",
+        },
       },
     },
   ],
