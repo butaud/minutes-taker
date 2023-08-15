@@ -368,8 +368,8 @@ const makeMotionParagraphs = (note: MotionNote): Paragraph[] => {
   return motionParagraphs;
 };
 
-const makeTopicBody = (topic: Topic): Paragraph[] =>
-  topic.notes.flatMap((note) => {
+const makeTopicBody = (topic: Topic): Paragraph[] => {
+  const noteParagraphs = topic.notes.flatMap((note) => {
     if (isTextNote(note)) {
       return makeTextNoteParagraphs(note);
     } else if (isActionItemNote(note)) {
@@ -378,6 +378,12 @@ const makeTopicBody = (topic: Topic): Paragraph[] =>
       return makeMotionParagraphs(note);
     }
   });
+  if (noteParagraphs.length === 0) {
+    return [emptyLine()];
+  } else {
+    return noteParagraphs;
+  }
+};
 
 const makeCommitteeBulletPoint = (committee: Committee): Paragraph => {
   return new Paragraph({
