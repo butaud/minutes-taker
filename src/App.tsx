@@ -134,10 +134,10 @@ const fakeSession: Session = {
       text: "clean up the board calendar",
       assignee: boardMember1,
       dueDate: new Date(),
-      completed: false,
+      completed: true,
     },
     {
-      text: "clean up the board calendar",
+      text: "create a committee report",
       assignee: boardMember1,
       dueDate: new Date(),
       completed: false,

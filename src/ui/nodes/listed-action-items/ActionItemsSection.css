@@ -1,0 +1,48 @@
+.actionItems h3 {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.actionItems li {
+  list-style-type: disc;
+  list-style-position: inside;
+  padding-left: 10px;
+  overflow: hidden;
+}
+
+.actionItems ul.past li:last-child {
+  list-style-type: none;
+}
+
+.actionItems ul.past li:last-child button {
+  padding: 5px;
+  margin-left: 10px;
+  color: black;
+  display: inline-flex;
+  font-size: small;
+  transition:
+    border-color 0.25s,
+    color 0.25s;
+}
+
+.actionItems ul.past li:last-child button i {
+  font-size: medium;
+}
+
+.actionItems form {
+  display: flex;
+}
+
+.actionItems form input {
+  margin: 0 8px;
+}
+
+.actionItems form input[type="text"] {
+  width: 40%;
+}
+
+.actionItems form select {
+  margin-right: 8px;
+}

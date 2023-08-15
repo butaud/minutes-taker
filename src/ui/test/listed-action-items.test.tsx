@@ -7,6 +7,11 @@ import { getByTextContent } from "../../test/matchers";
 
 let sessionStore: SessionStore;
 
+const findListItemByTextContent = (textContent: string) => {
+  const allListItems = screen.getAllByRole("listitem");
+  return allListItems.find((listitem) => listitem.textContent === textContent);
+};
+
 const getListItemByTextContent = (textContent: string) => {
   const allListItems = screen.getAllByRole("listitem");
   const found = allListItems.find(
@@ -105,7 +110,9 @@ describe("listed action items", () => {
       "Test Action Item"
     );
     await user.selectOptions(screen.getByLabelText("Assignee"), "Test User");
-    await user.type(screen.getByLabelText("Due date"), "1/1/21");
+    fireEvent.change(screen.getByLabelText("Due date"), {
+      target: { value: "2021-01-01" },
+    });
     fireEvent.click(screen.getByLabelText("Completed"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
@@ -148,11 +155,12 @@ describe("listed action items", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
-      getListItemByTextContent(
+      findListItemByTextContent(
         "Mr. Jones to Test Action Item 1 by 1/1/21. (Done)"
       )
-    ).not.toBeInTheDocument();
+    ).toBeUndefined();
 
     expect(
       getListItemByTextContent(
@@ -182,7 +190,7 @@ describe("listed action items", () => {
 
     await userEvent.hover(
       screen.getByText(
-        getByTextContent("Test User to Test Action Item by 1/1/21.")
+        getByTextContent("Mr. User to Test Action Item by 1/1/21.")
       )
     );
 
@@ -262,7 +270,9 @@ describe("listed action items", () => {
       )
     );
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-    await user.type(screen.getByLabelText("Due date"), "2/1/21.");
+    fireEvent.change(screen.getByLabelText("Due date"), {
+      target: { value: "2021-02-01" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     rerender(<SessionEditor session={sessionStore.session} />);
