@@ -12,6 +12,7 @@ import {
   Calendar,
   CalendarItem,
   Committee,
+  PastActionItem,
 } from "minutes-model";
 import { produce, Immutable, Draft } from "immer";
 
@@ -79,6 +80,7 @@ export type StoredMotionNote = Omit<
   seconder: StoredPerson;
 };
 export type StoredCommittee = StoredSession["committees"][number];
+export type StoredPastActionItem = StoredSession["pastActionItems"][number];
 
 export class SessionStore {
   private _history: StoredSession[] = [];
@@ -90,6 +92,7 @@ export class SessionStore {
   private noteId = 0;
   private calendarItemId = 0;
   private committeeId = 0;
+  private pastActionItemId = 0;
 
   constructor(session: Session) {
     this._session = this.convertSession(session);
@@ -110,18 +113,23 @@ export class SessionStore {
       calendar: [],
       topics: [],
       committees: [],
+      pastActionItems: [],
     };
 
     const metadata = this.convertSessionMetadata(session.metadata);
     const calendar = this.convertSessionCalendar(session.calendar);
     const topics = this.convertTopics(session.topics);
     const committees = this.convertCommittees(session.committees);
+    const pastActionItems = this.convertPastActionItems(
+      session.pastActionItems
+    );
 
     return {
       metadata,
       calendar,
       topics,
       committees,
+      pastActionItems,
     };
   }
 
@@ -240,6 +248,16 @@ export class SessionStore {
     return committees.map((committee) => ({
       ...committee,
       id: this.committeeId++,
+    }));
+  }
+
+  private convertPastActionItems(
+    pastActionItems: PastActionItem[]
+  ): StoredPastActionItem[] {
+    return pastActionItems.map((pastActionItem) => ({
+      ...pastActionItem,
+      id: this.pastActionItemId++,
+      assignee: this.findPerson(pastActionItem.assignee),
     }));
   }
 
@@ -608,6 +626,36 @@ export class SessionStore {
     });
   };
 
+  addPastActionItem = (item: PastActionItem) => {
+    this.produceUpdate((draft) => {
+      draft.pastActionItems.push({
+        ...item,
+        id: this.pastActionItemId++,
+        assignee: this.findPerson(item.assignee),
+      });
+    });
+  };
+
+  removePastActionItem = (item: StoredPastActionItem) => {
+    this.produceUpdate((draft) => {
+      draft.pastActionItems = draft.pastActionItems.filter(
+        (i) => i.id !== item.id
+      );
+    });
+  };
+
+  updatePastActionItem = (item: StoredPastActionItem) => {
+    this.produceUpdate((draft) => {
+      const existing = draft.pastActionItems.find((i) => i.id === item.id);
+      if (existing) {
+        existing.text = item.text;
+        existing.assignee = item.assignee;
+        existing.dueDate = item.dueDate;
+        existing.completed = item.completed;
+      }
+    });
+  };
+
   private exportPerson = (person: StoredPerson): Person => ({
     title: person.title,
     firstName: person.firstName,
@@ -668,10 +716,20 @@ export class SessionStore {
     type: committee.type,
   });
 
+  private exportPastActionItem = (
+    pastActionItem: StoredPastActionItem
+  ): PastActionItem => ({
+    text: pastActionItem.text,
+    assignee: this.exportPerson(pastActionItem.assignee),
+    dueDate: pastActionItem.dueDate,
+    completed: pastActionItem.completed,
+  });
+
   export = (): Session => {
     const metadata = this._session.metadata;
     const topics = this._session.topics;
     const committees = this._session.committees;
+    const pastActionItems = this._session.pastActionItems;
     return {
       metadata: {
         ...metadata,
@@ -684,6 +742,7 @@ export class SessionStore {
       calendar: this.exportCalendar(this._session.calendar),
       topics: topics.map(this.exportTopic),
       committees: committees.map(this.exportCommittee),
+      pastActionItems: pastActionItems.map(this.exportPastActionItem),
     };
   };
 }

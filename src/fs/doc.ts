@@ -16,6 +16,7 @@ import {
   CalendarMonthEntry,
   Committee,
   MotionNote,
+  PastActionItem,
   Person,
   Session,
   SessionMetadata,
@@ -222,18 +223,60 @@ const makeTextNoteParagraphs = (note: TextNote): Paragraph[] => [
   }),
 ];
 
+type ActionItemNoteOrPastActionItem = {
+  assignee: Person;
+  text: string;
+  dueDate: Date;
+  completed?: boolean;
+};
+const makeActionItemTextRuns = (
+  actionItem: ActionItemNoteOrPastActionItem,
+  showStatus: boolean
+): TextRun[] => {
+  const textRuns = [
+    new TextRun({
+      text: "Action item: ",
+      style: "ActionItemPrefix",
+    }),
+    makeSpeakerReference(actionItem.assignee),
+    new TextRun({
+      text: ` ${actionItem.text} by ${actionItem.dueDate.toLocaleDateString(
+        "en-US",
+        { dateStyle: "short", timeZone: "UTC" }
+      )}.`,
+    }),
+  ];
+
+  if (showStatus) {
+    if (actionItem.completed === false) {
+      textRuns.push(
+        new TextRun({
+          text: " (Carried forward)",
+          style: "ActionItemCarried",
+        })
+      );
+    } else if (actionItem.completed === true) {
+      textRuns.push(
+        new TextRun({
+          text: " (Done)",
+          style: "ActionItemDone",
+        })
+      );
+    } else {
+      textRuns.push(
+        new TextRun({
+          text: " (Added)",
+          style: "ActionItemAdded",
+        })
+      );
+    }
+  }
+  return textRuns;
+};
+
 const makeActionItemParagraphs = (note: ActionItemNote): Paragraph[] => [
   new Paragraph({
-    children: [
-      new TextRun({
-        text: "Action item: ",
-        style: "ActionItemPrefix",
-      }),
-      makeSpeakerReference(note.assignee),
-      new TextRun({
-        text: ` ${note.text}`,
-      }),
-    ],
+    children: makeActionItemTextRuns(note, false),
     style: "NoteFinalLine",
   }),
 ];
@@ -371,6 +414,38 @@ const makeCommitteesSection = (
   ];
 };
 
+const makeListedActionItemBulletPoint = (
+  actionItem: ActionItemNote | PastActionItem
+): Paragraph => {
+  return new Paragraph({
+    children: makeActionItemTextRuns(actionItem, true),
+    bullet: {
+      level: 0,
+    },
+  });
+};
+
+const makeListedActionItemParagraphs = (
+  topics: Topic[],
+  pastActionItems: PastActionItem[]
+): Paragraph[] => {
+  const sessionActionItems = topics.flatMap((topic) =>
+    topic.notes.filter(isActionItemNote)
+  );
+  const allActionItems = [...sessionActionItems, ...pastActionItems].sort(
+    (a, b) => a.dueDate.getTime() - b.dueDate.getTime()
+  );
+  return [
+    new Paragraph({
+      children: [
+        new TextRun({ text: "Action Items:", style: "ActionItemHeader" }),
+        new TextRun(" (New and carried forward from previous meetings)"),
+      ],
+    }),
+    ...allActionItems.map(makeListedActionItemBulletPoint),
+  ];
+};
+
 const emptyLine = () => new Paragraph({ children: [new TextRun("")] });
 
 export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
@@ -394,6 +469,11 @@ export const exportSessionToDocx: (session: Session) => Promise<Blob> = (
           ...makeCommitteesSection(
             session.committees,
             session.metadata.committeeDocUrl
+          ),
+          emptyLine(),
+          ...makeListedActionItemParagraphs(
+            session.topics,
+            session.pastActionItems
           ),
         ],
       },

@@ -11,6 +11,7 @@ import { CallerNode } from "./nodes/caller/CallerNode";
 import { useAsyncReporter } from "./async-reporter-hook";
 import { CalendarNode } from "./nodes/calendar/CalendarNode";
 import { CommitteeSection } from "./nodes/committee/CommitteeSection";
+import { ActionItemsSection } from "./nodes/listed-action-items/ActionItemsSection";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -90,6 +91,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         <CommitteeSection
           committees={session.committees}
           committeeDocUrl={session.metadata.committeeDocUrl}
+        />
+        <ActionItemsSection
+          pastActionItems={session.pastActionItems}
+          topics={session.topics}
         />
       </div>
     </InsertingContext.Provider>

@@ -50,7 +50,11 @@ export const ActionItemNoteDisplay: React.FC<ActionItemNoteDisplayProps> = ({
         <em>Action item:</em>{" "}
         <SpeakerReference speaker={note.assignee} emphasis /> to {note.text}{" "}
         {note.dueDate &&
-          "by " + note.dueDate.toLocaleDateString("en-US", { timeZone: "UTC" })}
+          "by " +
+            note.dueDate.toLocaleDateString("en-US", {
+              dateStyle: "short",
+              timeZone: "UTC",
+            })}
         .
       </p>
     </NodeControls>
@@ -151,13 +155,16 @@ export const ActionItemNoteEditor: React.FC<ActionItemNoteEditorProps> = ({
         onChange={handleAssigneeChange}
         ariaLabel="Assignee"
       />
-      <input
-        aria-label="Action item text"
-        className="ainn-text-input"
-        type="text"
-        value={text ?? ""}
-        onChange={handleTextChange}
-      />
+      <label>
+        to:
+        <input
+          aria-label="Action item text"
+          className="ainn-text-input"
+          type="text"
+          value={text ?? ""}
+          onChange={handleTextChange}
+        />
+      </label>
       <input
         aria-label="Action item due date"
         type="date"
