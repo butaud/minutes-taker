@@ -3,7 +3,7 @@ import { SpeakerReference } from "../../controls/SpeakerReference";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { Fragment, useCallback, useState } from "react";
 import { useSessionStore } from "../../context/SessionStoreContext";
-import { StoredPerson, StoredTopic } from "../../../store/SessionStore";
+import { StoredPerson, StoredTopic } from "../../../store/types";
 import { OptionalPersonSelector } from "../../controls/PersonSelector";
 import { NoteNode } from "../NoteNode";
 import { NewNoteNode } from "../NewNoteNode";

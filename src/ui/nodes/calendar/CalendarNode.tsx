@@ -1,7 +1,4 @@
-import {
-  StoredCalendar,
-  StoredCalendarItem,
-} from "../../../store/SessionStore";
+import { StoredCalendar, StoredCalendarItem } from "../../../store/types";
 import { NonFormNodeControls } from "../../controls/NodeControls";
 import { FC, useState } from "react";
 import { useSessionStore } from "../../context/SessionStoreContext";

@@ -2,13 +2,10 @@ import "./App.css";
 import { Person, Session } from "minutes-model";
 import { SessionEditor } from "./ui/SessionEditor";
 import { useEffect, useState } from "react";
-import {
-  SessionStore,
-  StoredPerson,
-  StoredSession,
-} from "./store/SessionStore";
+import { SessionStore } from "./store/SessionStore";
 import { SessionProvider } from "./ui/context/SessionStoreContext";
 import { PersonListContext } from "./ui/context/PersonListContext";
+import { StoredPerson, StoredSession } from "./store/types";
 
 const boardMember1: Person = {
   title: "Mr.",

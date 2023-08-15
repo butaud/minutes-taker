@@ -4,7 +4,7 @@ import {
   StoredMotionNote,
   StoredNote,
   StoredTextNote,
-} from "../store/SessionStore";
+} from "../store/types";
 
 export const isStoredTextNote = (note: StoredNote): note is StoredTextNote => {
   return note.type === "text";

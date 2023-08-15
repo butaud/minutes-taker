@@ -14,114 +14,81 @@ import {
   Committee,
   PastActionItem,
 } from "minutes-model";
-import { produce, Immutable, Draft } from "immer";
+import { produce, Draft } from "immer";
+import { ISessionDb } from "./ISessionDb";
+import {
+  StoredActionItemNote,
+  StoredCalendar,
+  StoredCalendarItem,
+  StoredCommittee,
+  StoredMotionNote,
+  StoredNote,
+  StoredPastActionItem,
+  StoredPerson,
+  StoredSession,
+  StoredSessionMetadata,
+  StoredTextNote,
+  StoredTopic,
+} from "./types";
+import { MemorySessionDb } from "./MemorySessionDb";
 
-type WithId<T> = T & { id: number };
+type AttendanceLists = Pick<
+  StoredSessionMetadata,
+  "membersPresent" | "membersAbsent" | "administrationPresent"
+>;
 
-type HaltingTypes =
-  | string
-  | number
-  | boolean
-  | bigint
-  | symbol
-  | null
-  | undefined
-  | Function
-  | Date;
-
-type AddIdToArrayTypes<T, SpecialIdTypes = never> = {
-  [K in keyof T]: T[K] extends Array<infer Item>
-    ? Array<WithId<AddIdToArrayTypes<Item, SpecialIdTypes>>>
-    : T[K] extends SpecialIdTypes
-    ? WithId<T[K]>
-    : T[K] extends HaltingTypes
-    ? T[K]
-    : AddIdToArrayTypes<T[K], SpecialIdTypes>;
+const emptySession: StoredSession = {
+  metadata: {
+    startTime: new Date(),
+    membersPresent: [],
+    membersAbsent: [],
+    administrationPresent: [],
+    location: "",
+    organization: "",
+    subtitle: "",
+    title: "",
+  },
+  calendar: [],
+  topics: [],
+  committees: [],
+  pastActionItems: [],
 };
-type StoredSessionBeforeTopicLeaderHack = AddIdToArrayTypes<Session, Person>;
-type StoredSessionAfterTopicLeaderHack = Omit<
-  StoredSessionBeforeTopicLeaderHack,
-  "topics"
-> & {
-  topics: (Omit<
-    StoredSessionBeforeTopicLeaderHack["topics"][number],
-    "leader"
-  > & {
-    leader?: StoredPerson;
-  })[];
-};
-type StoredSessionAfterCalendarHack = Omit<
-  StoredSessionAfterTopicLeaderHack,
-  "calendar"
-> & {
-  calendar: StoredCalendarMonthEntry[];
-};
-export type StoredSession = Immutable<StoredSessionAfterCalendarHack>;
-export type StoredSessionMetadata = StoredSession["metadata"];
-export type StoredCalendar = StoredSession["calendar"];
-export type StoredCalendarItem = WithId<CalendarItem>;
-export type StoredCalendarMonthEntry = {
-  month: CalendarMonth;
-  items: StoredCalendarItem[];
-};
-export type StoredCaller = StoredSessionMetadata["caller"];
-export type StoredTopic = StoredSession["topics"][number];
-export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
-export type StoredNote = StoredTopic["notes"][number];
-export type StoredTextNote = WithId<TextNote>;
-export type StoredActionItemNote = Omit<WithId<ActionItemNote>, "assignee"> & {
-  assignee: StoredPerson;
-};
-export type StoredMotionNote = Omit<
-  WithId<MotionNote>,
-  "mover" | "seconder"
-> & {
-  mover: StoredPerson;
-  seconder: StoredPerson;
-};
-export type StoredCommittee = StoredSession["committees"][number];
-export type StoredPastActionItem = StoredSession["pastActionItems"][number];
 
 export class SessionStore {
-  private _history: StoredSession[] = [];
-  private _undoHistory: StoredSession[] = [];
-  private _session: StoredSession;
   private callbacks: ((session: StoredSession) => void)[] = [];
-  private personId = 0;
-  private topicId = 0;
-  private noteId = 0;
-  private calendarItemId = 0;
-  private committeeId = 0;
-  private pastActionItemId = 0;
+  private db: ISessionDb;
 
   constructor(session: Session) {
-    this._session = this.convertSession(session);
+    this.db = new MemorySessionDb(emptySession);
+    this.db.currentSession = this.convertSession(session);
   }
 
   loadSession(session: Session) {
-    this._history = [];
-    this._undoHistory = [];
-    this._session = this.convertSession(session);
-    this.callbacks.forEach((callback) => callback(this._session));
+    this.db.history = [];
+    this.db.undoHistory = [];
+    this.db.currentSession = this.convertSession(session);
+    this.callbacks.forEach((callback) => callback(this.db.currentSession));
   }
 
   private convertSession(session: Session): StoredSession {
     const attendanceLists = this.convertAttendanceLists(session.metadata);
-    // Hack so that we can access the full list of persons when we are converting the rest of the schema.
-    this._session = {
-      metadata: attendanceLists as any,
-      calendar: [],
-      topics: [],
-      committees: [],
-      pastActionItems: [],
-    };
 
-    const metadata = this.convertSessionMetadata(session.metadata);
-    const calendar = this.convertSessionCalendar(session.calendar);
-    const topics = this.convertTopics(session.topics);
-    const committees = this.convertCommittees(session.committees);
+    const metadata = this.convertSessionMetadata(
+      session.metadata,
+      attendanceLists
+    );
+    const calendar = this.convertSessionCalendar(
+      session.calendar,
+      attendanceLists
+    );
+    const topics = this.convertTopics(session.topics, attendanceLists);
+    const committees = this.convertCommittees(
+      session.committees,
+      attendanceLists
+    );
     const pastActionItems = this.convertPastActionItems(
-      session.pastActionItems
+      session.pastActionItems,
+      attendanceLists
     );
 
     return {
@@ -135,14 +102,11 @@ export class SessionStore {
 
   private convertAttendanceLists(
     sessionMetadata: SessionMetadata
-  ): Pick<
-    StoredSessionMetadata,
-    "membersPresent" | "membersAbsent" | "administrationPresent"
-  > {
+  ): AttendanceLists {
     const personListConverter = (people: Person[]) => {
       return people.map((person) => ({
         ...person,
-        id: this.personId++,
+        id: this.db.personId++,
       }));
     };
     return {
@@ -154,8 +118,18 @@ export class SessionStore {
     };
   }
 
-  private findPerson(person: Person): StoredPerson {
-    const found = this.allPeople.find(
+  private findPerson(
+    person: Person,
+    attendanceLists?: AttendanceLists
+  ): StoredPerson {
+    const allPeople = attendanceLists
+      ? [
+          ...attendanceLists.membersPresent,
+          ...attendanceLists.membersAbsent,
+          ...attendanceLists.administrationPresent,
+        ]
+      : this.allPeople;
+    const found = allPeople.find(
       (p) => p.firstName === person.firstName && p.lastName === person.lastName
     );
     if (!found) {
@@ -167,13 +141,12 @@ export class SessionStore {
   }
 
   private convertSessionMetadata(
-    metadata: SessionMetadata
+    metadata: SessionMetadata,
+    attendanceLists: AttendanceLists
   ): StoredSessionMetadata {
     return {
       ...metadata,
-      membersPresent: this.session.metadata.membersPresent,
-      membersAbsent: this.session.metadata.membersAbsent,
-      administrationPresent: this.session.metadata.administrationPresent,
+      ...attendanceLists,
       caller: metadata.caller && {
         ...metadata.caller,
         person: this.findPerson(metadata.caller.person),
@@ -181,11 +154,14 @@ export class SessionStore {
     };
   }
 
-  private convertSessionCalendar(calendar: Calendar): StoredCalendar {
+  private convertSessionCalendar(
+    calendar: Calendar,
+    _attendanceLists: AttendanceLists
+  ): StoredCalendar {
     const calendarItemConverter = (items: CalendarItem[]) => {
       return items.map((item) => ({
         ...item,
-        id: this.calendarItemId++,
+        id: this.db.calendarItemId++,
       }));
     };
     return calendar.map((monthEntry) => {
@@ -199,65 +175,79 @@ export class SessionStore {
   private convertTextNote = (note: TextNote): StoredTextNote => {
     return {
       ...note,
-      id: this.noteId++,
+      id: this.db.noteId++,
     };
   };
 
   private convertActionItemNote = (
-    note: ActionItemNote
+    note: ActionItemNote,
+    attendanceLists?: AttendanceLists
   ): StoredActionItemNote => {
     return {
       ...note,
-      id: this.noteId++,
-      assignee: this.findPerson(note.assignee),
+      id: this.db.noteId++,
+      assignee: this.findPerson(note.assignee, attendanceLists),
     };
   };
 
-  private convertMotionNote = (note: MotionNote): StoredMotionNote => {
+  private convertMotionNote = (
+    note: MotionNote,
+    attendanceLists?: AttendanceLists
+  ): StoredMotionNote => {
     return {
       ...note,
-      id: this.noteId++,
-      mover: this.findPerson(note.mover),
-      seconder: this.findPerson(note.seconder),
+      id: this.db.noteId++,
+      mover: this.findPerson(note.mover, attendanceLists),
+      seconder: this.findPerson(note.seconder, attendanceLists),
     };
   };
 
-  private convertNote = (note: Note): StoredNote => {
+  private convertNote = (
+    note: Note,
+    attendanceLists?: AttendanceLists
+  ): StoredNote => {
     if (note.type === "text") {
       return this.convertTextNote(note);
     } else if (note.type === "actionItem") {
-      return this.convertActionItemNote(note);
+      return this.convertActionItemNote(note, attendanceLists);
     } else {
-      return this.convertMotionNote(note);
+      return this.convertMotionNote(note, attendanceLists);
     }
   };
 
-  private convertTopics(topics: Topic[]): StoredTopic[] {
+  private convertTopics(
+    topics: Topic[],
+    attendanceLists: AttendanceLists
+  ): StoredTopic[] {
     const noteListConverter = (notes: Note[]) => {
-      return notes.map((note) => this.convertNote(note));
+      return notes.map((note) => this.convertNote(note, attendanceLists));
     };
     return topics.map((topic) => ({
       ...topic,
-      id: this.topicId++,
+      id: this.db.topicId++,
       notes: noteListConverter(topic.notes),
-      leader: topic.leader && this.findPerson(topic.leader),
+      leader: topic.leader && this.findPerson(topic.leader, attendanceLists),
     }));
   }
 
-  private convertCommittees(committees: Committee[]): StoredCommittee[] {
+  private convertCommittees(
+    committees: Committee[],
+    _attendanceLists: AttendanceLists
+  ): StoredCommittee[] {
     return committees.map((committee) => ({
       ...committee,
-      id: this.committeeId++,
+      id: this.db.committeeId++,
     }));
   }
 
   private convertPastActionItems(
-    pastActionItems: PastActionItem[]
+    pastActionItems: PastActionItem[],
+    attendanceLists: AttendanceLists
   ): StoredPastActionItem[] {
     return pastActionItems.map((pastActionItem) => ({
       ...pastActionItem,
-      id: this.pastActionItemId++,
-      assignee: this.findPerson(pastActionItem.assignee),
+      id: this.db.pastActionItemId++,
+      assignee: this.findPerson(pastActionItem.assignee, attendanceLists),
     }));
   }
 
@@ -267,32 +257,36 @@ export class SessionStore {
     isRedo: boolean = false
   ) {
     if (isUndo) {
-      this._undoHistory.push(this._session);
-      this._history.pop();
+      this.db.undoHistory.push(this.db.currentSession);
+      this.db.history.pop();
     } else {
-      this._history.push(this._session);
+      this.db.history.push(this.db.currentSession);
       if (isRedo) {
-        this._undoHistory.pop();
+        this.db.undoHistory.pop();
       } else {
-        this._undoHistory = [];
+        this.db.undoHistory = [];
       }
     }
-    this._session = session;
-    this.callbacks.forEach((cb) => cb(this._session));
+    this.db.currentSession = session;
+    this.callbacks.forEach((cb) => cb(this.db.currentSession));
   }
 
   private produceUpdate(update: (draft: Draft<StoredSession>) => void) {
-    this.updateSession(produce(this._session, update));
+    this.updateSession(produce(this.db.currentSession, update));
   }
 
   private throwIfMemberIsReferenced = (person: StoredPerson) => {
-    if (this._session.topics.some((topic) => topic.leader?.id === person.id)) {
+    if (
+      this.db.currentSession.topics.some(
+        (topic) => topic.leader?.id === person.id
+      )
+    ) {
       throw new Error(
         "This person is the leader of a topic and cannot be removed."
       );
     }
     if (
-      this._session.topics.some((topic) =>
+      this.db.currentSession.topics.some((topic) =>
         topic.notes.some(
           (note) =>
             (note.type === "motion" &&
@@ -309,7 +303,7 @@ export class SessionStore {
   };
 
   get session() {
-    return this._session;
+    return this.db.currentSession;
   }
 
   get allPeople(): readonly StoredPerson[] {
@@ -329,15 +323,15 @@ export class SessionStore {
   };
 
   undo = () => {
-    if (this._history.length > 0) {
-      this.updateSession(this._history[this._history.length - 1], true);
+    if (this.db.history.length > 0) {
+      this.updateSession(this.db.history[this.db.history.length - 1], true);
     }
   };
 
   redo = () => {
-    if (this._undoHistory.length > 0) {
+    if (this.db.undoHistory.length > 0) {
       this.updateSession(
-        this._undoHistory[this._undoHistory.length - 1],
+        this.db.undoHistory[this.db.undoHistory.length - 1],
         false,
         true
       );
@@ -375,7 +369,7 @@ export class SessionStore {
 
   addMemberPresent = (member: Person) => {
     this.produceUpdate((draft) => {
-      draft.metadata.membersPresent.push({ ...member, id: this.personId++ });
+      draft.metadata.membersPresent.push({ ...member, id: this.db.personId++ });
     });
   };
 
@@ -402,7 +396,7 @@ export class SessionStore {
 
   addMemberAbsent = (member: Person) => {
     this.produceUpdate((draft) => {
-      draft.metadata.membersAbsent.push({ ...member, id: this.personId++ });
+      draft.metadata.membersAbsent.push({ ...member, id: this.db.personId++ });
     });
   };
 
@@ -431,7 +425,7 @@ export class SessionStore {
     this.produceUpdate((draft) => {
       draft.metadata.administrationPresent.push({
         ...member,
-        id: this.personId++,
+        id: this.db.personId++,
       });
     });
   };
@@ -457,7 +451,7 @@ export class SessionStore {
   };
 
   addCalendarMonth = (month: CalendarMonth, beforeIndex: number) => {
-    if (this._session.calendar.some((m) => m.month === month)) {
+    if (this.db.currentSession.calendar.some((m) => m.month === month)) {
       throw new Error("This month already exists in the calendar.");
     }
     this.produceUpdate((draft) => {
@@ -469,7 +463,7 @@ export class SessionStore {
   };
 
   removeCalendarMonth = (month: CalendarMonth) => {
-    if (!this._session.calendar.some((m) => m.month === month)) {
+    if (!this.db.currentSession.calendar.some((m) => m.month === month)) {
       throw new Error("This month does not exist in the calendar.");
     }
     this.produceUpdate((draft) => {
@@ -478,14 +472,14 @@ export class SessionStore {
   };
 
   addCalendarItem = (month: CalendarMonth, item: CalendarItem) => {
-    if (!this._session.calendar.some((m) => m.month === month)) {
+    if (!this.db.currentSession.calendar.some((m) => m.month === month)) {
       throw new Error("This month does not exist in the calendar.");
     }
     this.produceUpdate((draft) => {
       const index = draft.calendar.findIndex((m) => m.month === month);
       draft.calendar[index].items.push({
         ...item,
-        id: this.calendarItemId++,
+        id: this.db.calendarItemId++,
       });
     });
   };
@@ -525,7 +519,7 @@ export class SessionStore {
       }
       const storedTopic = {
         ...topic,
-        id: this.topicId++,
+        id: this.db.topicId++,
         notes: [],
         leader: topic.leader && this.findPerson(topic.leader),
       };
@@ -533,7 +527,7 @@ export class SessionStore {
       if (beforeIndex === undefined) {
         draft.topics.push({
           ...topic,
-          id: this.topicId++,
+          id: this.db.topicId++,
           notes: [],
           leader: topic.leader && this.findPerson(topic.leader),
         });
@@ -605,7 +599,7 @@ export class SessionStore {
     this.produceUpdate((draft) => {
       draft.committees.push({
         ...committee,
-        id: this.committeeId++,
+        id: this.db.committeeId++,
       });
     });
   };
@@ -630,7 +624,7 @@ export class SessionStore {
     this.produceUpdate((draft) => {
       draft.pastActionItems.push({
         ...item,
-        id: this.pastActionItemId++,
+        id: this.db.pastActionItemId++,
         assignee: this.findPerson(item.assignee),
       });
     });
@@ -726,10 +720,10 @@ export class SessionStore {
   });
 
   export = (): Session => {
-    const metadata = this._session.metadata;
-    const topics = this._session.topics;
-    const committees = this._session.committees;
-    const pastActionItems = this._session.pastActionItems;
+    const metadata = this.db.currentSession.metadata;
+    const topics = this.db.currentSession.topics;
+    const committees = this.db.currentSession.committees;
+    const pastActionItems = this.db.currentSession.pastActionItems;
     return {
       metadata: {
         ...metadata,
@@ -739,7 +733,7 @@ export class SessionStore {
           this.exportPerson
         ),
       },
-      calendar: this.exportCalendar(this._session.calendar),
+      calendar: this.exportCalendar(this.db.currentSession.calendar),
       topics: topics.map(this.exportTopic),
       committees: committees.map(this.exportCommittee),
       pastActionItems: pastActionItems.map(this.exportPastActionItem),

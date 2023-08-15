@@ -243,7 +243,9 @@ describe("action items", () => {
     const { rerender } = render(
       <SessionEditor session={sessionStore.session} />
     );
-    fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
+    );
     await user.selectOptions(screen.getByLabelText("Assignee"), "Test User");
     await user.type(
       screen.getByLabelText("Action item text"),
@@ -276,7 +278,9 @@ describe("action items", () => {
 
     const user = userEvent.setup();
     render(<SessionEditor session={sessionStore.session} />);
-    fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
+    );
     await user.selectOptions(screen.getByLabelText("Assignee"), "Test User");
     fireEvent.change(screen.getByLabelText("Action item due date"), {
       target: { value: "2022-01-01" },
@@ -302,7 +306,9 @@ describe("action items", () => {
 
     const user = userEvent.setup();
     render(<SessionEditor session={sessionStore.session} />);
-    fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
+    );
     await user.type(
       screen.getByLabelText("Action item text"),
       "New Action Item"
@@ -331,7 +337,9 @@ describe("action items", () => {
 
     const user = userEvent.setup();
     render(<SessionEditor session={sessionStore.session} />);
-    fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
+    );
     await user.selectOptions(screen.getByLabelText("Assignee"), "Test User");
     await user.type(
       screen.getByLabelText("Action item text"),
@@ -360,7 +368,9 @@ describe("action items", () => {
     const { rerender } = render(
       <SessionEditor session={sessionStore.session} />
     );
-    fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
+    );
     await user.type(
       screen.getByLabelText("Action item text"),
       "New Action Item"
@@ -373,7 +383,7 @@ describe("action items", () => {
 
     rerender(<SessionEditor session={sessionStore.session} />);
     expect(
-      screen.getByRole("button", { name: "Add Action Item" })
+      screen.getAllByRole("button", { name: "Add Action Item" })[0]
     ).toBeInTheDocument();
     expect(screen.queryByText("Action item:")).not.toBeInTheDocument();
   });

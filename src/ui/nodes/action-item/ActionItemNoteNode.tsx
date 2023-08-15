@@ -3,10 +3,7 @@ import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import { SpeakerReference } from "../../controls/SpeakerReference";
 
 import "./ActionItemNoteNode.css";
-import {
-  StoredActionItemNote,
-  StoredPerson,
-} from "../../../store/SessionStore";
+import { StoredActionItemNote, StoredPerson } from "../../../store/types";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { PersonSelector } from "../../controls/PersonSelector";
 

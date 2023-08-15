@@ -2,7 +2,7 @@ import React, { Fragment, useEffect } from "react";
 import { NewTopicNode, TopicNode } from "./nodes/topic/TopicNode";
 import { AttendanceNode } from "./nodes/attendance/AttendanceNode";
 import "./SessionEditor.css";
-import { StoredSession } from "../store/SessionStore";
+import { StoredSession } from "../store/types";
 import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";

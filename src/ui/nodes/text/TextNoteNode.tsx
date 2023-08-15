@@ -1,7 +1,7 @@
 import { FunctionComponent, useCallback, useState } from "react";
 import { FormNodeControls, NodeControls } from "../../controls/NodeControls";
 import "./TextNoteNode.css";
-import { StoredTextNote } from "../../../store/SessionStore";
+import { StoredTextNote } from "../../../store/types";
 import { useSessionStore } from "../../context/SessionStoreContext";
 
 export const TextNoteNode: React.FC<{ note: StoredTextNote }> = ({ note }) => {

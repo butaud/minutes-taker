@@ -1,7 +1,7 @@
 import { TextNoteNode } from "./text/TextNoteNode";
 import { ActionItemNoteNode } from "./action-item/ActionItemNoteNode";
 import { MotionNoteNode } from "./motion/MotionNoteNode";
-import { StoredNote } from "../../store/SessionStore";
+import { StoredNote } from "../../store/types";
 import {
   isStoredActionItemNote,
   isStoredTextNote,
