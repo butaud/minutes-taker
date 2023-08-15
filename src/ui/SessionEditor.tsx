@@ -13,6 +13,7 @@ import { CalendarNode } from "./nodes/calendar/CalendarNode";
 import { CommitteeSection } from "./nodes/committee/CommitteeSection";
 import { ActionItemsSection } from "./nodes/listed-action-items/ActionItemsSection";
 import { fakeSession } from "./fake-session";
+import { FileMenu } from "./file-menu/FileMenu";
 
 export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   session,
@@ -22,41 +23,55 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   const [isInserting, setIsInserting] = React.useState(false);
   const { report, tryAsyncOperation } = useAsyncReporter();
 
+  const undo = () => sessionStore.undo();
+  const redo = () => sessionStore.redo();
+  const insert = () => setIsInserting((isInserting) => !isInserting);
+  const save = () =>
+    tryAsyncOperation({
+      perform: () => saveSession(sessionStore.export()),
+      successMessage: "Session saved to JSON.",
+      failureMessage: "Error saving session to JSON.",
+    });
+  const load = () =>
+    tryAsyncOperation({
+      perform: async () => {
+        const session = await loadSession();
+        sessionStore.loadSession(session);
+      },
+      successMessage: "Loaded session from JSON.",
+      failureMessage: "Error loading session.",
+    });
+  const exportDocx = () =>
+    tryAsyncOperation({
+      perform: () => saveSessionAsDocx(sessionStore.export()),
+      successMessage: "Session exported as docx.",
+      failureMessage: "Error saving as docx.",
+    });
+  const loadFake = () => sessionStore.loadSession(fakeSession);
+
   useEffect(() => {
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "z") {
-        sessionStore.undo();
+        event.preventDefault();
+        undo();
       } else if (event.ctrlKey && event.key === "y") {
-        sessionStore.redo();
+        event.preventDefault();
+        redo();
       } else if (event.ctrlKey && event.key === "i") {
-        setIsInserting((isInserting) => !isInserting);
+        event.preventDefault();
+        insert();
       } else if (event.ctrlKey && event.key === "s") {
         event.preventDefault();
-        tryAsyncOperation({
-          perform: () => saveSession(sessionStore.export()),
-          successMessage: "Session saved to JSON.",
-          failureMessage: "Error saving session to JSON.",
-        });
+        save();
       } else if (event.ctrlKey && event.key === "o") {
         event.preventDefault();
-        tryAsyncOperation({
-          perform: async () => {
-            const session = await loadSession();
-            sessionStore.loadSession(session);
-          },
-          successMessage: "Loaded session from JSON.",
-          failureMessage: "Error loading session.",
-        });
+        open();
       } else if (event.ctrlKey && event.key === "e") {
         event.preventDefault();
-        tryAsyncOperation({
-          perform: () => saveSessionAsDocx(sessionStore.export()),
-          successMessage: "Session exported as docx.",
-          failureMessage: "Error saving as docx.",
-        });
+        exportDocx();
       } else if (event.ctrlKey && event.shiftKey && event.key === "F") {
         event.preventDefault();
-        sessionStore.loadSession(fakeSession);
+        loadFake();
       }
     };
 
@@ -75,6 +90,15 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
         </p>
       )}
       <div>
+        <FileMenu
+          onExport={exportDocx}
+          onLoad={load}
+          onSave={save}
+          onInsert={insert}
+          onLoadFakeData={loadFake}
+          onRedo={redo}
+          onUndo={undo}
+        />
         <SessionHeaderNode metadata={session.metadata} />
         <AttendanceNode
           present={session.metadata.membersPresent}
