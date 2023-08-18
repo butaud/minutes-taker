@@ -1,8 +1,26 @@
 import { Session } from "minutes-model";
 import { exportSessionToDocx } from "./doc";
+import { getIdb, initializeIdb, setIdb } from "./idb";
 
-const saveContext: { handle?: FileSystemFileHandle } = {
+type SaveContextType = {
+  handle?: FileSystemFileHandle;
+};
+const saveContext: SaveContextType = {
   handle: undefined,
+};
+
+export const initializeIndexedDbBackup = async (): Promise<void> => {
+  await initializeIdb();
+  if (!saveContext.handle) {
+    saveContext.handle = await getIdb<FileSystemFileHandle>();
+  }
+};
+
+const syncHandleToIndexedDb = async () => {
+  if (saveContext.handle) {
+    await initializeIdb();
+    await setIdb(saveContext.handle);
+  }
 };
 
 export const saveSession: (
@@ -25,6 +43,7 @@ export const saveSession: (
       ],
       suggestedName: filename,
     });
+    syncHandleToIndexedDb();
   }
 
   const json = JSON.stringify(session, undefined, 2);

@@ -6,7 +6,12 @@ import { StoredSession } from "../store/types";
 import { useSessionStore } from "./context/SessionStoreContext";
 import { SessionHeaderNode } from "./nodes/header/SessionHeaderNode";
 import { InsertingContext } from "./context/InsertingContext";
-import { loadSession, saveSession, saveSessionAsDocx } from "../fs/io";
+import {
+  initializeIndexedDbBackup,
+  loadSession,
+  saveSession,
+  saveSessionAsDocx,
+} from "../fs/io";
 import { CallerNode } from "./nodes/caller/CallerNode";
 import { useAsyncReporter } from "./async-reporter-hook";
 import { CalendarNode } from "./nodes/calendar/CalendarNode";
@@ -88,6 +93,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [sessionStore]);
+
+  useEffect(() => {
+    initializeIndexedDbBackup();
+  }, []);
 
   return (
     <InsertingContext.Provider value={isInserting}>
