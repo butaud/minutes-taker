@@ -4,6 +4,7 @@ import "./FileMenu.css";
 export type FileMenuProps = {
   onLoadFakeData: () => void;
   onSave: () => void;
+  onSaveAs: () => void;
   onLoad: () => void;
   onExport: () => void;
   onInsert: () => void;
@@ -14,6 +15,7 @@ export type FileMenuProps = {
 export const FileMenu: FC<FileMenuProps> = ({
   onLoadFakeData,
   onSave,
+  onSaveAs,
   onLoad,
   onExport,
   onInsert,
@@ -23,6 +25,7 @@ export const FileMenu: FC<FileMenuProps> = ({
   const [expanded, setExpanded] = useState(false);
   const fileButtons = [
     { label: "Save", action: onSave },
+    { label: "Save as", action: onSaveAs },
     { label: "Load", action: onLoad },
     { label: "Export", action: onExport },
     { label: "Load Fake Data", action: onLoadFakeData },

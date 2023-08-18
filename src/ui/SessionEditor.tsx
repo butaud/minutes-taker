@@ -28,10 +28,17 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   const insert = () => setIsInserting((isInserting) => !isInserting);
   const save = () =>
     tryAsyncOperation({
-      perform: () => saveSession(sessionStore.export()),
+      perform: () => saveSession(sessionStore.export(), true),
       successMessage: "Session saved to JSON.",
       failureMessage: "Error saving session to JSON.",
     });
+  const saveAs = () => {
+    tryAsyncOperation({
+      perform: () => saveSession(sessionStore.export(), false),
+      successMessage: "Session saved to JSON.",
+      failureMessage: "Error saving session to JSON.",
+    });
+  };
   const load = () =>
     tryAsyncOperation({
       perform: async () => {
@@ -94,6 +101,7 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           onExport={exportDocx}
           onLoad={load}
           onSave={save}
+          onSaveAs={saveAs}
           onInsert={insert}
           onLoadFakeData={loadFake}
           onRedo={redo}

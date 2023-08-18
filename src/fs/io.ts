@@ -1,27 +1,35 @@
 import { Session } from "minutes-model";
 import { exportSessionToDocx } from "./doc";
 
-export const saveSession: (session: Session) => Promise<void> = async (
-  session
-) => {
-  const filename = `${session.metadata.organization}-${
-    session.metadata.title
-  }-${session.metadata.startTime.toDateString()}.json`;
+const saveContext: { handle?: FileSystemFileHandle } = {
+  handle: undefined,
+};
+
+export const saveSession: (
+  session: Session,
+  reuseHandle: boolean
+) => Promise<void> = async (session, reuseHandle) => {
+  if (!saveContext.handle || !reuseHandle) {
+    const filename = `${session.metadata.organization}-${
+      session.metadata.title
+    }-${session.metadata.startTime.toDateString()}.json`;
+
+    saveContext.handle = await window.showSaveFilePicker({
+      types: [
+        {
+          description: "JSON File",
+          accept: {
+            "application/json": [".json"],
+          },
+        },
+      ],
+      suggestedName: filename,
+    });
+  }
+
   const json = JSON.stringify(session, undefined, 2);
 
-  const handle = await window.showSaveFilePicker({
-    types: [
-      {
-        description: "JSON File",
-        accept: {
-          "application/json": [".json"],
-        },
-      },
-    ],
-    suggestedName: filename,
-  });
-
-  const writable = await handle.createWritable();
+  const writable = await saveContext.handle.createWritable();
   await writable.write(json);
   await writable.close();
 };
