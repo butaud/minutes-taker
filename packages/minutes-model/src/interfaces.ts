@@ -80,7 +80,7 @@ export type Topic = {
   leader?: Person;
 };
 
-export type Note = TextNote | ActionItemNote | MotionNote;
+export type Note = TextNote | ActionItemNote | MotionNote | LinkNote;
 
 export type TextNote = {
   type: "text";
@@ -103,4 +103,10 @@ export type MotionNote = {
   opposedCount?: number;
   abstainedCount?: number;
   outcome: "passed" | "failed" | "tabled" | "withdrawn" | "active";
+};
+
+export type LinkNote = {
+  type: "link";
+  text: string;
+  url: string;
 };

@@ -17,11 +17,12 @@
   --color-secondary: #9b6a6c;
   --color-tertiary: #8aa8a1;
   --color-background: #cbcbd4;
+  --color-link: #646cff;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-link);
   text-decoration: inherit;
 }
 a:hover {

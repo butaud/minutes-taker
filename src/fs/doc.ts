@@ -15,6 +15,7 @@ import {
   Calendar,
   CalendarMonthEntry,
   Committee,
+  LinkNote,
   MotionNote,
   PastActionItem,
   Person,
@@ -29,7 +30,7 @@ import {
   TopicHeaderCellMargins,
   TopicHeaderCellShading,
 } from "./style";
-import { isActionItemNote, isTextNote } from "../util/types";
+import { isActionItemNote, isLinkNote, isTextNote } from "../util/types";
 
 const makeSpeakerReference = (person: Person): TextRun => {
   return new TextRun({
@@ -223,6 +224,18 @@ const makeTextNoteParagraphs = (note: TextNote): Paragraph[] => [
   }),
 ];
 
+const makeLinkNoteParagraphs = (note: LinkNote): Paragraph[] => [
+  new Paragraph({
+    children: [
+      new ExternalHyperlink({
+        children: [new TextRun({ text: note.text, style: "Hyperlink" })],
+        link: note.url,
+      }),
+    ],
+    style: "NoteFinalLine",
+  }),
+];
+
 type ActionItemNoteOrPastActionItem = {
   assignee: Person;
   text: string;
@@ -374,6 +387,8 @@ const makeTopicBody = (topic: Topic): Paragraph[] => {
       return makeTextNoteParagraphs(note);
     } else if (isActionItemNote(note)) {
       return makeActionItemParagraphs(note);
+    } else if (isLinkNote(note)) {
+      return makeLinkNoteParagraphs(note);
     } else {
       return makeMotionParagraphs(note);
     }

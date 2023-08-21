@@ -6,7 +6,9 @@ import {
   isStoredActionItemNote,
   isStoredTextNote,
   isStoredMotionNote,
+  isStoredLinkNote,
 } from "../../util/types";
+import { LinkNoteNode } from "./link-note/LinkNoteNode";
 
 export const NoteNode: React.FC<{ note: StoredNote }> = ({ note }) => {
   if (isStoredTextNote(note)) {
@@ -15,6 +17,8 @@ export const NoteNode: React.FC<{ note: StoredNote }> = ({ note }) => {
     return <ActionItemNoteNode note={note} />;
   } else if (isStoredMotionNote(note)) {
     return <MotionNoteNode note={note} />;
+  } else if (isStoredLinkNote(note)) {
+    return <LinkNoteNode note={note} />;
   } else {
     return null;
   }

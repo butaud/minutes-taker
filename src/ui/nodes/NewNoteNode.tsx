@@ -4,6 +4,7 @@ import { TextNoteEditor } from "./text/TextNoteNode";
 import { ActionItemNoteEditor } from "./action-item/ActionItemNoteNode";
 import { MotionNoteEditor } from "./motion/MotionNoteNode";
 import { InlineNewNodeButton } from "../controls/InlineNewNodeButton";
+import { LinkNoteEditor } from "./link-note/LinkNoteNode";
 
 export type NewNoteNodeProps = {
   topicId: number;
@@ -16,7 +17,9 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   alwaysExpanded,
 }) => {
   const [isExpanded, setExpanded] = useState(alwaysExpanded);
-  const [addingType, setAddingType] = useState<"text" | "motion" | "action">();
+  const [addingType, setAddingType] = useState<
+    "text" | "motion" | "action" | "link"
+  >();
 
   const onAddTextNote = () => {
     setAddingType("text");
@@ -26,6 +29,9 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
   };
   const onAddActionItem = () => {
     setAddingType("action");
+  };
+  const onAddLinkNote = () => {
+    setAddingType("link");
   };
   const stopAdding = () => {
     setAddingType(undefined);
@@ -57,6 +63,11 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
           className="text"
         />
         <NewNoteButton
+          onClick={onAddLinkNote}
+          label="Add Link Note"
+          className="link"
+        />
+        <NewNoteButton
           onClick={onAddMotion}
           label="Add Motion"
           className="motion"
@@ -73,6 +84,14 @@ export const NewNoteNode: FC<NewNoteNodeProps> = ({
     case "text":
       return (
         <TextNoteEditor
+          stopEditing={stopAdding}
+          topicId={topicId}
+          beforeIndex={beforeIndex}
+        />
+      );
+    case "link":
+      return (
+        <LinkNoteEditor
           stopEditing={stopAdding}
           topicId={topicId}
           beforeIndex={beforeIndex}
