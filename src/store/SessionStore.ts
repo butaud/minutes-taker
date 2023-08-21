@@ -32,15 +32,7 @@ import {
   StoredTopic,
 } from "./types";
 import { LocalStorageSessionDb } from "./LocalStorageSessionDb";
-import {
-  isActionItemNote,
-  isMotionNote,
-  isStoredActionItemNote,
-  isStoredLinkNote,
-  isStoredMotionNote,
-  isStoredTextNote,
-  isTextNote,
-} from "../util/types";
+import { isActionItemNote, isMotionNote, isTextNote } from "../util/types";
 
 type AttendanceLists = Pick<
   StoredSessionMetadata,
