@@ -3,6 +3,7 @@ import {
   ActionItemNote,
   CalendarItem,
   CalendarMonth,
+  LinkNote,
   MotionNote,
   Person,
   Session,
@@ -62,6 +63,7 @@ export type StoredTopic = StoredSession["topics"][number];
 export type StoredPerson = StoredSessionMetadata["membersPresent"][number];
 export type StoredNote = StoredTopic["notes"][number];
 export type StoredTextNote = WithId<TextNote>;
+export type StoredLinkNote = WithId<LinkNote>;
 export type StoredActionItemNote = Omit<WithId<ActionItemNote>, "assignee"> & {
   assignee: StoredPerson;
 };

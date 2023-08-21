@@ -1,0 +1,17 @@
+.link-editor input.text {
+  width: 15%;
+}
+
+.link-editor input.url {
+  width: 50%;
+}
+
+.link-editor input[type="text"] {
+  margin: 0px 5px;
+}
+
+.link-editor i {
+  font-size: 20px;
+  vertical-align: middle;
+  color: var(--color-link);
+}

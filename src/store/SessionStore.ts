@@ -13,6 +13,7 @@ import {
   CalendarItem,
   Committee,
   PastActionItem,
+  LinkNote,
 } from "minutes-model";
 import { produce, Draft } from "immer";
 import { ISessionDb } from "./ISessionDb";
@@ -31,6 +32,15 @@ import {
   StoredTopic,
 } from "./types";
 import { LocalStorageSessionDb } from "./LocalStorageSessionDb";
+import {
+  isActionItemNote,
+  isMotionNote,
+  isStoredActionItemNote,
+  isStoredLinkNote,
+  isStoredMotionNote,
+  isStoredTextNote,
+  isTextNote,
+} from "../util/types";
 
 type AttendanceLists = Pick<
   StoredSessionMetadata,
@@ -184,16 +194,26 @@ export class SessionStore {
     };
   };
 
+  private convertLinkNote = (
+    note: LinkNote,
+    _attendanceLists?: AttendanceLists
+  ) => ({
+    ...note,
+    id: this.db.noteId++,
+  });
+
   private convertNote = (
     note: Note,
     attendanceLists?: AttendanceLists
   ): StoredNote => {
-    if (note.type === "text") {
+    if (isTextNote(note)) {
       return this.convertTextNote(note);
-    } else if (note.type === "actionItem") {
+    } else if (isActionItemNote(note)) {
       return this.convertActionItemNote(note, attendanceLists);
-    } else {
+    } else if (isMotionNote(note)) {
       return this.convertMotionNote(note, attendanceLists);
+    } else {
+      return this.convertLinkNote(note, attendanceLists);
     }
   };
 
@@ -656,7 +676,7 @@ export class SessionStore {
         assignee: this.exportPerson(note.assignee),
         dueDate: note.dueDate,
       };
-    } else {
+    } else if (note.type === "motion") {
       return {
         type: "motion",
         text: note.text,
@@ -666,6 +686,12 @@ export class SessionStore {
         inFavorCount: note.inFavorCount,
         opposedCount: note.opposedCount,
         abstainedCount: note.abstainedCount,
+      };
+    } else {
+      return {
+        type: "link",
+        text: note.text,
+        url: note.url,
       };
     }
   };

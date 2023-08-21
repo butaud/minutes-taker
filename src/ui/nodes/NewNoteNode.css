@@ -13,7 +13,9 @@ button.newNote {
   color: black;
   display: flex;
   font-size: small;
-  transition: border-color 0.25s, color 0.25s;
+  transition:
+    border-color 0.25s,
+    color 0.25s;
 }
 
 button.newNote:first-child {
@@ -27,6 +29,11 @@ button.newNote:hover {
 button.newNote.text:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+button.newNote.link:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
 }
 
 button.newNote.motion:hover {

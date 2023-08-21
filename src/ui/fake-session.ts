@@ -101,6 +101,11 @@ export const fakeSession: Session = {
           text: "The headmaster gave his report.",
         },
         {
+          type: "link",
+          text: "Headmaster Report",
+          url: "https://www.example.com",
+        },
+        {
           type: "actionItem",
           assignee: boardMember1,
           text: "follow up with the headmaster about the report",
