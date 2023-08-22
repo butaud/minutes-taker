@@ -173,7 +173,10 @@ const makeTopicHeader = (topic: Topic): Table => {
     new TableCell({
       children: [
         new Paragraph(
-          topic.startTime.toLocaleTimeString(undefined, { timeStyle: "short" })
+          topic.startTime.toLocaleTimeString(undefined, {
+            timeStyle: "short",
+            timeZone: "UTC",
+          })
         ),
       ],
       shading: TopicHeaderCellShading,
