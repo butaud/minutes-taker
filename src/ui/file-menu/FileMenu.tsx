@@ -10,6 +10,7 @@ export type FileMenuProps = {
   onInsert: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  onSortTopics: () => void;
 };
 
 export const FileMenu: FC<FileMenuProps> = ({
@@ -21,6 +22,7 @@ export const FileMenu: FC<FileMenuProps> = ({
   onInsert,
   onUndo,
   onRedo,
+  onSortTopics,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const fileButtons = [
@@ -34,6 +36,7 @@ export const FileMenu: FC<FileMenuProps> = ({
     { label: "Insert", action: onInsert },
     { label: "Undo", action: onUndo },
     { label: "Redo", action: onRedo },
+    { label: "Sort Topics", action: onSortTopics },
   ];
 
   const closeMenu = () => {
@@ -42,7 +45,12 @@ export const FileMenu: FC<FileMenuProps> = ({
 
   return (
     <div className={"menu " + (expanded ? "expanded" : "")}>
-      <i className="material-icons" onClick={() => setExpanded(!expanded)}>
+      <i
+        role="button"
+        aria-label="Menu"
+        className="material-icons"
+        onClick={() => setExpanded(!expanded)}
+      >
         menu
       </i>
       {expanded && (

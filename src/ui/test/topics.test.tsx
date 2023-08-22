@@ -426,5 +426,37 @@ describe("topics", () => {
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
   });
 
+  it("allows sorting topics by start time", async () => {
+    sessionStore.addTopic({
+      title: "Topic 1",
+      startTime: new Date("2020-01-01T12:00:00Z"),
+      durationMinutes: 5,
+    });
+    sessionStore.addTopic({
+      title: "Topic 2",
+      startTime: new Date("2020-01-01T11:00:00Z"),
+      durationMinutes: 5,
+    });
+    sessionStore.addTopic({
+      title: "Topic 3",
+      startTime: new Date("2020-01-01T13:00:00Z"),
+      durationMinutes: 5,
+    });
+
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sort Topics" }));
+    rerender(<SessionEditor session={sessionStore.session} />);
+
+    const topic1 = screen.getByText("Topic 1");
+    const topic2 = screen.getByText("Topic 2");
+    const topic3 = screen.getByText("Topic 3");
+    expect(topic2).toPrecede(topic1);
+    expect(topic1).toPrecede(topic3);
+  });
+
   it.todo("allows reordering topics");
 });

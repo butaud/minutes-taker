@@ -31,6 +31,7 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
   const undo = () => sessionStore.undo();
   const redo = () => sessionStore.redo();
   const insert = () => setIsInserting((isInserting) => !isInserting);
+  const sortTopics = () => sessionStore.sortTopics();
   const save = () =>
     tryAsyncOperation({
       perform: () => saveSession(sessionStore.export(), true),
@@ -115,6 +116,7 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
           onLoadFakeData={loadFake}
           onRedo={redo}
           onUndo={undo}
+          onSortTopics={sortTopics}
         />
         <SessionHeaderNode metadata={session.metadata} />
         <AttendanceNode

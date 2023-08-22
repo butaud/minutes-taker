@@ -546,6 +546,14 @@ export class SessionStore {
     });
   };
 
+  sortTopics = () => {
+    this.produceUpdate((draft) => {
+      draft.topics.sort(
+        (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      );
+    });
+  };
+
   getLastTopicEndTime = (beforeIndex?: number) => {
     const lastTopic =
       beforeIndex !== undefined
