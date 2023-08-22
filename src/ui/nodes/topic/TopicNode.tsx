@@ -9,6 +9,7 @@ import { NoteNode } from "../NoteNode";
 import { NewNoteNode } from "../NewNoteNode";
 import { InlineNewNodeButton } from "../../controls/InlineNewNodeButton";
 import { useInserting } from "../../context/InsertingContext";
+import { TimePicker } from "../../controls/TimePicker";
 
 export const NewTopicNode: React.FC<{
   miniature: boolean;
@@ -127,6 +128,7 @@ const TopicHeaderDisplay: React.FC<TopicHeaderDisplayProps> = ({
         <span className="topicTime">
           {topic.startTime.toLocaleTimeString("en-US", {
             timeStyle: "short",
+            timeZone: "UTC",
           })}{" "}
           {topic.durationMinutes !== undefined
             ? `for ${topic.durationMinutes} minutes`
@@ -174,14 +176,8 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
     setTopicDraft({ ...topicDraft, title: newTitle });
   };
 
-  const handleStartTimeChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newDate = new Date(topicDraft.startTime ?? new Date());
-    const [hours, minutes] = event.target.value.split(":");
-    newDate.setHours(parseInt(hours));
-    newDate.setMinutes(parseInt(minutes));
-    setTopicDraft({ ...topicDraft, startTime: newDate });
+  const handleStartTimeChange = (newTime: Date) => {
+    setTopicDraft({ ...topicDraft, startTime: newTime });
   };
 
   const handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,15 +231,10 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
       </div>
       <div>
         <label htmlFor="topic-start-time">Start Time</label>
-        <input
+        <TimePicker
           id="topic-start-time"
-          type="time"
           step={60}
-          value={topicDraft.startTime.toLocaleTimeString("en-US", {
-            hour12: false,
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          value={topicDraft.startTime}
           onChange={handleStartTimeChange}
         />
       </div>

@@ -53,7 +53,7 @@ describe("topics", () => {
   it("shows the topic start time", () => {
     sessionStore.addTopic({
       title: "Test Topic",
-      startTime: new Date("2020-01-01T12:00:00"),
+      startTime: new Date("2020-01-01T12:00:00Z"),
     });
 
     render(<SessionEditor session={sessionStore.session} />);
@@ -63,7 +63,7 @@ describe("topics", () => {
   it("shows the topic duration if it exists", () => {
     sessionStore.addTopic({
       title: "Test Topic",
-      startTime: new Date("2020-01-01T12:00:00"),
+      startTime: new Date("2020-01-01T12:00:00Z"),
       durationMinutes: 5,
     });
 
@@ -153,7 +153,7 @@ describe("topics", () => {
   it("allows editing the topic duration", async () => {
     sessionStore.addTopic({
       title: "Test Topic",
-      startTime: new Date("2020-01-01T12:00:00"),
+      startTime: new Date("2020-01-01T12:00:00Z"),
       durationMinutes: 5,
     });
 
@@ -231,7 +231,7 @@ describe("topics", () => {
   it("does not apply changes if cancel is clicked", async () => {
     sessionStore.addTopic({
       title: "Test Topic",
-      startTime: new Date("2020-01-01T12:00:00"),
+      startTime: new Date("2020-01-01T12:00:00Z"),
       durationMinutes: 5,
     });
 
@@ -324,8 +324,35 @@ describe("topics", () => {
     expect(newTopic).toPrecede(existingTopic);
   });
 
+  it("allows setting a topic's start time when it is added before another topic", async () => {
+    sessionStore.addTopic({
+      title: "Existing Topic",
+      startTime: new Date("2020-01-01T12:00:00Z"),
+    });
+
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
+
+    fireEvent.keyDown(screen.getByText("Members in attendance:"), {
+      key: "i",
+      ctrlKey: true,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Topic Inline" }));
+    await user.type(screen.getByLabelText("Title"), "New Topic");
+    fireEvent.change(screen.getByLabelText("Start Time"), {
+      target: { value: "13:00" },
+    });
+    await user.type(screen.getByLabelText("Duration (minutes)"), "5");
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(screen.getByText("1:00 PM for 5 minutes")).toBeInTheDocument();
+  });
+
   it("automatically sets a new topic's start time to the previous topic's start + duration", async () => {
-    const previousTopicStartTime = new Date("2020-01-01T12:00:00");
+    const previousTopicStartTime = new Date("2020-01-01T12:00:00Z");
     sessionStore.addTopic({
       title: "Previous Topic",
       startTime: previousTopicStartTime,
@@ -342,13 +369,7 @@ describe("topics", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     rerender(<SessionEditor session={sessionStore.session} />);
 
-    const expectedStartTime = new Date("2020-01-01T12:05:00");
-    const thisTopicTimeString = expectedStartTime.toLocaleTimeString([], {
-      timeStyle: "short",
-    });
-    expect(
-      screen.getByText(`${thisTopicTimeString} for 5 minutes`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(`12:05 PM for 5 minutes`)).toBeInTheDocument();
   });
 
   it("allows deleting a topic", async () => {
