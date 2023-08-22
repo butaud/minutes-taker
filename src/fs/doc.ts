@@ -42,7 +42,7 @@ const makeSpeakerReference = (person: Person): TextRun => {
 const sessionHeader = (metadata: SessionMetadata): Paragraph[] => {
   const titleLine = `${metadata.title} - ${metadata.subtitle}: ${
     metadata.location
-  }, ${metadata.startTime.toLocaleDateString()}`;
+  }, ${metadata.startTime.toLocaleDateString(undefined, { timeZone: "UTC" })}`;
   return [
     new Paragraph({
       children: [new TextRun(metadata.organization)],
@@ -131,6 +131,7 @@ const makeCallToOrderParagraph = (session: Session): Paragraph[] => {
   const actualStartTime = session.topics[0].startTime;
   const formattedStartTime = actualStartTime.toLocaleTimeString(undefined, {
     timeStyle: "short",
+    timeZone: "UTC",
   });
   const locationTextRun = new TextRun({
     text: `The meeting was held at the ${session.metadata.location}. `,

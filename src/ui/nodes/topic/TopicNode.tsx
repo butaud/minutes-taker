@@ -164,7 +164,7 @@ export const TopicEditor: React.FC<TopicEditorProps> = ({
 }) => {
   const sessionStore = useSessionStore();
   const initialStartTime =
-    sessionStore.getLastTopicEndTime() ??
+    sessionStore.getLastTopicEndTime(beforeIndex) ??
     sessionStore.session.metadata.startTime;
 
   const [topicDraft, setTopicDraft] = useState<TopicDraft>(

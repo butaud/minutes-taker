@@ -546,9 +546,13 @@ export class SessionStore {
     });
   };
 
-  getLastTopicEndTime = () => {
+  getLastTopicEndTime = (beforeIndex?: number) => {
     const lastTopic =
-      this.db.currentSession.topics[this.db.currentSession.topics.length - 1];
+      beforeIndex !== undefined
+        ? this.db.currentSession.topics[beforeIndex - 1]
+        : this.db.currentSession.topics[
+            this.db.currentSession.topics.length - 1
+          ];
     if (lastTopic) {
       const lastTopicDuration = lastTopic.durationMinutes ?? 0;
       return new Date(

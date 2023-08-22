@@ -39,9 +39,10 @@ export const SessionHeaderDisplay: React.FC<{
       </NodeControls>
       <NodeControls as="h2" onEdit={onEdit}>
         {metadata.title} - {metadata.subtitle}: {metadata.location},{" "}
-        {metadata.startTime.toLocaleString(navigator.language, {
+        {metadata.startTime.toLocaleString(undefined, {
           timeStyle: "short",
           dateStyle: "short",
+          timeZone: "UTC",
         })}
       </NodeControls>
     </>
@@ -131,19 +132,15 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
   const handleStartTimeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const startTime = new Date(event.target.value);
-    setSessionHeaderDraft({
-      ...sessionHeaderDraft,
-      startTime: startTime,
-    });
+    const timestamp = Date.parse(event.target.value + "Z");
+    if (!isNaN(timestamp)) {
+      const startTime = new Date(timestamp);
+      setSessionHeaderDraft({
+        ...sessionHeaderDraft,
+        startTime: startTime,
+      });
+    }
   };
-
-  const adjustedDisplayTime = sessionHeaderDraft.startTime
-    ? new Date(
-        sessionHeaderDraft.startTime.getTime() -
-          sessionHeaderDraft.startTime.getTimezoneOffset() * 60 * 1000
-      )
-    : undefined;
 
   return (
     <FormNodeControls onCancel={handleCancel} onSubmit={handleSubmit}>
@@ -178,7 +175,7 @@ export const SessionHeaderEditor: React.FC<SessionHeaderEditorProps> = ({
         <input
           type="datetime-local"
           aria-label="Start time"
-          value={adjustedDisplayTime?.toISOString().slice(0, -8)}
+          value={sessionHeaderDraft.startTime?.toISOString().slice(0, -8) ?? ""}
           onChange={handleStartTimeChange}
         />
       </h2>
