@@ -75,13 +75,20 @@ export const TextNoteEditor: FunctionComponent<TextNoteEditorProps> = ({
       );
     }
     stopEditing();
-  }, [draft]);
+  }, [
+    beforeIndex,
+    draft.text,
+    existingNote,
+    sessionStore,
+    stopEditing,
+    topicId,
+  ]);
 
   const handleCancel = useCallback(() => {
     setDraft({ ...existingNote });
     setErrorMessage(undefined);
     stopEditing();
-  }, [existingNote]);
+  }, [existingNote, stopEditing]);
 
   const handleTextChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {

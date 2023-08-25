@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Session } from "minutes-model";
 import { SessionStore } from "../../store/SessionStore";
 import { ReactElement } from "react";

@@ -52,7 +52,7 @@ export const TopicNode: React.FC<{ topic: StoredTopic }> = ({ topic }) => {
 
   const onDelete = useCallback(() => {
     sessionStore.removeTopic(topic);
-  }, [topic]);
+  }, [sessionStore, topic]);
   return (
     <>
       {isEditing ? (

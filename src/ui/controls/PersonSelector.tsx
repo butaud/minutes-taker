@@ -63,7 +63,8 @@ export const PersonSelector: React.FC<PersonSelectorProps> = ({
     <InternalPersonSelector
       selectedPerson={selectedPerson}
       // Null person can't actually be selected in this case
-      onChange={(newSelectedPerson) => onChange(newSelectedPerson!!!)}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      onChange={(newSelectedPerson) => onChange(newSelectedPerson!)}
       allowNone={false}
       ariaLabel={ariaLabel}
     />

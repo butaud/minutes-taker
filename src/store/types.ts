@@ -20,6 +20,7 @@ type HaltingTypes =
   | symbol
   | null
   | undefined
+  // eslint-disable-next-line @typescript-eslint/ban-types
   | Function
   | Date;
 

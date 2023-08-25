@@ -189,9 +189,9 @@ export const MotionNoteEditor: React.FC<MotionNoteEditorProps> = ({
         opposedCount,
         abstainedCount,
       });
-    } else {
+    } else if (topicId) {
       sessionStore.addNote(
-        topicId!,
+        topicId,
         {
           type: "motion",
           mover,

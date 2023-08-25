@@ -41,7 +41,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       newTime.setUTCMinutes(minutes);
       onChange(newTime);
     },
-    [onChange]
+    [onChange, value]
   );
 
   return (

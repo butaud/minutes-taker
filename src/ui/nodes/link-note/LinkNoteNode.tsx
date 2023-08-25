@@ -81,13 +81,21 @@ export const LinkNoteEditor: FunctionComponent<LinkNoteEditorProps> = ({
       );
     }
     stopEditing();
-  }, [draft]);
+  }, [
+    beforeIndex,
+    draft.text,
+    draft.url,
+    existingNote,
+    sessionStore,
+    stopEditing,
+    topicId,
+  ]);
 
   const handleCancel = useCallback(() => {
     setDraft({ ...existingNote });
     setErrorMessage(undefined);
     stopEditing();
-  }, [existingNote]);
+  }, [existingNote, stopEditing]);
 
   const handleTextChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -61,15 +61,9 @@ export class SessionStore {
       session.metadata,
       attendanceLists
     );
-    const calendar = this.convertSessionCalendar(
-      session.calendar,
-      attendanceLists
-    );
+    const calendar = this.convertSessionCalendar(session.calendar);
     const topics = this.convertTopics(session.topics, attendanceLists);
-    const committees = this.convertCommittees(
-      session.committees,
-      attendanceLists
-    );
+    const committees = this.convertCommittees(session.committees);
     const pastActionItems = this.convertPastActionItems(
       session.pastActionItems,
       attendanceLists
@@ -138,10 +132,7 @@ export class SessionStore {
     };
   }
 
-  private convertSessionCalendar(
-    calendar: Calendar,
-    _attendanceLists: AttendanceLists
-  ): StoredCalendar {
+  private convertSessionCalendar(calendar: Calendar): StoredCalendar {
     const calendarItemConverter = (items: CalendarItem[]) => {
       return items.map((item) => ({
         ...item,
@@ -186,10 +177,7 @@ export class SessionStore {
     };
   };
 
-  private convertLinkNote = (
-    note: LinkNote,
-    _attendanceLists?: AttendanceLists
-  ) => ({
+  private convertLinkNote = (note: LinkNote) => ({
     ...note,
     id: this.db.noteId++,
   });
@@ -205,7 +193,7 @@ export class SessionStore {
     } else if (isMotionNote(note)) {
       return this.convertMotionNote(note, attendanceLists);
     } else {
-      return this.convertLinkNote(note, attendanceLists);
+      return this.convertLinkNote(note);
     }
   };
 
@@ -224,10 +212,7 @@ export class SessionStore {
     }));
   }
 
-  private convertCommittees(
-    committees: Committee[],
-    _attendanceLists: AttendanceLists
-  ): StoredCommittee[] {
+  private convertCommittees(committees: Committee[]): StoredCommittee[] {
     return committees.map((committee) => ({
       ...committee,
       id: this.db.committeeId++,
@@ -247,8 +232,8 @@ export class SessionStore {
 
   private updateSession(
     session: StoredSession,
-    isUndo: boolean = false,
-    isRedo: boolean = false
+    isUndo = false,
+    isRedo = false
   ) {
     if (isUndo) {
       this.db.pushUndoHistory(this.db.currentSession);

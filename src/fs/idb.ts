@@ -40,7 +40,11 @@ export const getIdb = async <T>(): Promise<T | undefined> => {
 
   await initializeIdb();
   return new Promise<T | undefined>((resolve, reject) => {
-    const tx = idbContext.db!.transaction(OBJECT_STORE_NAME, "readonly");
+    if (!idbContext.db) {
+      resolve(undefined);
+      return;
+    }
+    const tx = idbContext.db.transaction(OBJECT_STORE_NAME, "readonly");
     const store = tx.objectStore(OBJECT_STORE_NAME);
     const getHandle = store.get(0);
     getHandle.onsuccess = () => {
@@ -59,7 +63,11 @@ export const setIdb = async <T>(value: T): Promise<void> => {
 
   await initializeIdb();
   return new Promise<void>((resolve, reject) => {
-    const tx = idbContext.db!.transaction(OBJECT_STORE_NAME, "readwrite");
+    if (!idbContext.db) {
+      resolve();
+      return;
+    }
+    const tx = idbContext.db.transaction(OBJECT_STORE_NAME, "readwrite");
     const store = tx.objectStore(OBJECT_STORE_NAME);
     const putHandle = store.put(value, 0);
     putHandle.onsuccess = () => {
