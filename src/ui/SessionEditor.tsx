@@ -64,6 +64,10 @@ export const SessionEditor: React.FC<{ session: StoredSession }> = ({
 
   useEffect(() => {
     const handleKeyDown = async (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement) {
+        // don't handle keyboard shortcuts when typing in an input
+        return;
+      }
       if (event.ctrlKey && event.key === "z") {
         event.preventDefault();
         undo();
