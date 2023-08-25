@@ -8,11 +8,3 @@ ul {
   padding: 0;
   overflow: hidden;
 }
-
-p.message.error {
-  color: red;
-}
-
-p.message.info {
-  color: var(--color-primary);
-}

@@ -24,3 +24,22 @@
 .menu i {
   cursor: pointer;
 }
+
+p.message {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  z-index: 1000;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+p.message.error {
+  color: red;
+}
+
+p.message.info {
+  color: var(--color-primary);
+}
