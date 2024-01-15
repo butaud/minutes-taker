@@ -3,7 +3,7 @@ import "./FileMenu.css";
 import { useSessionStore } from "../context/SessionStoreContext";
 import { useInserting } from "../context/InsertingContext";
 import { useAsyncReporter } from "../async-reporter-hook";
-import { loadSession, saveSession, saveSessionAsDocx } from "../../fs/io";
+import { loadSession, saveSession, saveSessionAsDocx, useContextFilename } from "../../fs/io";
 import { fakeSession } from "../fake-session";
 
 export type FileMenuProps = {
@@ -15,6 +15,7 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
   const sessionStore = useSessionStore();
   const inserting = useInserting();
   const { report, tryAsyncOperation } = useAsyncReporter();
+  const contextFilename = useContextFilename();
 
   const undo = useCallback(() => sessionStore.undo(), [sessionStore]);
   const redo = useCallback(() => sessionStore.redo(), [sessionStore]);
@@ -134,12 +135,14 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
         <i
           role="button"
           aria-label="Menu"
-          className="material-icons"
+          className={`material-icons  ${contextFilename ? "saved" : "unsaved"}`}
           onClick={() => setExpanded(!expanded)}
+          title={contextFilename ?? "Unsaved"}
         >
           menu
         </i>
         {expanded && (
+          <>
           <ul>
             {fileButtons.map((button) => (
               <MenuButton
@@ -159,6 +162,7 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
               />
             ))}
           </ul>
+          </>
         )}
       </div>
     </>

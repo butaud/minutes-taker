@@ -1,4 +1,5 @@
 import { Session } from "minutes-model";
+import { useEffect, useState } from "react";
 import { exportSessionToDocx } from "./doc";
 import { getIdb, initializeIdb, setIdb } from "./idb";
 
@@ -96,6 +97,28 @@ export const loadSession: () => Promise<Session> = async () => {
   const session = JSON.parse(json, dateTimeReviver);
   return session;
 };
+
+export const getContextFilename: () => string | undefined = () => {
+  return saveContext.handle?.name;
+}
+
+export const useContextFilename: () => string | undefined = () => {
+  const [contextFilename, setContextFilename] = useState<string | undefined>(undefined);
+
+  // poll to keep contextFilename up to date
+  useEffect(() => {
+    const intervalHandle = setInterval(() => {
+      const currentContextFilename = getContextFilename();
+      if (contextFilename != currentContextFilename) {
+        setContextFilename(currentContextFilename);
+      }
+    }, 500);
+    return () => {
+      clearInterval(intervalHandle);
+    };
+  }, [contextFilename]);
+  return contextFilename;
+}
 
 export const dateTimeReviver = (_: string, value: string) => {
   if (typeof value === "string") {
