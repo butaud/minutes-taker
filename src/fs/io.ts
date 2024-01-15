@@ -95,6 +95,7 @@ export const loadSession: () => Promise<Session> = async () => {
   const file = await handle[0].getFile();
   const json = await file.text();
   const session = JSON.parse(json, dateTimeReviver);
+  saveContext.handle = handle[0];
   return session;
 };
 
