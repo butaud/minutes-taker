@@ -121,12 +121,14 @@ type AttendanceNodeProps = {
   present: readonly StoredPerson[];
   absent: readonly StoredPerson[];
   administrationPresent: readonly StoredPerson[];
+  othersReferenced: readonly StoredPerson[];
 };
 
 export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
   present,
   absent,
   administrationPresent,
+  othersReferenced,
 }) => {
   const sessionStore = useSessionStore();
   const [isEditing, setIsEditing] = useState(false);
@@ -165,6 +167,13 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
         people={administrationPresent}
         addPerson={sessionStore.addAdministrationPresent}
         removePerson={sessionStore.removeAdministrationPresent}
+        isEditing={isEditing}
+      />
+      <PersonList
+        title="Others referenced"
+        people={othersReferenced}
+        addPerson={sessionStore.addOtherReferenced}
+        removePerson={sessionStore.removeOtherReferenced}
         isEditing={isEditing}
       />
     </NonFormNodeControls>

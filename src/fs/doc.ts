@@ -76,6 +76,7 @@ const attendanceSection = (metadata: SessionMetadata): Paragraph[] => {
     makeAttendanceLine("Members in attendance", metadata.membersPresent),
     makeAttendanceLine("Members absent", metadata.membersAbsent),
     makeAttendanceLine("Administration", metadata.administrationPresent),
+    makeAttendanceLine("Others referenced", metadata.othersReferenced),
   ];
 };
 

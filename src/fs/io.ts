@@ -2,6 +2,7 @@ import { Session } from "minutes-model";
 import { useEffect, useState } from "react";
 import { exportSessionToDocx } from "./doc";
 import { getIdb, initializeIdb, setIdb } from "./idb";
+import { upgradeSerializedSession } from "../util/upgrade";
 
 type SaveContextType = {
   handle?: FileSystemFileHandle;
@@ -95,16 +96,19 @@ export const loadSession: () => Promise<Session> = async () => {
   const file = await handle[0].getFile();
   const json = await file.text();
   const session = JSON.parse(json, dateTimeReviver);
+  upgradeSerializedSession(session);
   saveContext.handle = handle[0];
   return session;
 };
 
 export const getContextFilename: () => string | undefined = () => {
   return saveContext.handle?.name;
-}
+};
 
 export const useContextFilename: () => string | undefined = () => {
-  const [contextFilename, setContextFilename] = useState<string | undefined>(undefined);
+  const [contextFilename, setContextFilename] = useState<string | undefined>(
+    undefined
+  );
 
   // poll to keep contextFilename up to date
   useEffect(() => {
@@ -119,7 +123,7 @@ export const useContextFilename: () => string | undefined = () => {
     };
   }, [contextFilename]);
   return contextFilename;
-}
+};
 
 export const dateTimeReviver = (_: string, value: string) => {
   if (typeof value === "string") {

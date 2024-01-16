@@ -97,6 +97,33 @@ describe("attendance", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows the others referenced", () => {
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
+    expect(screen.getByText("Others referenced:")).toBeInTheDocument();
+
+    sessionStore.addOtherReferenced({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Smith",
+    });
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.getByText(getByTextContent("Others referenced: Smith"))
+    ).toBeInTheDocument();
+
+    sessionStore.addOtherReferenced({
+      title: "Mr.",
+      firstName: "Joe",
+      lastName: "Williams",
+    });
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.getByText(getByTextContent("Others referenced: Smith, Williams"))
+    ).toBeInTheDocument();
+  });
+
   it("allows adding members to attendance", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
@@ -305,6 +332,56 @@ describe("attendance", () => {
     rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.queryByText(getByTextContent("Administration: Jones"))
+    ).not.toBeInTheDocument();
+  });
+
+  it("allows adding others referenced", async () => {
+    expect.assertions(1);
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
+
+    await user.hover(screen.getByText("Others referenced:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    await user.type(
+      screen.getByLabelText("Name to add to Others referenced"),
+      "Bob Jones"
+    );
+    await user.keyboard("{enter}");
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.getByText(getByTextContent("Others referenced: Jones"))
+    ).toBeInTheDocument();
+  });
+
+  it("allows removing others referenced", async () => {
+    expect.assertions(1);
+
+    sessionStore.addOtherReferenced({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Jones",
+    });
+
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
+    await user.hover(screen.getByText("Others referenced:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    const memberEntry = screen.getByText("Bob Jones");
+
+    const removeButton = within(memberEntry).getByRole("button", {
+      name: "Remove",
+    });
+    fireEvent.click(removeButton);
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.queryByText(getByTextContent("Others referenced: Jones"))
     ).not.toBeInTheDocument();
   });
 });

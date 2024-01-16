@@ -1,4 +1,5 @@
 import { dateTimeReviver } from "../fs/io";
+import { upgradeSerializedSession } from "../util/upgrade";
 import { ISessionDb } from "./ISessionDb";
 import { StoredSession, emptySession } from "./types";
 
@@ -44,7 +45,9 @@ export class LocalStorageSessionDb implements ISessionDb {
   }
 
   get currentSession(): StoredSession {
-    return parseDefiniteLocalStorageValue("currentSession");
+    const orig = parseDefiniteLocalStorageValue("currentSession");
+    upgradeSerializedSession(orig);
+    return orig as StoredSession;
   }
 
   set history(history: StoredSession[]) {

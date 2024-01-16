@@ -16,6 +16,7 @@ export const makeEmptySession: () => Session = () => ({
     membersPresent: [],
     membersAbsent: [],
     administrationPresent: [],
+    othersReferenced: [],
   },
   calendar: [],
   topics: [],

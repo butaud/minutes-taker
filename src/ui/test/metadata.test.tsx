@@ -18,6 +18,7 @@ describe("metadata", () => {
         membersPresent: [],
         membersAbsent: [],
         administrationPresent: [],
+        othersReferenced: [],
       },
     });
   });

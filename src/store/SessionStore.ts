@@ -36,7 +36,10 @@ import { isActionItemNote, isMotionNote, isTextNote } from "../util/types";
 
 type AttendanceLists = Pick<
   StoredSessionMetadata,
-  "membersPresent" | "membersAbsent" | "administrationPresent"
+  | "membersPresent"
+  | "membersAbsent"
+  | "administrationPresent"
+  | "othersReferenced"
 >;
 
 export class SessionStore {
@@ -93,6 +96,7 @@ export class SessionStore {
       administrationPresent: personListConverter(
         sessionMetadata.administrationPresent
       ),
+      othersReferenced: personListConverter(sessionMetadata.othersReferenced),
     };
   }
 
@@ -105,6 +109,7 @@ export class SessionStore {
           ...attendanceLists.membersPresent,
           ...attendanceLists.membersAbsent,
           ...attendanceLists.administrationPresent,
+          ...attendanceLists.othersReferenced,
         ]
       : this.allPeople;
     const found = allPeople.find(
@@ -290,6 +295,7 @@ export class SessionStore {
       ...this.session.metadata.membersPresent,
       ...this.session.metadata.membersAbsent,
       ...this.session.metadata.administrationPresent,
+      ...this.session.metadata.othersReferenced,
     ];
   }
 
@@ -320,7 +326,11 @@ export class SessionStore {
   updateMetadata = (
     metadata: Omit<
       SessionMetadata,
-      "membersPresent" | "membersAbsent" | "administrationPresent" | "caller"
+      | "membersPresent"
+      | "membersAbsent"
+      | "administrationPresent"
+      | "othersReferenced"
+      | "caller"
     >
   ) => {
     this.produceUpdate((draft) => {
@@ -425,6 +435,36 @@ export class SessionStore {
       draft.metadata.administrationPresent[index] = {
         ...member,
         id: draft.metadata.administrationPresent[index].id,
+      };
+    });
+  };
+
+  addOtherReferenced = (member: Person) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.othersReferenced.push({
+        ...member,
+        id: this.db.personId++,
+      });
+    });
+  };
+
+  removeOtherReferenced = (member: StoredPerson) => {
+    this.throwIfMemberIsReferenced(member);
+    this.produceUpdate((draft) => {
+      draft.metadata.othersReferenced = draft.metadata.othersReferenced.filter(
+        (m) => m.id !== member.id
+      );
+    });
+  };
+
+  updateOtherReferenced = (member: StoredPerson) => {
+    this.produceUpdate((draft) => {
+      const index = draft.metadata.othersReferenced.findIndex(
+        (m) => m.id === member.id
+      );
+      draft.metadata.othersReferenced[index] = {
+        ...member,
+        id: draft.metadata.othersReferenced[index].id,
       };
     });
   };
@@ -734,6 +774,7 @@ export class SessionStore {
         administrationPresent: metadata.administrationPresent.map(
           this.exportPerson
         ),
+        othersReferenced: metadata.othersReferenced.map(this.exportPerson),
       },
       calendar: this.exportCalendar(this.db.currentSession.calendar),
       topics: topics.map(this.exportTopic),

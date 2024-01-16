@@ -30,6 +30,7 @@ export const fakeSession: Session = {
     administrationPresent: [headmaster],
     membersPresent: [boardMember1, boardMember2],
     membersAbsent: [boardMember3],
+    othersReferenced: [],
     location: "School Boardroom",
     organization: "School School",
     title: "Board Meeting",

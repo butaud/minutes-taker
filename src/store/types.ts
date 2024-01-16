@@ -84,6 +84,7 @@ export const emptySession: StoredSession = {
     membersPresent: [],
     membersAbsent: [],
     administrationPresent: [],
+    othersReferenced: [],
     location: "",
     organization: "",
     subtitle: "",
