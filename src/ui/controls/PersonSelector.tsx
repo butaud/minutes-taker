@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { StoredPerson } from "../../store/types";
 import { usePersonList } from "../context/PersonListContext";
 
@@ -37,6 +38,13 @@ const InternalPersonSelector: React.FC<InternalPersonSelectorProps> = ({
       onChange(selectedPerson);
     }
   };
+
+  // If the selected person is undefined, and we don't allow none, select the first person
+  useEffect(() => {
+    if (!allowNone && selectedPerson === undefined) {
+      onChange(personList[0]);
+    }
+  }, [allowNone, selectedPerson, onChange, personList]);
 
   return (
     <select

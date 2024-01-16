@@ -293,7 +293,7 @@ describe("action items", () => {
     );
   });
 
-  it("shows an error message if the new action item does not have an assignee", async () => {
+  it("does not show an error message if the default (first) assignee is selected", async () => {
     sessionStore.addTopic({
       title: "Test Topic",
       startTime: new Date(),
@@ -305,7 +305,9 @@ describe("action items", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
     fireEvent.click(
       screen.getAllByRole("button", { name: "Add Action Item" })[0]
     );
@@ -318,10 +320,13 @@ describe("action items", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    rerender(<SessionEditor session={sessionStore.session} />);
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Assignee cannot be empty."
-    );
+    expect(
+      screen.getByText(
+        getByTextContent("Action item: Mr. User to New Action Item by 1/1/22.")
+      )
+    ).toBeInTheDocument();
   });
 
   it("shows an error message if the new action item does not have a due date", async () => {

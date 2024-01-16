@@ -864,7 +864,7 @@ describe("motions", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Text is required.");
   });
 
-  it("shows an error message if the new motion does not have a mover", async () => {
+  it("allows creating a motion with the default (first) mover", async () => {
     sessionStore.addTopic({
       title: "Test Topic",
       startTime: new Date(),
@@ -882,17 +882,22 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
     await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Mover is required.");
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
+    ).toBeInTheDocument();
   });
 
-  it("shows an error message if the new motion does not have a seconder", async () => {
+  it("allows creating a motion with the default (first) seconder", async () => {
     sessionStore.addTopic({
       title: "Test Topic",
       startTime: new Date(),
@@ -910,16 +915,19 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    const { rerender } = render(
+      <SessionEditor session={sessionStore.session} />
+    );
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
     await user.selectOptions(screen.getByLabelText("Mover:"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Seconder is required."
-    );
+    rerender(<SessionEditor session={sessionStore.session} />);
+    expect(
+      screen.getByText(getByTextContent("Mr. Smith moved New Motion"))
+    ).toBeInTheDocument();
   });
 
   it("allows cancelling a new motion", async () => {
