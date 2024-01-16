@@ -258,7 +258,7 @@ const makeActionItemTextRuns = (
     }),
     makeSpeakerReference(actionItem.assignee),
     new TextRun({
-      text: ` ${actionItem.text} by ${actionItem.dueDate.toLocaleDateString(
+      text: ` to ${actionItem.text} by ${actionItem.dueDate.toLocaleDateString(
         "en-US",
         { dateStyle: "short", timeZone: "UTC" }
       )}.`,
