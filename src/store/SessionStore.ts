@@ -127,7 +127,7 @@ export class SessionStore {
       ...attendanceLists,
       caller: metadata.caller && {
         ...metadata.caller,
-        person: this.findPerson(metadata.caller.person),
+        person: this.findPerson(metadata.caller.person, attendanceLists),
       },
     };
   }

@@ -22,9 +22,10 @@ export const useAsyncReporter = () => {
         setReport({ type: "info", message: operation.successMessage });
         setTimeout(() => setReport(null), 5000);
       })
-      .catch(() =>
-        setReport({ type: "error", message: operation.failureMessage })
-      );
+      .catch((e) => {
+        setReport({ type: "error", message: operation.failureMessage });
+        console.error(e);
+      });
   }, []);
 
   return { report, tryAsyncOperation };
