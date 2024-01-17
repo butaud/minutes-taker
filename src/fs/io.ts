@@ -45,7 +45,7 @@ export const saveSession: (
       ],
       suggestedName: filename,
     });
-    syncHandleToIndexedDb();
+    await syncHandleToIndexedDb();
   }
 
   const json = JSON.stringify(session, undefined, 2);
@@ -98,6 +98,7 @@ export const loadSession: () => Promise<Session> = async () => {
   const session = JSON.parse(json, dateTimeReviver);
   upgradeSerializedSession(session);
   saveContext.handle = handle[0];
+  await syncHandleToIndexedDb();
   return session;
 };
 
