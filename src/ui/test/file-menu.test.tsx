@@ -1,11 +1,12 @@
 import { initializeIdb, setIdb, getIdb, clearIdb } from "../../fs/idb.mock";
-import { MockFilePicker } from "../../fs/file-manager.mock";
+import { MockFileHandle, MockFilePicker } from "../../fs/file-manager.mock";
 import { SessionStore } from "../../store/SessionStore";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { SessionEditor } from "../SessionEditor";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
 import { resetSaveContext } from "../../fs/io";
+import test from "./data/test.json";
 
 let sessionStore: SessionStore;
 
@@ -228,6 +229,88 @@ describe("editor", () => {
       await allowPropagation();
 
       expect(MockFilePicker.handles.length).toBe(2);
+    });
+  });
+
+  describe("load button", () => {
+    it("loads the file as JSON", async () => {
+      const jsonToLoad = JSON.stringify(test, null, 2);
+      const mockHandle = new MockFileHandle("JSON", "test.json");
+      mockHandle.setFileText(jsonToLoad);
+
+      MockFilePicker.openCallback = () => mockHandle;
+
+      render(<SessionEditor session={sessionStore.session} />);
+      await allowPropagation();
+
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Load" }));
+
+      await allowPropagation();
+
+      expect(sessionStore.session.metadata.title).toBe("Title from test.json");
+    });
+
+    it("sets the filename to the loaded file", async () => {
+      const jsonToLoad = JSON.stringify(test, null, 2);
+      const mockHandle = new MockFileHandle("JSON", "test.json");
+      mockHandle.setFileText(jsonToLoad);
+
+      MockFilePicker.openCallback = () => mockHandle;
+
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+      await allowPropagation();
+
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Load" }));
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+          "test.json"
+        );
+      });
+    });
+
+    it("updates the current file handle if a file has already been loaded", async () => {
+      const jsonToLoad = JSON.stringify(test, null, 2);
+      const mockHandleToOpen = new MockFileHandle("JSON", "test.json");
+      mockHandleToOpen.setFileText(jsonToLoad);
+
+      MockFilePicker.openCallback = () => mockHandleToOpen;
+
+      render(<SessionEditor session={sessionStore.session} />);
+      await allowPropagation();
+
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await allowPropagation();
+
+      const originalHandle = MockFilePicker.handles[0];
+      const originalHandleContents = originalHandle.getFileText();
+
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Load" }));
+
+      await allowPropagation();
+
+      sessionStore.updateMetadata({
+        ...sessionStore.session.metadata,
+        title: "Modified Title",
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await allowPropagation();
+
+      // make sure we wrote to the new handle, not the original one
+      expect(originalHandle.getFileText()).toBe(originalHandleContents);
+      expect(mockHandleToOpen.getFileText()).toContain("Modified Title");
     });
   });
 });

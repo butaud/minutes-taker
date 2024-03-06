@@ -5,7 +5,7 @@ export type IMockFileHandle = IFileHandle & {
   getFileText: () => string;
 };
 
-class MockFileHandle implements IMockFileHandle {
+export class MockFileHandle implements IMockFileHandle {
   private _filename: string;
   private _fileText: string;
   constructor(
