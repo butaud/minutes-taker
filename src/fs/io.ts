@@ -3,18 +3,19 @@ import { useEffect, useState } from "react";
 import { exportSessionToDocx } from "./doc";
 import { getIdb, initializeIdb, setIdb } from "./idb";
 import { upgradeSerializedSession } from "../util/upgrade";
+import { LocalFilePicker } from "./local-file-manager";
+import { IFileHandle } from "./file-manager.interface";
 
-type SaveContextType = {
-  handle?: FileSystemFileHandle;
-};
-const saveContext: SaveContextType = {
+const saveContext: {
+  handle?: IFileHandle;
+} = {
   handle: undefined,
 };
 
 export const initializeIndexedDbBackup = async (): Promise<void> => {
   await initializeIdb();
   if (!saveContext.handle) {
-    saveContext.handle = await getIdb<FileSystemFileHandle>();
+    saveContext.handle = await getIdb<IFileHandle>();
   }
 };
 
@@ -34,25 +35,13 @@ export const saveSession: (
       session.metadata.title
     }-${session.metadata.startTime.toDateString()}.json`;
 
-    saveContext.handle = await window.showSaveFilePicker({
-      types: [
-        {
-          description: "JSON File",
-          accept: {
-            "application/json": [".json"],
-          },
-        },
-      ],
-      suggestedName: filename,
-    });
+    saveContext.handle = await LocalFilePicker.save("JSON", filename);
     await syncHandleToIndexedDb();
   }
 
   const json = JSON.stringify(session, undefined, 2);
 
-  const writable = await saveContext.handle.createWritable();
-  await writable.write(json);
-  await writable.close();
+  await saveContext.handle.write(json);
 };
 
 export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
@@ -63,47 +52,24 @@ export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
   }-${session.metadata.startTime.toDateString()}.docx`;
   const blob = await exportSessionToDocx(session);
 
-  const handle = await window.showSaveFilePicker({
-    types: [
-      {
-        description: "Word Document",
-        accept: {
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            [".docx"],
-        },
-      },
-    ],
-    suggestedName: filename,
-  });
+  const handle = await LocalFilePicker.save("Word", filename);
 
-  const writable = await handle.createWritable();
-  await writable.write(blob);
-  await writable.close();
+  await handle.write(blob);
 };
 
 export const loadSession: () => Promise<Session> = async () => {
-  const handle = await window.showOpenFilePicker({
-    types: [
-      {
-        description: "JSON File",
-        accept: {
-          "application/json": [".json"],
-        },
-      },
-    ],
-  });
+  const handle = await LocalFilePicker.open("JSON");
 
-  const file = await handle[0].getFile();
-  const json = await file.text();
+  const json = await handle.read();
   const session = JSON.parse(json, dateTimeReviver);
   upgradeSerializedSession(session);
-  saveContext.handle = handle[0];
+  saveContext.handle = handle;
   await syncHandleToIndexedDb();
   return session;
 };
 
 export const getContextFilename: () => string | undefined = () => {
-  return saveContext.handle?.name;
+  return saveContext.handle?.filename;
 };
 
 export const useContextFilename: () => string | undefined = () => {
@@ -137,4 +103,8 @@ export const dateTimeReviver = (_: string, value: string) => {
     }
   }
   return value;
+};
+
+export const resetSaveContext = () => {
+  saveContext.handle = undefined;
 };
