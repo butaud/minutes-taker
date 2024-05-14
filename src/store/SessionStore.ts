@@ -42,6 +42,10 @@ type AttendanceLists = Pick<
   | "othersReferenced"
 >;
 
+export type CloneProps = {
+  startTime: Date;
+};
+
 export class SessionStore {
   private callbacks: ((session: StoredSession) => void)[] = [];
   private db: ISessionDb;
@@ -55,6 +59,12 @@ export class SessionStore {
     this.db.undoHistory = [];
     this.db.currentSession = this.convertSession(session);
     this.callbacks.forEach((callback) => callback(this.db.currentSession));
+  }
+
+  cloneSession(props: CloneProps) {
+    const newSession = this.export();
+    newSession.metadata.startTime = props.startTime;
+    this.loadSession(newSession);
   }
 
   private convertSession(session: Session): StoredSession {

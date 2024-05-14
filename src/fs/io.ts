@@ -26,6 +26,14 @@ const syncHandleToIndexedDb = async () => {
   }
 };
 
+export const unsetHandle = async () => {
+  await initializeIdb();
+  if (saveContext.handle) {
+    saveContext.handle = undefined;
+    await setIdb<IFileHandle | undefined>(undefined);
+  }
+};
+
 export const saveSession: (
   session: Session,
   reuseHandle: boolean

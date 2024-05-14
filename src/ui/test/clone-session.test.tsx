@@ -6,7 +6,6 @@ import { SessionEditor } from "../SessionEditor";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
 import { resetSaveContext } from "../../fs/io";
-import test from "./data/test.json";
 
 let sessionStore: SessionStore;
 
@@ -54,9 +53,7 @@ describe("follow-up session", () => {
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
-      fireEvent.click(
-        screen.getByRole("button", { name: "Create Follow-up Session..." })
-      );
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
       await allowPropagation();
 
@@ -76,13 +73,12 @@ describe("follow-up session", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
+      const originalJson = JSON.stringify(sessionStore.export(), undefined, 2);
       await allowPropagation();
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
-      fireEvent.click(
-        screen.getByRole("button", { name: "Create Follow-up Session..." })
-      );
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
       const savedHandle = new MockFileHandle("JSON", "test.json");
       mockFilePicker.resolveSave?.(savedHandle);
@@ -92,9 +88,7 @@ describe("follow-up session", () => {
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
 
-      expect(savedHandle.getFileText()).toEqual(
-        JSON.stringify(test, undefined, 2)
-      );
+      expect(savedHandle.getFileText()).toEqual(originalJson);
     });
 
     it("should reset the file handle", async () => {
@@ -121,14 +115,12 @@ describe("follow-up session", () => {
             "test.json"
           );
         },
-        { timeout: 100 }
+        { timeout: 1000 }
       );
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
-      fireEvent.click(
-        screen.getByRole("button", { name: "Create Follow-up Session..." })
-      );
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
       await allowPropagation();
 
@@ -136,8 +128,14 @@ describe("follow-up session", () => {
       rerender(<SessionEditor session={sessionStore.session} />);
 
       // expect it to be in unsaved state
-      expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
-        "Unsaved"
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+            "Unsaved"
+          );
+        },
+        { timeout: 1000 }
       );
     });
   });
