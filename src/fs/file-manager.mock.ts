@@ -60,13 +60,13 @@ export class MockFilePicker implements IMockFilePicker {
     mockData.filename = "";
   };
 
-  open = (type: FileType): Promise<IFileHandle> => {
+  open = (_type: FileType): Promise<IFileHandle> => {
     return new Promise<IMockFileHandle>((resolve) => {
       this.resolveOpen = resolve;
     });
   };
 
-  save = (type: FileType, suggestedName: string): Promise<IFileHandle> => {
+  save = (_type: FileType, _suggestedName: string): Promise<IFileHandle> => {
     return new Promise<IMockFileHandle>((resolve) => {
       this.resolveSave = resolve;
     });
