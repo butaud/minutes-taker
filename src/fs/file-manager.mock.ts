@@ -48,38 +48,29 @@ const mockData: {
 
 export type IMockFilePicker = IFilePicker & {
   reset: () => void;
-  handles: IMockFileHandle[];
-  resolveOpen: (handle: IMockFileHandle) => void;
-  resolveSave: (handle: IMockFileHandle) => void;
+  resolveOpen: ((handle: IMockFileHandle) => void) | undefined;
+  resolveSave: ((handle: IMockFileHandle) => void) | undefined;
 };
 
-let openPromise = new Promise<IMockFileHandle>((resolve) => {
-  MockFilePicker.resolveOpen = resolve;
-});
+export class MockFilePicker implements IMockFilePicker {
+  resolveOpen: ((handle: IMockFileHandle) => void) | undefined;
+  resolveSave: ((handle: IMockFileHandle) => void) | undefined;
 
-let savePromise = new Promise<IMockFileHandle>((resolve) => {
-  MockFilePicker.resolveSave = resolve;
-});
-
-export const MockFilePicker: IMockFilePicker = {
-  handles: [],
-
-  reset: () => {
-    MockFilePicker.handles.splice(0, MockFilePicker.handles.length);
-    openPromise = new Promise<IMockFileHandle>((resolve) => {
-      MockFilePicker.resolveOpen = resolve;
-    });
-    savePromise = new Promise<IMockFileHandle>((resolve) => {
-      MockFilePicker.resolveSave = resolve;
-    });
+  reset = () => {
     mockData.filename = "";
-  },
+  };
 
-  open: async (type: FileType): Promise<IFileHandle> => {
-    return await openPromise;
-  },
+  open = (type: FileType): Promise<IFileHandle> => {
+    return new Promise<IMockFileHandle>((resolve) => {
+      this.resolveOpen = resolve;
+    });
+  };
 
-  save: async (type: FileType, suggestedName: string): Promise<IFileHandle> => {
-    return await savePromise;
-  },
-};
+  save = (type: FileType, suggestedName: string): Promise<IFileHandle> => {
+    return new Promise<IMockFileHandle>((resolve) => {
+      this.resolveSave = resolve;
+    });
+  };
+}
+
+export const mockFilePicker = new MockFilePicker();

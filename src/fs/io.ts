@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { exportSessionToDocx } from "./doc";
 import { getIdb, initializeIdb, setIdb } from "./idb";
 import { upgradeSerializedSession } from "../util/upgrade";
-import { LocalFilePicker } from "./local-file-manager";
+import { localFilePicker } from "./local-file-manager";
 import { IFileHandle } from "./file-manager.interface";
 
 const saveContext: {
@@ -35,7 +35,7 @@ export const saveSession: (
       session.metadata.title
     }-${session.metadata.startTime.toDateString()}.json`;
 
-    saveContext.handle = await LocalFilePicker.save("JSON", filename);
+    saveContext.handle = await localFilePicker.save("JSON", filename);
     await syncHandleToIndexedDb();
   }
 
@@ -52,13 +52,13 @@ export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
   }-${session.metadata.startTime.toDateString()}.docx`;
   const blob = await exportSessionToDocx(session);
 
-  const handle = await LocalFilePicker.save("Word", filename);
+  const handle = await localFilePicker.save("Word", filename);
 
   await handle.write(blob);
 };
 
 export const loadSession: () => Promise<Session> = async () => {
-  const handle = await LocalFilePicker.open("JSON");
+  const handle = await localFilePicker.open("JSON");
 
   const json = await handle.read();
   const session = JSON.parse(json, dateTimeReviver);

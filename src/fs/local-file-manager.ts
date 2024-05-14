@@ -45,19 +45,24 @@ const localFileTypes: Record<FileType, FilePickerAcceptType[]> = {
   ],
 };
 
-export const LocalFilePicker: IFilePicker = {
-  open: async (type: FileType): Promise<IFileHandle> => {
+export class LocalFilePicker implements IFilePicker {
+  open = async (type: FileType): Promise<IFileHandle> => {
     const handle = await window.showOpenFilePicker({
       types: localFileTypes[type],
     });
     return new LocalFileHandle(type, handle[0]);
-  },
+  };
 
-  save: async (type: FileType, suggestedName: string): Promise<IFileHandle> => {
+  save = async (
+    type: FileType,
+    suggestedName: string
+  ): Promise<IFileHandle> => {
     const handle = await window.showSaveFilePicker({
       types: localFileTypes[type],
       suggestedName: suggestedName,
     });
     return new LocalFileHandle(type, handle);
-  },
-};
+  };
+}
+
+export const localFilePicker = new LocalFilePicker();
