@@ -14,7 +14,7 @@ export const initializeIdb = async (): Promise<void> => {
   }
 
   return new Promise<void>((resolve, reject) => {
-    const open = indexedDB.open(INDEXEDDB_NAME, 2);
+    const open = indexedDB.open(INDEXEDDB_NAME, 3);
     open.onupgradeneeded = () => {
       if (open.result.objectStoreNames.contains(OBJECT_STORE_NAME)) {
         open.result.deleteObjectStore(OBJECT_STORE_NAME);

@@ -1,0 +1,167 @@
+{
+    "metadata": {
+        "startTime": "2024-02-12T22:22:05.427Z",
+        "administrationPresent": [
+            {
+                "title": "Mr.",
+                "firstName": "Bob",
+                "lastName": "Baker"
+            }
+        ],
+        "membersPresent": [
+            {
+                "title": "Mr.",
+                "firstName": "Joe",
+                "lastName": "Smith"
+            },
+            {
+                "title": "Mr.",
+                "firstName": "Tom",
+                "lastName": "Jones"
+            }
+        ],
+        "membersAbsent": [
+            {
+                "title": "Mr.",
+                "firstName": "Sam",
+                "lastName": "Adams"
+            }
+        ],
+        "othersReferenced": [],
+        "location": "School Boardroom",
+        "organization": "School School",
+        "title": "Title from test.json",
+        "subtitle": "Executive Session",
+        "committeeDocUrl": "https://www.google.com"
+    },
+    "calendar": [
+        {
+            "month": "June",
+            "items": [
+                {
+                    "text": "Attend Graduation Ceremony",
+                    "completed": true
+                },
+                {
+                    "text": "Review Annual Performance",
+                    "completed": false
+                }
+            ]
+        },
+        {
+            "month": "July",
+            "items": [
+                {
+                    "text": "Plan Board Retreat",
+                    "completed": false
+                }
+            ]
+        }
+    ],
+    "topics": [
+        {
+            "title": "Call to Order",
+            "startTime": "2024-02-12T22:22:05.427Z",
+            "durationMinutes": 5,
+            "notes": [
+                {
+                    "type": "text",
+                    "text": "The meeting was called to order at 7:01pm."
+                }
+            ]
+        },
+        {
+            "title": "Approval of Minutes",
+            "startTime": "2024-02-12T22:22:05.427Z",
+            "durationMinutes": 5,
+            "leader": {
+                "title": "Mr.",
+                "firstName": "Tom",
+                "lastName": "Jones"
+            },
+            "notes": [
+                {
+                    "type": "motion",
+                    "text": "to approve the minutes from the last meeting.",
+                    "mover": {
+                        "title": "Mr.",
+                        "firstName": "Joe",
+                        "lastName": "Smith"
+                    },
+                    "seconder": {
+                        "title": "Mr.",
+                        "firstName": "Tom",
+                        "lastName": "Jones"
+                    },
+                    "outcome": "passed",
+                    "inFavorCount": 2,
+                    "opposedCount": 0,
+                    "abstainedCount": 1
+                }
+            ]
+        },
+        {
+            "title": "Headmaster's Report",
+            "startTime": "2024-02-12T22:22:05.427Z",
+            "durationMinutes": 5,
+            "leader": {
+                "title": "Mr.",
+                "firstName": "Bob",
+                "lastName": "Baker"
+            },
+            "notes": [
+                {
+                    "type": "text",
+                    "text": "The headmaster gave his report."
+                },
+                {
+                    "type": "link",
+                    "text": "Headmaster Report",
+                    "url": "https://www.example.com"
+                },
+                {
+                    "type": "actionItem",
+                    "text": "follow up with the headmaster about the report",
+                    "assignee": {
+                        "title": "Mr.",
+                        "firstName": "Joe",
+                        "lastName": "Smith"
+                    },
+                    "dueDate": "2024-02-12T22:22:05.427Z"
+                }
+            ]
+        }
+    ],
+    "committees": [
+        {
+            "name": "Facility",
+            "type": "Board"
+        },
+        {
+            "name": "Finance",
+            "type": "Headmaster"
+        }
+    ],
+    "pastActionItems": [
+        {
+            "text": "clean up the board calendar",
+            "assignee": {
+                "title": "Mr.",
+                "firstName": "Joe",
+                "lastName": "Smith"
+            },
+            "dueDate": "2024-02-12T22:22:05.427Z",
+            "completed": true
+        },
+        {
+            "text": "create a committee report",
+            "assignee": {
+                "title": "Mr.",
+                "firstName": "Joe",
+                "lastName": "Smith"
+            },
+            "dueDate": "2024-02-12T22:22:05.427Z",
+            "completed": false
+        }
+    ]
+}
