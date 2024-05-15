@@ -292,5 +292,48 @@ describe("follow-up session", () => {
         screen.queryByText("The minutes were approved.")
       ).not.toBeInTheDocument();
     });
+
+    it("should offset topic times based on the new start time", async () => {
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T12:01:00Z"),
+      });
+      sessionStore.addTopic({
+        title: "Approval of Minutes",
+        startTime: new Date("2000-01-01T12:02:00Z"),
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.change(screen.getByLabelText("Start time"), {
+        target: { value: "2000-01-02 08:00:00" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      const callToOrderHeading = screen.getByText("Call to Order");
+      const callToOrderTime = screen.getByText("8:01 AM");
+      const approvalOfMinutesHeading = screen.getByText("Approval of Minutes");
+      const approvalOfMinutesTime = screen.getByText("8:02 AM");
+
+      expect(callToOrderHeading).toPrecede(callToOrderTime);
+      expect(callToOrderTime).toPrecede(approvalOfMinutesHeading);
+      expect(approvalOfMinutesHeading).toPrecede(approvalOfMinutesTime);
+    });
   });
 });

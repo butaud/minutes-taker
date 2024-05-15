@@ -68,8 +68,18 @@ export class SessionStore {
       props.selectedTopicIds.has(topic.id);
     const noteFilter = (topic: StoredTopic) =>
       props.preserveNoteTopicIds.has(topic.id);
+
     const newSession = this.export(topicFilter, noteFilter);
     newSession.metadata.startTime = props.startTime;
+
+    // offset the topic start times based on the new start time
+    const originalStartTime = this.db.currentSession.metadata.startTime;
+    const newStartTime = props.startTime;
+    const timeDifference = newStartTime.getTime() - originalStartTime.getTime();
+    newSession.topics.forEach((topic) => {
+      topic.startTime = new Date(topic.startTime.getTime() + timeDifference);
+    });
+
     this.loadSession(newSession);
   }
 
