@@ -89,12 +89,7 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
             >(CloneDialog, {
               topics: sessionStore.session.topics,
             });
-            sessionStore.cloneSession({
-              startTime: result.startTime,
-              removeCompletedPastActionItems: true,
-              preserveNoteTopicIds: result.preserveNoteTopicIds,
-              selectedTopicIds: result.selectedTopicIds,
-            });
+            sessionStore.cloneSession(result);
 
             await unsetHandle();
           } catch (e) {

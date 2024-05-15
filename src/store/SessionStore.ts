@@ -87,6 +87,20 @@ export class SessionStore {
       );
     }
 
+    // convert new action items to past action items
+    this.db.currentSession.topics.forEach((topic) => {
+      topic.notes.forEach((note) => {
+        if (isActionItemNote(note)) {
+          newSession.pastActionItems.push({
+            text: note.text,
+            assignee: note.assignee,
+            dueDate: note.dueDate,
+            completed: false,
+          });
+        }
+      });
+    });
+
     this.loadSession(newSession);
   }
 
