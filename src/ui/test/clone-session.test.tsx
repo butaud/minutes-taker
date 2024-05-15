@@ -1,12 +1,18 @@
 import { initializeIdb, setIdb, getIdb, clearIdb } from "../../fs/idb.mock";
 import { MockFileHandle, mockFilePicker } from "../../fs/file-manager.mock";
 import { SessionStore } from "../../store/SessionStore";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
-import { render, resetSessionStore } from "./util";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { resetSessionStore } from "./util";
 import { vi } from "vitest";
 import { unsetHandle } from "../../fs/io";
-import { allowPropagation } from "../../util/test";
+import { App } from "../../App";
+import { __clearDialogs } from "../dialog/dialog";
 
 let sessionStore: SessionStore;
 
@@ -22,6 +28,7 @@ vi.mock("../../fs/local-file-manager.ts", () => ({
 
 describe("follow-up session", () => {
   beforeEach(() => {
+    __clearDialogs();
     mockFilePicker.reset();
     clearIdb();
     unsetHandle();
@@ -42,16 +49,11 @@ describe("follow-up session", () => {
 
   describe("file behavior", () => {
     it("should create a new session with the same organization, title, subtitle, and location", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
-
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
 
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
         "Test Organization"
@@ -63,9 +65,7 @@ describe("follow-up session", () => {
     });
 
     it("should save the previous session", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
       const originalJson = JSON.stringify(sessionStore.export(), undefined, 2);
 
       // click menu button
@@ -75,16 +75,11 @@ describe("follow-up session", () => {
       const savedHandle = new MockFileHandle("JSON", "test.json");
       await mockFilePicker.resolveSave(savedHandle);
 
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
-
       expect(savedHandle.getFileText()).toEqual(originalJson);
     });
 
     it("should reset the file handle", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
@@ -92,9 +87,6 @@ describe("follow-up session", () => {
 
       const originalHandle = new MockFileHandle("JSON", "test.json");
       await mockFilePicker.resolveSave(originalHandle);
-
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
 
       await waitFor(
         () => {
@@ -109,14 +101,18 @@ describe("follow-up session", () => {
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
+      await waitFor(
+        () => {
+          screen.getByText("Create follow-up session");
+        },
+        { timeout: 10 }
+      );
+
       fireEvent.change(screen.getByLabelText("Start time"), {
         target: { value: "2020-01-02 08:00:00" },
       });
 
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
-
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
 
       // expect it to be in unsaved state
       await waitFor(
@@ -132,25 +128,29 @@ describe("follow-up session", () => {
 
   describe("updated values", () => {
     it("should prompt for an updated date", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
+      await mockFilePicker.resolveSave(new MockFileHandle("JSON", "test.json"));
 
-      fireEvent.change(screen.getByLabelText("Start time"), {
-        target: { value: "2020-01-02 08:00:00" },
-      });
+      act(() =>
+        fireEvent.change(screen.getByLabelText("Start time"), {
+          target: { value: "2020-01-02 08:00:00" },
+        })
+      );
 
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-      await allowPropagation();
-      rerender(<SessionEditor session={sessionStore.session} />);
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 100 }
+      );
 
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
         "Test Meeting - Test Subtitle: Test Location, 1/2/20, 8:00 AM"
@@ -159,17 +159,17 @@ describe("follow-up session", () => {
   });
   describe("topics", () => {
     it("should remove all notes from topics", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
-      sessionStore.addTopic({
-        title: "Call to Order",
-        startTime: new Date("2000-01-01T19:01:00Z"),
-      });
-      sessionStore.addNote(sessionStore.session.topics[0].id, {
-        type: "text",
-        text: "The meeting was called to order at 7:01pm.",
+      act(() => {
+        sessionStore.addTopic({
+          title: "Call to Order",
+          startTime: new Date("2000-01-01T19:01:00Z"),
+        });
+        sessionStore.addNote(sessionStore.session.topics[0].id, {
+          type: "text",
+          text: "The meeting was called to order at 7:01pm.",
+        });
       });
 
       // click menu button
@@ -179,14 +179,15 @@ describe("follow-up session", () => {
       const savedHandle = new MockFileHandle("JSON", "test.json");
       await mockFilePicker.resolveSave(savedHandle);
 
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
-
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-      await allowPropagation();
-
-      rerender(<SessionEditor session={sessionStore.session} />);
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 100 }
+      );
 
       expect(screen.getByText("Call to Order")).toBeInTheDocument();
       expect(
@@ -195,18 +196,17 @@ describe("follow-up session", () => {
     });
 
     it("should allow selecting which topics to keep", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
-      sessionStore.addTopic({
-        title: "Call to Order",
-        startTime: new Date("2000-01-01T19:01:00Z"),
-      });
-
-      sessionStore.addTopic({
-        title: "Approval of Minutes",
-        startTime: new Date("2000-01-01T19:02:00Z"),
+      act(() => {
+        sessionStore.addTopic({
+          title: "Call to Order",
+          startTime: new Date("2000-01-01T19:01:00Z"),
+        });
+        sessionStore.addTopic({
+          title: "Approval of Minutes",
+          startTime: new Date("2000-01-01T19:02:00Z"),
+        });
       });
 
       // click menu button
@@ -216,16 +216,17 @@ describe("follow-up session", () => {
       const savedHandle = new MockFileHandle("JSON", "test.json");
       await mockFilePicker.resolveSave(savedHandle);
 
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
-
       // uncheck the first topic
       fireEvent.click(screen.getByRole("checkbox", { name: "Call to Order" }));
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-      await allowPropagation();
-
-      rerender(<SessionEditor session={sessionStore.session} />);
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 100 }
+      );
 
       expect(screen.queryByText("Call to Order")).not.toBeInTheDocument();
 

@@ -1,21 +1,15 @@
 import "./App.css";
 import { SessionEditor } from "./ui/SessionEditor";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { SessionStore } from "./store/SessionStore";
 import { SessionProvider } from "./ui/context/SessionStoreContext";
 import { PersonListContext } from "./ui/context/PersonListContext";
 import { StoredPerson, StoredSession } from "./store/types";
 
-const store = new SessionStore();
-
-// make this available in JS console for HAX
-declare global {
-  // eslint-disable-next-line no-var
-  var __sessionStore: SessionStore;
-}
-globalThis.__sessionStore = store;
-
-function App() {
+export type AppProps = {
+  store: SessionStore;
+};
+export const App: FC<AppProps> = ({ store }) => {
   const [session, setSession] = useState<StoredSession | undefined>(undefined);
   const [personList, setPersonList] = useState<readonly StoredPerson[]>([]);
   useEffect(() => {
@@ -25,7 +19,7 @@ function App() {
       setSession(store.session);
       setPersonList(store.allPeople);
     });
-  }, []);
+  }, [store]);
   if (session === undefined) {
     return <div>Loading...</div>;
   }
@@ -38,6 +32,4 @@ function App() {
       </SessionProvider>
     </>
   );
-}
-
-export default App;
+};

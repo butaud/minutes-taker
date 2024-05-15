@@ -3,6 +3,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -29,7 +30,7 @@ describe("notes", () => {
       text: "Test Note 2",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     const topic1Header = screen.getByText("Test Topic 1");
     const note1 = screen.getByText("Test Note 1");
@@ -68,7 +69,7 @@ describe("notes", () => {
     await user.type(screen.getByLabelText("Text"), "Test Note 2");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
+    rerender(<App store={sessionStore} />);
 
     const note1 = screen.getByText("Test Note 1");
     const note2 = screen.getByText("Test Note 2");

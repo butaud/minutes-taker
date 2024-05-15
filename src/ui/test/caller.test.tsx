@@ -4,6 +4,7 @@ import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { getByTextContent } from "../../test/matchers";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -22,7 +23,7 @@ describe("caller", () => {
       person: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
       role: "Test Role",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(
       screen.getByText(
         getByTextContent("Mr. Jones, Test Role, called the meeting to order.")
@@ -31,7 +32,7 @@ describe("caller", () => {
   });
 
   it("shows default text if there is no caller", () => {
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(
       screen.getByText("The meeting was called to order.")
     ).toBeInTheDocument();
@@ -55,7 +56,7 @@ describe("caller", () => {
     await user.selectOptions(screen.getByLabelText("Caller"), "Bob Jones");
     await user.type(screen.getByLabelText("Role"), "Test Role");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+    rerender(<App store={sessionStore} />);
     expect(
       screen.getByText(
         getByTextContent("Mr. Jones, Test Role, called the meeting to order.")
@@ -87,7 +88,7 @@ describe("caller", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Caller"), "");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+    rerender(<App store={sessionStore} />);
     expect(
       screen.getByText("The meeting was called to order.")
     ).toBeInTheDocument();

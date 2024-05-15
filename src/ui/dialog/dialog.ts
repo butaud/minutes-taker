@@ -33,3 +33,7 @@ export const getDialogResult = async <Input, Result>(
     );
   });
 };
+
+export const __clearDialogs = () => {
+  document.getElementById("modal")?.remove();
+};

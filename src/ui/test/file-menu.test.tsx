@@ -1,12 +1,12 @@
 import { initializeIdb, setIdb, getIdb, clearIdb } from "../../fs/idb.mock";
 import { MockFileHandle, mockFilePicker } from "../../fs/file-manager.mock";
 import { SessionStore } from "../../store/SessionStore";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
 import { unsetHandle } from "../../fs/io";
 import test from "./data/test.json";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -30,7 +30,7 @@ describe("editor", () => {
 
   describe("menu title", () => {
     it("is unsaved before the file is saved", async () => {
-      render(<SessionEditor session={sessionStore.session} />);
+      render(<App store={sessionStore} />);
 
       expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
         "Unsaved"
@@ -38,18 +38,13 @@ describe("editor", () => {
     });
 
     it("is the filename after the file is saved", async () => {
-      const { rerender } = render(
-        <SessionEditor session={sessionStore.session} />
-      );
+      render(<App store={sessionStore} />);
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
       await mockFilePicker.resolveSave(new MockFileHandle("JSON", "test.json"));
-
-      // rerender
-      rerender(<SessionEditor session={sessionStore.session} />);
 
       // assert that the menu icon title is now "test.json"
       await waitFor(
@@ -81,7 +76,7 @@ describe("save button", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -104,7 +99,7 @@ describe("save button", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -137,9 +132,7 @@ describe("save button", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -147,12 +140,12 @@ describe("save button", () => {
     const savedHandle = new MockFileHandle("JSON", "test.json");
     await mockFilePicker.resolveSave(savedHandle);
 
-    sessionStore.addTopic({
-      title: "Another Topic",
-      startTime: new Date(),
-    });
-
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addTopic({
+        title: "Another Topic",
+        startTime: new Date(),
+      })
+    );
 
     // expect new topic to be in the session
     expect(screen.getByText("Another Topic")).toBeInTheDocument();
@@ -162,8 +155,6 @@ describe("save button", () => {
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
     await mockFilePicker.resolveOpen(savedHandle);
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     // expect the original topic to be there but the new topic to be gone
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
@@ -182,7 +173,7 @@ describe("save as button", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save as" }));
@@ -205,7 +196,7 @@ describe("save as button", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -213,10 +204,12 @@ describe("save as button", () => {
     const firstHandle = new MockFileHandle("JSON", "test.json");
     await mockFilePicker.resolveSave(firstHandle);
 
-    sessionStore.addTopic({
-      title: "Another Topic",
-      startTime: new Date(),
-    });
+    act(() =>
+      sessionStore.addTopic({
+        title: "Another Topic",
+        startTime: new Date(),
+      })
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save as" }));
@@ -235,7 +228,7 @@ describe("load button", () => {
     const mockHandle = new MockFileHandle("JSON", "test.json");
     mockHandle.setFileText(jsonToLoad);
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
@@ -250,16 +243,12 @@ describe("load button", () => {
     const mockHandle = new MockFileHandle("JSON", "test.json");
     mockHandle.setFileText(jsonToLoad);
 
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
     await mockFilePicker.resolveOpen(mockHandle);
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
@@ -269,7 +258,7 @@ describe("load button", () => {
   });
 
   it("updates the current file handle if a file has already been loaded", async () => {
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
