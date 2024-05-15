@@ -24,6 +24,11 @@
 .clone-dialog .form-line {
   display: flex;
   flex-direction: row;
+  align-items: center;
+}
+
+.clone-dialog .form-line p {
+  margin: 0;
 }
 
 .clone-dialog input {
