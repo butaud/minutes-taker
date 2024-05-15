@@ -1,6 +1,5 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { getByTextContent } from "../../test/matchers";
@@ -15,13 +14,12 @@ describe("editor", () => {
 
   it("allows undoing changes", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<App store={sessionStore} />);
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<App store={sessionStore} />);
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
 
     await user.hover(screen.getByText("Members in attendance:"));
@@ -39,15 +37,12 @@ describe("editor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
 
-    rerender(<App store={sessionStore} />);
     expect(screen.getByText("Jones, Smith")).toBeInTheDocument();
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "Bob Jones");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("Lead by Mr. Jones"))
@@ -57,7 +52,6 @@ describe("editor", () => {
       key: "z",
       ctrlKey: true,
     });
-    rerender(<App store={sessionStore} />);
 
     expect(
       screen.queryByText(getByTextContent("Lead by Mr. Jones"))
@@ -72,7 +66,6 @@ describe("editor", () => {
       key: "z",
       ctrlKey: true,
     });
-    rerender(<App store={sessionStore} />);
 
     expect(screen.queryByText("Jones, Smith")).not.toBeInTheDocument();
 
@@ -80,20 +73,18 @@ describe("editor", () => {
       key: "z",
       ctrlKey: true,
     });
-    rerender(<App store={sessionStore} />);
 
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
   });
 
   it("allows redoing undone changes", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<App store={sessionStore} />);
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<App store={sessionStore} />);
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
@@ -101,7 +92,6 @@ describe("editor", () => {
       ctrlKey: true,
     });
 
-    rerender(<App store={sessionStore} />);
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
@@ -109,20 +99,18 @@ describe("editor", () => {
       ctrlKey: true,
     });
 
-    rerender(<App store={sessionStore} />);
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
   });
 
   it("clears redo history when a new change is made", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<App store={sessionStore} />);
+    render(<App store={sessionStore} />);
 
     // create a topic
     await user.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<App store={sessionStore} />);
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
 
     // undo creating the topic
@@ -131,7 +119,6 @@ describe("editor", () => {
       ctrlKey: true,
     });
 
-    rerender(<App store={sessionStore} />);
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
 
     // create a new topic
@@ -146,7 +133,6 @@ describe("editor", () => {
     });
 
     // redo should not occur
-    rerender(<App store={sessionStore} />);
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
   });
 });
