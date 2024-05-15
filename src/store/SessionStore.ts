@@ -44,6 +44,7 @@ type AttendanceLists = Pick<
 
 export type CloneProps = {
   startTime: Date;
+  removeCompletedPastActionItems: boolean;
   preserveNoteTopicIds: Set<number>;
   selectedTopicIds: Set<number>;
 };
@@ -79,6 +80,12 @@ export class SessionStore {
     newSession.topics.forEach((topic) => {
       topic.startTime = new Date(topic.startTime.getTime() + timeDifference);
     });
+
+    if (props.removeCompletedPastActionItems) {
+      newSession.pastActionItems = newSession.pastActionItems.filter(
+        (item) => !item.completed
+      );
+    }
 
     this.loadSession(newSession);
   }
