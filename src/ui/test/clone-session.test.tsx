@@ -241,7 +241,7 @@ describe("follow-up session", () => {
       ).not.toBeInTheDocument();
     });
 
-    it.only("should keep notes for topics where button is unchecked", async () => {
+    it("should keep notes for topics where button is unchecked", async () => {
       sessionStore.addTopic({
         title: "Call to Order",
         startTime: new Date("2000-01-01T19:01:00Z"),
