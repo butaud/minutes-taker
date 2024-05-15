@@ -44,6 +44,7 @@ type AttendanceLists = Pick<
 
 export type CloneProps = {
   startTime: Date;
+  removeNotes?: boolean;
 };
 
 export class SessionStore {
@@ -64,6 +65,9 @@ export class SessionStore {
   cloneSession(props: CloneProps) {
     const newSession = this.export();
     newSession.metadata.startTime = props.startTime;
+    if (props.removeNotes) {
+      newSession.topics.forEach((topic) => (topic.notes = []));
+    }
     this.loadSession(newSession);
   }
 

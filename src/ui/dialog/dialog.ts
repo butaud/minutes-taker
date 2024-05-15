@@ -1,5 +1,4 @@
 import { createElement } from "react";
-import ReactDOM from "react-dom";
 import { Dialog } from "./dialog.interface";
 import { createRoot } from "react-dom/client";
 
@@ -15,18 +14,19 @@ export const getDialogResult = async <
   const modalDiv = document.createElement("div");
   modalDiv.id = "modal";
   document.body.appendChild(modalDiv);
+  const dialogRoot = createRoot(modalDiv);
   return new Promise<Result>((resolve, reject) => {
     const onComplete = (result: Result) => {
       resolve(result);
-      ReactDOM.unmountComponentAtNode(modalDiv as Element);
+      dialogRoot.unmount();
       modalDiv.remove();
     };
-    const onReject = () => {
-      reject();
-      ReactDOM.unmountComponentAtNode(modalDiv as Element);
+    const onReject = (error: Error) => {
+      reject(error);
+      dialogRoot.unmount();
       modalDiv.remove();
     };
-    createRoot(modalDiv).render(
+    dialogRoot.render(
       createElement(dialogElement, { complete: onComplete, reject: onReject })
     );
   });

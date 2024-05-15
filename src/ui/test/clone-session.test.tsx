@@ -5,7 +5,7 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { SessionEditor } from "../SessionEditor";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
-import { resetSaveContext } from "../../fs/io";
+import { resetSaveContext, unsetHandle } from "../../fs/io";
 
 let sessionStore: SessionStore;
 
@@ -28,6 +28,7 @@ describe("follow-up session", () => {
   beforeEach(() => {
     mockFilePicker.reset();
     clearIdb();
+    unsetHandle();
     resetSaveContext();
     sessionStore = resetSessionStore({
       metadata: {
@@ -176,6 +177,47 @@ describe("follow-up session", () => {
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
         "Test Meeting - Test Subtitle: Test Location, 1/2/20, 8:00 AM"
       );
+    });
+  });
+  describe("topics", () => {
+    it("should remove all notes from topics", async () => {
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T19:01:00Z"),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "The meeting was called to order at 7:01pm.",
+      });
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      await allowPropagation();
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      mockFilePicker.resolveSave?.(savedHandle);
+
+      await allowPropagation();
+
+      // rerender
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await allowPropagation();
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.getByText("Call to Order")).toBeInTheDocument();
+      expect(
+        screen.queryByText("The meeting was called to order at 7:01pm.")
+      ).not.toBeInTheDocument();
     });
   });
 });

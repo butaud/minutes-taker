@@ -13,6 +13,7 @@ import {
 import { fakeSession } from "../fake-session";
 import { getDialogResult } from "../dialog/dialog";
 import { CloneDialog, CloneDialogResult } from "../dialog/CloneDialog";
+import { CancelledError } from "../dialog/dialog.interface";
 
 export type FileMenuProps = {
   setInserting: (inserting: boolean) => void;
@@ -77,14 +78,22 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
       tryAsyncOperation({
         perform: async () => {
           await saveSession(sessionStore.export(), true);
-          const result = await getDialogResult<
-            CloneDialogResult,
-            typeof CloneDialog
-          >(CloneDialog);
-          sessionStore.cloneSession({
-            startTime: result.startTime,
-          });
-          await unsetHandle();
+          try {
+            const result = await getDialogResult<
+              CloneDialogResult,
+              typeof CloneDialog
+            >(CloneDialog);
+            sessionStore.cloneSession({
+              startTime: result.startTime,
+              removeNotes: true,
+            });
+
+            await unsetHandle();
+          } catch (e) {
+            if (!(e instanceof CancelledError)) {
+              throw e;
+            }
+          }
         },
         successMessage: "Created follow-up session.",
         failureMessage: "Error creating follow-up session.",
