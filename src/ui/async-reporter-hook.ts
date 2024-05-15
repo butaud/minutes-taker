@@ -6,7 +6,7 @@ export type AsyncReport = {
 };
 
 export type AsyncOperation = {
-  perform: () => Promise<void>;
+  perform: () => Promise<string | undefined> | Promise<void>;
   successMessage: string;
   failureMessage: string;
 };
@@ -18,8 +18,11 @@ export const useAsyncReporter = () => {
     setReport(null);
     operation
       .perform()
-      .then(() => {
-        setReport({ type: "info", message: operation.successMessage });
+      .then((result) => {
+        setReport({
+          type: "info",
+          message: result ?? operation.successMessage,
+        });
         setTimeout(() => setReport(null), 5000);
       })
       .catch((e) => {

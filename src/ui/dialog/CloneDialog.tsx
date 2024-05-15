@@ -49,31 +49,61 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
           />
         </div>
         <p>Topics to carry over:</p>
-        {topics.map((topic) => (
-          <div className="form-line" key={topic.id}>
-            <label>
-              {topic.title}
-              <input
-                type="checkbox"
-                value={topic.id}
-                checked={selectedTopicIds.has(topic.id)}
-                onChange={(event) => {
-                  const selected = new Set(selectedTopicIds);
-                  if (event.target.checked) {
-                    selected.add(topic.id);
-                  } else {
-                    selected.delete(topic.id);
-                  }
-                  setSelectedTopicIds(selected);
-                }}
-              />
-            </label>
-          </div>
-        ))}
+        <TopicTable
+          topics={topics}
+          topicIdsToInclude={selectedTopicIds}
+          onToggleIncludeTopic={(topicId) => {
+            const newSelectedTopicIds = new Set(selectedTopicIds);
+            if (newSelectedTopicIds.has(topicId)) {
+              newSelectedTopicIds.delete(topicId);
+            } else {
+              newSelectedTopicIds.add(topicId);
+            }
+            setSelectedTopicIds(newSelectedTopicIds);
+          }}
+        />
         <button onClick={() => complete({ startTime, selectedTopicIds })}>
           Create
         </button>
       </div>
     </div>
+  );
+};
+
+type TopicTableProps = {
+  topics: readonly StoredTopic[];
+  topicIdsToInclude: Set<number>;
+  onToggleIncludeTopic: (topicId: number) => void;
+};
+
+const TopicTable: React.FC<TopicTableProps> = ({
+  topics,
+  topicIdsToInclude,
+  onToggleIncludeTopic,
+}) => {
+  return (
+    <table className="topics">
+      <thead>
+        <tr>
+          <th>Topic</th>
+          <th className="checkbox">Include</th>
+        </tr>
+      </thead>
+      <tbody>
+        {topics.map((topic) => (
+          <tr key={topic.id}>
+            <td title={topic.title}>{topic.title}</td>
+            <td className="checkbox">
+              <input
+                type="checkbox"
+                aria-label={`Keep ${topic.title}`}
+                checked={topicIdsToInclude.has(topic.id)}
+                onChange={() => onToggleIncludeTopic(topic.id)}
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };

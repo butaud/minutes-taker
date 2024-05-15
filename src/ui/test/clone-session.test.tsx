@@ -156,56 +156,17 @@ describe("follow-up session", () => {
     });
   });
   describe("topics", () => {
-    it("should remove all notes from topics", async () => {
-      render(<App store={sessionStore} />);
-
-      act(() => {
-        sessionStore.addTopic({
-          title: "Call to Order",
-          startTime: new Date("2000-01-01T19:01:00Z"),
-        });
-        sessionStore.addNote(sessionStore.session.topics[0].id, {
-          type: "text",
-          text: "The meeting was called to order at 7:01pm.",
-        });
-      });
-
-      // click menu button
-      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
-      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
-
-      const savedHandle = new MockFileHandle("JSON", "test.json");
-      await mockFilePicker.resolveSave(savedHandle);
-
-      fireEvent.click(screen.getByRole("button", { name: "Create" }));
-
-      await waitFor(
-        () =>
-          expect(screen.getByRole("alert")).toHaveTextContent(
-            "Created follow-up session."
-          ),
-        { timeout: 10 }
-      );
-
-      expect(screen.getByText("Call to Order")).toBeInTheDocument();
-      expect(
-        screen.queryByText("The meeting was called to order at 7:01pm.")
-      ).not.toBeInTheDocument();
-    });
-
     it("should allow selecting which topics to keep", async () => {
-      render(<App store={sessionStore} />);
-
-      act(() => {
-        sessionStore.addTopic({
-          title: "Call to Order",
-          startTime: new Date("2000-01-01T19:01:00Z"),
-        });
-        sessionStore.addTopic({
-          title: "Approval of Minutes",
-          startTime: new Date("2000-01-01T19:02:00Z"),
-        });
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T19:01:00Z"),
       });
+      sessionStore.addTopic({
+        title: "Approval of Minutes",
+        startTime: new Date("2000-01-01T19:02:00Z"),
+      });
+
+      render(<App store={sessionStore} />);
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
@@ -215,7 +176,9 @@ describe("follow-up session", () => {
       await mockFilePicker.resolveSave(savedHandle);
 
       // uncheck the first topic
-      fireEvent.click(screen.getByRole("checkbox", { name: "Call to Order" }));
+      fireEvent.click(
+        screen.getByRole("checkbox", { name: "Keep Call to Order" })
+      );
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
       await waitFor(
@@ -229,6 +192,105 @@ describe("follow-up session", () => {
       expect(screen.queryByText("Call to Order")).not.toBeInTheDocument();
 
       expect(screen.queryByText("Approval of Minutes")).toBeInTheDocument();
+    });
+
+    it("should remove notes from all topics by default", async () => {
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T19:01:00Z"),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "The meeting was called to order at 7:01pm.",
+      });
+      sessionStore.addTopic({
+        title: "Approval of Minutes",
+        startTime: new Date("2000-01-01T19:02:00Z"),
+      });
+      sessionStore.addNote(sessionStore.session.topics[1].id, {
+        type: "text",
+        text: "The minutes were approved.",
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(screen.queryByText("Call to Order")).toBeInTheDocument();
+      expect(
+        screen.queryByText("The meeting was called to order at 7:01pm.")
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Approval of Minutes")).toBeInTheDocument();
+      expect(
+        screen.queryByText("The minutes were approved.")
+      ).not.toBeInTheDocument();
+    });
+
+    it("should keep notes for topics where button is unchecked", async () => {
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T19:01:00Z"),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "text",
+        text: "The meeting was called to order at 7:01pm.",
+      });
+      sessionStore.addTopic({
+        title: "Approval of Minutes",
+        startTime: new Date("2000-01-01T19:02:00Z"),
+      });
+      sessionStore.addNote(sessionStore.session.topics[1].id, {
+        type: "text",
+        text: "The minutes were approved.",
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: "Delete notes from Call to Order",
+        })
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(screen.getByText("Call to Order")).toBeInTheDocument();
+      expect(
+        screen.queryByText("The meeting was called to order at 7:01pm.")
+      ).toBeInTheDocument();
+      expect(screen.queryByText("Approval of Minutes")).toBeInTheDocument();
+      expect(
+        screen.queryByText("The minutes were approved.")
+      ).not.toBeInTheDocument();
     });
   });
 });

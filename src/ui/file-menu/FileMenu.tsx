@@ -97,9 +97,10 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
 
             await unsetHandle();
           } catch (e) {
-            if (!(e instanceof CancelledError)) {
-              throw e;
+            if (e instanceof CancelledError) {
+              return "Cancelled creating follow-up session.";
             }
+            throw e;
           }
         },
         successMessage: "Created follow-up session.",

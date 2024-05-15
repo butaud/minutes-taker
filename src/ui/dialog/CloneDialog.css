@@ -31,3 +31,17 @@
   border-radius: 4px;
   border: 1px solid #ccc;
 }
+
+table.topics td,
+table.topics th {
+  text-align: start;
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+table.topics td.checkbox,
+table.topics th.checkbox {
+  text-align: center;
+}
