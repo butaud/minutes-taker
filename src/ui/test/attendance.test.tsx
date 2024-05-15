@@ -1,9 +1,9 @@
 import { SessionStore } from "../../store/SessionStore";
-import { fireEvent, screen, within } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import { getByTextContent } from "../../test/matchers";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -13,27 +13,29 @@ describe("attendance", () => {
   });
 
   it("shows the list of members in attendance", () => {
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
     expect(screen.getByText("Members in attendance:")).toBeInTheDocument();
 
-    sessionStore.addMemberPresent({
-      title: "Mr.",
-      firstName: "Bob",
-      lastName: "Smith",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Smith",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Members in attendance: Smith"))
     ).toBeInTheDocument();
 
-    sessionStore.addMemberPresent({
-      title: "Mr.",
-      firstName: "Joe",
-      lastName: "Williams",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Williams",
+      })
+    );
+
     expect(
       screen.getByText(
         getByTextContent("Members in attendance: Smith, Williams")
@@ -42,27 +44,29 @@ describe("attendance", () => {
   });
 
   it("shows the list of members not in attendance", () => {
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
     expect(screen.getByText("Members not in attendance:")).toBeInTheDocument();
 
-    sessionStore.addMemberAbsent({
-      title: "Mr.",
-      firstName: "Bob",
-      lastName: "Smith",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addMemberAbsent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Smith",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Members not in attendance: Smith"))
     ).toBeInTheDocument();
 
-    sessionStore.addMemberAbsent({
-      title: "Mr.",
-      firstName: "Joe",
-      lastName: "Williams",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addMemberAbsent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Williams",
+      })
+    );
+
     expect(
       screen.getByText(
         getByTextContent("Members not in attendance: Smith, Williams")
@@ -71,54 +75,60 @@ describe("attendance", () => {
   });
 
   it("shows the administrators in attendance", () => {
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     expect(screen.getByText("Administration:")).toBeInTheDocument();
 
-    sessionStore.addAdministrationPresent({
-      title: "Mr.",
-      firstName: "Bob",
-      lastName: "Smith",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addAdministrationPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Smith",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Administration: Smith"))
     ).toBeInTheDocument();
 
-    sessionStore.addAdministrationPresent({
-      title: "Mr.",
-      firstName: "Joe",
-      lastName: "Williams",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addAdministrationPresent({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Williams",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Administration: Smith, Williams"))
     ).toBeInTheDocument();
   });
 
   it("shows the others referenced", () => {
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     expect(screen.getByText("Others referenced:")).toBeInTheDocument();
 
-    sessionStore.addOtherReferenced({
-      title: "Mr.",
-      firstName: "Bob",
-      lastName: "Smith",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addOtherReferenced({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Smith",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Others referenced: Smith"))
     ).toBeInTheDocument();
 
-    sessionStore.addOtherReferenced({
-      title: "Mr.",
-      firstName: "Joe",
-      lastName: "Williams",
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+    act(() =>
+      sessionStore.addOtherReferenced({
+        title: "Mr.",
+        firstName: "Joe",
+        lastName: "Williams",
+      })
+    );
+
     expect(
       screen.getByText(getByTextContent("Others referenced: Smith, Williams"))
     ).toBeInTheDocument();
@@ -127,9 +137,7 @@ describe("attendance", () => {
   it("allows adding members to attendance", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Members in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -139,7 +147,7 @@ describe("attendance", () => {
     );
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByText(getByTextContent("Members in attendance: Jones"))
     ).toBeInTheDocument();
@@ -148,9 +156,7 @@ describe("attendance", () => {
   it("shows an error message if new member does not have first and last name", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Members in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -163,7 +169,6 @@ describe("attendance", () => {
     expect(errorMessage).toHaveTextContent(
       "Please enter a first and last name."
     );
-    rerender(<SessionEditor session={sessionStore.session} />);
   });
 
   it("allows removing members from attendance", async () => {
@@ -176,9 +181,8 @@ describe("attendance", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Members in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
@@ -189,7 +193,7 @@ describe("attendance", () => {
     });
     fireEvent.click(removeButton);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByText(getByTextContent("Members in attendance: Jones"))
     ).not.toBeInTheDocument();
@@ -218,7 +222,7 @@ describe("attendance", () => {
 
     const user = userEvent.setup();
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Members in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -238,9 +242,7 @@ describe("attendance", () => {
   it("allows adding members to not in attendance", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Members not in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -250,7 +252,7 @@ describe("attendance", () => {
     );
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByText(getByTextContent("Members not in attendance: Jones"))
     ).toBeInTheDocument();
@@ -266,9 +268,8 @@ describe("attendance", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Members not in attendance:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
@@ -279,7 +280,7 @@ describe("attendance", () => {
     });
     fireEvent.click(removeButton);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByText(getByTextContent("Members not in attendance: Jones"))
     ).not.toBeInTheDocument();
@@ -288,9 +289,7 @@ describe("attendance", () => {
   it("allows adding administrators to attendance", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Administration:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -300,7 +299,7 @@ describe("attendance", () => {
     );
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByText(getByTextContent("Administration: Jones"))
     ).toBeInTheDocument();
@@ -316,9 +315,8 @@ describe("attendance", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Administration:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
@@ -329,7 +327,7 @@ describe("attendance", () => {
     });
     fireEvent.click(removeButton);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByText(getByTextContent("Administration: Jones"))
     ).not.toBeInTheDocument();
@@ -338,9 +336,7 @@ describe("attendance", () => {
   it("allows adding others referenced", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Others referenced:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -350,7 +346,7 @@ describe("attendance", () => {
     );
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByText(getByTextContent("Others referenced: Jones"))
     ).toBeInTheDocument();
@@ -366,9 +362,8 @@ describe("attendance", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Others referenced:"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
@@ -379,7 +374,7 @@ describe("attendance", () => {
     });
     fireEvent.click(removeButton);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByText(getByTextContent("Others referenced: Jones"))
     ).not.toBeInTheDocument();

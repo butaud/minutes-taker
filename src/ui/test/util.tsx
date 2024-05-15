@@ -4,7 +4,11 @@ import { SessionStore } from "../../store/SessionStore";
 import { ReactElement } from "react";
 import { SessionProvider } from "../context/SessionStoreContext";
 import { PersonListContext } from "../context/PersonListContext";
-import { render as origRender, RenderOptions } from "@testing-library/react";
+import {
+  render as origRender,
+  RenderOptions,
+  screen,
+} from "@testing-library/react";
 
 export const makeEmptySession: () => Session = () => ({
   metadata: {
@@ -44,4 +48,26 @@ export const resetSessionStore = (overrides?: Partial<Session>) => {
   newStore.loadSession({ ...makeEmptySession(), ...overrides });
   renderContext.sessionStore = newStore;
   return newStore;
+};
+
+export const findListItemByTextContent = (textContent: string) => {
+  const allListItems = screen.getAllByRole("listitem");
+  return allListItems.find((listitem) => listitem.textContent === textContent);
+};
+
+export const getListItemByTextContent = (textContent: string) => {
+  const allListItems = screen.getAllByRole("listitem");
+  const found = allListItems.find(
+    (listitem) => listitem.textContent === textContent
+  );
+  if (found === undefined) {
+    screen.debug();
+    const allText = allListItems
+      .map((listitem) => listitem.textContent)
+      .join("\n");
+    throw new Error(
+      `Could not find list item with text content "${textContent}". Found these items:\n${allText}`
+    );
+  }
+  return found;
 };

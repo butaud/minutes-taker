@@ -1,9 +1,9 @@
 import { SessionStore } from "../../store/SessionStore";
-import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
+import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { getByTextContent } from "../../test/matchers";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -24,17 +24,18 @@ describe("topics", () => {
       durationMinutes: 5,
     });
 
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     expect(screen.getAllByText("Test Topic", { exact: false })).toHaveLength(2);
-    sessionStore.addTopic({
-      title: "Test Topic 3",
-      startTime: new Date(),
-      durationMinutes: 5,
-    });
-    rerender(<SessionEditor session={sessionStore.session} />);
+
+    act(() =>
+      sessionStore.addTopic({
+        title: "Test Topic 3",
+        startTime: new Date(),
+        durationMinutes: 5,
+      })
+    );
+
     expect(screen.getAllByText("Test Topic", { exact: false })).toHaveLength(3);
   });
 
@@ -45,7 +46,7 @@ describe("topics", () => {
       durationMinutes: 5,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
   });
@@ -56,7 +57,7 @@ describe("topics", () => {
       startTime: new Date("2020-01-01T12:00:00Z"),
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(screen.getByText("12:00 PM")).toBeInTheDocument();
   });
 
@@ -67,7 +68,7 @@ describe("topics", () => {
       durationMinutes: 5,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(screen.getByText("12:00 PM for 5 minutes")).toBeInTheDocument();
   });
 
@@ -83,7 +84,7 @@ describe("topics", () => {
       durationMinutes: 5,
       leader: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(
       screen.getByText(getByTextContent("Lead by Mr. Jones"))
     ).toBeInTheDocument();
@@ -101,7 +102,7 @@ describe("topics", () => {
       durationMinutes: 5,
       leader: { title: "Mrs.", firstName: "Mary", lastName: "Jones" },
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(
       screen.getByText(getByTextContent("Lead by Mrs. Jones"))
     ).toBeInTheDocument();
@@ -115,16 +116,14 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.clear(screen.getByLabelText("Title"));
     await user.type(screen.getByLabelText("Title"), "New Topic Title");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("New Topic Title")).toBeInTheDocument();
   });
 
@@ -136,9 +135,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -146,7 +143,7 @@ describe("topics", () => {
       target: { value: "13:00" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("1:00 PM for 5 minutes")).toBeInTheDocument();
   });
 
@@ -158,16 +155,14 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.clear(screen.getByLabelText("Duration (minutes)"));
     await user.type(screen.getByLabelText("Duration (minutes)"), "10");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("12:00 PM for 10 minutes")).toBeInTheDocument();
   });
 
@@ -185,15 +180,13 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "Bob Jones");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByText(getByTextContent("Lead by Mr. Jones"))
     ).toBeInTheDocument();
@@ -214,15 +207,13 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByText(getByTextContent("Lead by Mr. Jones"))
     ).not.toBeInTheDocument();
@@ -236,9 +227,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -248,8 +237,6 @@ describe("topics", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     // for some reason this test is triggering the onSubmit for the form and it's saving even though it should cancel
-
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(screen.getByText("12:00 PM for 5 minutes")).toBeInTheDocument();
   });
 
@@ -261,7 +248,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -274,26 +261,24 @@ describe("topics", () => {
 
   it("saves the topic when the enter key is pressed", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     await user.keyboard("{enter}");
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
   });
 
   it("allows adding a topic", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     await user.type(screen.getByLabelText("Duration (minutes)"), "5");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("Test Topic")).toBeInTheDocument();
   });
 
@@ -304,9 +289,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
       key: "i",
@@ -317,7 +300,6 @@ describe("topics", () => {
     await user.type(screen.getByLabelText("Title"), "New Topic");
     await user.type(screen.getByLabelText("Duration (minutes)"), "5");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     const existingTopic = screen.getByText("Existing Topic");
     const newTopic = screen.getByText("New Topic");
@@ -331,9 +313,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
       key: "i",
@@ -347,7 +327,7 @@ describe("topics", () => {
     });
     await user.type(screen.getByLabelText("Duration (minutes)"), "5");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("1:00 PM for 5 minutes")).toBeInTheDocument();
   });
 
@@ -360,14 +340,12 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     fireEvent.click(screen.getByRole("button", { name: "Add Topic" }));
     await user.type(screen.getByLabelText("Title"), "Test Topic");
     await user.type(screen.getByLabelText("Duration (minutes)"), "5");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(screen.getByText(`12:05 PM for 5 minutes`)).toBeInTheDocument();
   });
@@ -388,9 +366,7 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
       key: "i",
@@ -405,7 +381,7 @@ describe("topics", () => {
     fireEvent.click(middleInsertButton);
     await user.type(screen.getByLabelText("Title"), "New Topic");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("12:05 PM")).toBeInTheDocument();
   });
 
@@ -417,12 +393,11 @@ describe("topics", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Topic"));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.queryByText("Test Topic")).not.toBeInTheDocument();
   });
 
@@ -443,13 +418,10 @@ describe("topics", () => {
       durationMinutes: 5,
     });
 
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Sort Topics" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     const topic1 = screen.getByText("Topic 1");
     const topic2 = screen.getByText("Topic 2");

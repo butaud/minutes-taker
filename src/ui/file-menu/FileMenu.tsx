@@ -3,8 +3,21 @@ import "./FileMenu.css";
 import { useSessionStore } from "../context/SessionStoreContext";
 import { useInserting } from "../context/InsertingContext";
 import { useAsyncReporter } from "../async-reporter-hook";
-import { loadSession, saveSession, saveSessionAsDocx, useContextFilename } from "../../fs/io";
+import {
+  loadSession,
+  saveSession,
+  saveSessionAsDocx,
+  unsetHandle,
+  useContextFilename,
+} from "../../fs/io";
 import { fakeSession } from "../fake-session";
+import { getDialogResult } from "../dialog/dialog";
+import {
+  CloneDialog,
+  CloneDialogProps,
+  CloneDialogResult,
+} from "../dialog/CloneDialog";
+import { CancelledError } from "../dialog/dialog.interface";
 
 export type FileMenuProps = {
   setInserting: (inserting: boolean) => void;
@@ -64,6 +77,33 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
       }),
     [sessionStore, tryAsyncOperation]
   );
+  const createFollowUpSession = useCallback(
+    () =>
+      tryAsyncOperation({
+        perform: async () => {
+          await saveSession(sessionStore.export(), true);
+          try {
+            const result = await getDialogResult<
+              CloneDialogProps,
+              CloneDialogResult
+            >(CloneDialog, {
+              topics: sessionStore.session.topics,
+            });
+            sessionStore.cloneSession(result);
+
+            await unsetHandle();
+          } catch (e) {
+            if (e instanceof CancelledError) {
+              return "Cancelled creating follow-up session.";
+            }
+            throw e;
+          }
+        },
+        successMessage: "Created follow-up session.",
+        failureMessage: "Error creating follow-up session.",
+      }),
+    [tryAsyncOperation, sessionStore]
+  );
   const loadFake = useCallback(
     () => sessionStore.loadSession(fakeSession),
     [sessionStore]
@@ -111,6 +151,7 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
     { label: "Save as", action: saveAs },
     { label: "Load", action: load },
     { label: "Export", action: exportDocx },
+    { label: "Follow-up...", action: createFollowUpSession },
     { label: "Load Fake Data", action: loadFake },
   ];
   const editButtons = [
@@ -143,25 +184,25 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
         </i>
         {expanded && (
           <>
-          <ul>
-            {fileButtons.map((button) => (
-              <MenuButton
-                key={button.label}
-                action={button.action}
-                label={button.label}
-                closeMenu={closeMenu}
-              />
-            ))}
-            <hr />
-            {editButtons.map((button) => (
-              <MenuButton
-                key={button.label}
-                action={button.action}
-                label={button.label}
-                closeMenu={closeMenu}
-              />
-            ))}
-          </ul>
+            <ul>
+              {fileButtons.map((button) => (
+                <MenuButton
+                  key={button.label}
+                  action={button.action}
+                  label={button.label}
+                  closeMenu={closeMenu}
+                />
+              ))}
+              <hr />
+              {editButtons.map((button) => (
+                <MenuButton
+                  key={button.label}
+                  action={button.action}
+                  label={button.label}
+                  closeMenu={closeMenu}
+                />
+              ))}
+            </ul>
           </>
         )}
       </div>

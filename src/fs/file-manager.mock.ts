@@ -1,3 +1,4 @@
+import { allowPropagation } from "../util/test";
 import { FileType, IFileHandle, IFilePicker } from "./file-manager.interface";
 
 export type IMockFileHandle = IFileHandle & {
@@ -53,8 +54,20 @@ export type IMockFilePicker = IFilePicker & {
 };
 
 export class MockFilePicker implements IMockFilePicker {
-  resolveOpen: ((handle: IMockFileHandle) => void) | undefined;
-  resolveSave: ((handle: IMockFileHandle) => void) | undefined;
+  private _resolveOpen: ((handle: IMockFileHandle) => void) | undefined;
+  private _resolveSave: ((handle: IMockFileHandle) => void) | undefined;
+
+  public async resolveOpen(handle: IMockFileHandle) {
+    await allowPropagation();
+    this._resolveOpen?.(handle);
+    await allowPropagation();
+  }
+
+  public async resolveSave(handle: IMockFileHandle) {
+    await allowPropagation();
+    this._resolveSave?.(handle);
+    await allowPropagation();
+  }
 
   reset = () => {
     mockData.filename = "";
@@ -62,13 +75,13 @@ export class MockFilePicker implements IMockFilePicker {
 
   open = (_type: FileType): Promise<IFileHandle> => {
     return new Promise<IMockFileHandle>((resolve) => {
-      this.resolveOpen = resolve;
+      this._resolveOpen = resolve;
     });
   };
 
   save = (_type: FileType, _suggestedName: string): Promise<IFileHandle> => {
     return new Promise<IMockFileHandle>((resolve) => {
-      this.resolveSave = resolve;
+      this._resolveSave = resolve;
     });
   };
 }

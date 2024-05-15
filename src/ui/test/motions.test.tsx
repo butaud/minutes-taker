@@ -1,9 +1,9 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { getByTextContent } from "../../test/matchers";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -37,7 +37,7 @@ describe("motions", () => {
       outcome: "withdrawn",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved Test Motion"))
@@ -69,7 +69,7 @@ describe("motions", () => {
       outcome: "withdrawn",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("Mr. Smith seconded."))
@@ -101,7 +101,7 @@ describe("motions", () => {
       outcome: "withdrawn",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("The motion was withdrawn."))
@@ -136,7 +136,7 @@ describe("motions", () => {
       abstainedCount: 1,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(
@@ -173,7 +173,7 @@ describe("motions", () => {
       abstainedCount: 1,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("Vote: 2 in favor, 1 abstained"))
@@ -207,7 +207,7 @@ describe("motions", () => {
       opposedCount: 2,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(
       screen.getByText(getByTextContent("Vote: 1 in favor, 2 opposed"))
@@ -242,7 +242,7 @@ describe("motions", () => {
       abstainedCount: 1,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
   });
@@ -275,7 +275,7 @@ describe("motions", () => {
       abstainedCount: 1,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
   });
@@ -308,7 +308,7 @@ describe("motions", () => {
       abstainedCount: 1,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.queryByText("Vote:")).not.toBeInTheDocument();
   });
@@ -344,16 +344,13 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Mover:"), "Joe Brown");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(screen.getByText("Mr. Brown")).toBeInTheDocument();
   });
 
@@ -388,16 +385,13 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Seconder:"), "Joe Brown");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Brown seconded."))
     ).toBeInTheDocument();
@@ -429,9 +423,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -439,7 +431,6 @@ describe("motions", () => {
     await user.type(screen.getByLabelText("Text:"), "Updated Motion");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved Updated Motion"))
     ).toBeInTheDocument();
@@ -471,16 +462,13 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Outcome:"), "passed");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(screen.getByText("Motion passed.")).toBeInTheDocument();
   });
 
@@ -510,9 +498,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -521,7 +507,6 @@ describe("motions", () => {
     await user.type(screen.getByLabelText("Abstained:"), "1");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(
         getByTextContent("Vote: 10 in favor, 5 opposed, 1 abstained")
@@ -555,9 +540,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -566,7 +549,6 @@ describe("motions", () => {
     await user.type(screen.getByLabelText("Abstained:"), "2");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(
         getByTextContent("Vote: 5 in favor, 7 opposed, 2 abstained")
@@ -600,7 +582,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -635,7 +617,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -670,7 +652,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -705,9 +687,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -715,7 +695,6 @@ describe("motions", () => {
     await user.type(screen.getByLabelText("Text:"), "Updated Motion");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved Test Motion"))
     ).toBeInTheDocument();
@@ -747,9 +726,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Mr. Jones"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -757,7 +734,6 @@ describe("motions", () => {
     await user.type(screen.getByLabelText("Text:"), "Updated Motion");
     await user.keyboard("{enter}");
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved Updated Motion"))
     ).toBeInTheDocument();
@@ -781,9 +757,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
@@ -792,7 +766,6 @@ describe("motions", () => {
     await user.selectOptions(screen.getByLabelText("Outcome:"), "tabled");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
     ).toBeInTheDocument();
@@ -817,9 +790,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
@@ -827,7 +798,6 @@ describe("motions", () => {
     await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
     ).toBeInTheDocument();
@@ -854,7 +824,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.selectOptions(screen.getByLabelText("Mover:"), "Bob Jones");
@@ -882,16 +852,13 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
     await user.selectOptions(screen.getByLabelText("Seconder:"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Jones moved New Motion"))
     ).toBeInTheDocument();
@@ -915,16 +882,13 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");
     await user.selectOptions(screen.getByLabelText("Mover:"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<SessionEditor session={sessionStore.session} />);
     expect(
       screen.getByText(getByTextContent("Mr. Smith moved New Motion"))
     ).toBeInTheDocument();
@@ -948,7 +912,7 @@ describe("motions", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await user.click(screen.getByRole("button", { name: "Add Motion" }));
     await user.type(screen.getByLabelText("Text:"), "New Motion");

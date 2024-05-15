@@ -1,8 +1,8 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -13,7 +13,7 @@ describe("calendar", () => {
 
   it("shows empty months if there are no calendar items for that month", () => {
     sessionStore.addCalendarMonth("September", 0);
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.getByText("Board Calendar Items")).toBeInTheDocument();
     expect(screen.getByText("September")).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("calendar", () => {
       completed: false,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     const septMonth = screen.getByText("September");
     const octMonth = screen.getByText("October");
@@ -59,7 +59,7 @@ describe("calendar", () => {
       completed: false,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(screen.getByText("Test Calendar Item 1")).toHaveClass("completed");
     expect(screen.getByText("Test Calendar Item 2")).not.toHaveClass(
       "completed"
@@ -69,9 +69,7 @@ describe("calendar", () => {
   it("allows adding any month if there are no existing months", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Board Calendar Items"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -79,7 +77,7 @@ describe("calendar", () => {
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("September")).toBeInTheDocument();
   });
 
@@ -88,15 +86,13 @@ describe("calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
     sessionStore.addCalendarMonth("October", 1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("October"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.click(screen.getByRole("button", { name: "Add August" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("August")).toBeInTheDocument();
   });
 
@@ -105,15 +101,13 @@ describe("calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
     sessionStore.addCalendarMonth("October", 1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("October"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.click(screen.getByRole("button", { name: "Add November" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("November")).toBeInTheDocument();
   });
 
@@ -122,15 +116,13 @@ describe("calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
     sessionStore.addCalendarMonth("October", 1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("October"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete September" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.queryByText("September")).not.toBeInTheDocument();
   });
 
@@ -139,9 +131,7 @@ describe("calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
     sessionStore.addCalendarMonth("October", 1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("October"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -150,7 +140,7 @@ describe("calendar", () => {
     await user.type(allItemInputs[0], "Test Calendar Item");
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("Test Calendar Item")).toBeInTheDocument();
   });
 
@@ -166,9 +156,7 @@ describe("calendar", () => {
       completed: false,
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("September"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -178,7 +166,7 @@ describe("calendar", () => {
     expect(allItemDeleteButtons).toHaveLength(2);
     fireEvent.click(allItemDeleteButtons[1]);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.queryByText("Test Calendar Item 1")).toBeInTheDocument();
     expect(screen.queryByText("Test Calendar Item 2")).not.toBeInTheDocument();
   });
@@ -194,9 +182,7 @@ describe("calendar", () => {
       completed: false,
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("September"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -206,7 +192,7 @@ describe("calendar", () => {
     expect(allItemDeleteButtons).toHaveLength(2);
     fireEvent.click(allItemDeleteButtons[0]);
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.queryByText("Test Calendar Item 1")).not.toBeInTheDocument();
     expect(screen.queryByText("Test Calendar Item 2")).toBeInTheDocument();
   });
@@ -219,9 +205,7 @@ describe("calendar", () => {
       completed: false,
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("September"));
     await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -231,7 +215,7 @@ describe("calendar", () => {
     await user.type(input, "New Calendar Item Text");
     await user.keyboard("{enter}");
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("New Calendar Item Text")).toBeInTheDocument();
   });
   it("allows marking a calendar item as completed", async () => {
@@ -242,9 +226,7 @@ describe("calendar", () => {
       completed: false,
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("September"));
     await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -252,7 +234,7 @@ describe("calendar", () => {
     await user.click(screen.getByLabelText("Completed"));
     await user.click(screen.getByRole("button", { name: "Save" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("Test Calendar Item")).toHaveClass("completed");
   });
 
@@ -264,9 +246,7 @@ describe("calendar", () => {
       completed: true,
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("September"));
     await fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -274,13 +254,13 @@ describe("calendar", () => {
     await user.click(screen.getByLabelText("Completed"));
     await user.click(screen.getByRole("button", { name: "Save" }));
     fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByText("Test Calendar Item")).not.toHaveClass("completed");
   });
 
   it("allows collapsing the calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.getByText("Board Calendar Items")).toBeInTheDocument();
     expect(screen.getByText("September")).toBeInTheDocument();
@@ -293,7 +273,7 @@ describe("calendar", () => {
 
   it("allows expanding the calendar", () => {
     sessionStore.addCalendarMonth("September", 0);
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     expect(screen.getByText("Board Calendar Items")).toBeInTheDocument();
     expect(screen.getByText("September")).toBeInTheDocument();

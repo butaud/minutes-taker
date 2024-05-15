@@ -42,6 +42,14 @@ type AttendanceLists = Pick<
   | "othersReferenced"
 >;
 
+export type CloneProps = {
+  startTime: Date;
+  removeCompletedPastActionItems: boolean;
+  resetMotionOutcomes: boolean;
+  preserveNoteTopicIds: Set<number>;
+  selectedTopicIds: Set<number>;
+};
+
 export class SessionStore {
   private callbacks: ((session: StoredSession) => void)[] = [];
   private db: ISessionDb;
@@ -55,6 +63,60 @@ export class SessionStore {
     this.db.undoHistory = [];
     this.db.currentSession = this.convertSession(session);
     this.callbacks.forEach((callback) => callback(this.db.currentSession));
+  }
+
+  cloneSession(props: CloneProps) {
+    const topicFilter = (topic: StoredTopic) =>
+      props.selectedTopicIds.has(topic.id);
+    const noteFilter = (topic: StoredTopic) =>
+      props.preserveNoteTopicIds.has(topic.id);
+
+    const newSession = this.export(topicFilter, noteFilter);
+    newSession.metadata.startTime = props.startTime;
+
+    // offset the topic start times based on the new start time
+    const originalStartTime = this.db.currentSession.metadata.startTime;
+    const newStartTime = props.startTime;
+    const timeDifference = newStartTime.getTime() - originalStartTime.getTime();
+    newSession.topics.forEach((topic) => {
+      topic.startTime = new Date(topic.startTime.getTime() + timeDifference);
+    });
+
+    if (props.removeCompletedPastActionItems) {
+      newSession.pastActionItems = newSession.pastActionItems.filter(
+        (item) => !item.completed
+      );
+    }
+
+    // convert new action items to past action items
+    this.db.currentSession.topics.forEach((topic) => {
+      topic.notes.forEach((note) => {
+        if (isActionItemNote(note)) {
+          newSession.pastActionItems.push({
+            text: note.text,
+            assignee: note.assignee,
+            dueDate: note.dueDate,
+            completed: false,
+          });
+        }
+      });
+    });
+
+    // reset motion outcomes
+    if (props.resetMotionOutcomes) {
+      newSession.topics.forEach((topic) => {
+        topic.notes.forEach((note) => {
+          if (isMotionNote(note)) {
+            note.outcome = "active";
+            note.inFavorCount = 0;
+            note.opposedCount = 0;
+            note.abstainedCount = 0;
+          }
+        });
+      });
+    }
+
+    this.loadSession(newSession);
   }
 
   private convertSession(session: Session): StoredSession {
@@ -739,12 +801,17 @@ export class SessionStore {
     }));
   };
 
-  private exportTopic = (topic: StoredTopic): Topic => ({
+  private exportTopic = (
+    topic: StoredTopic,
+    noteFilter?: (topic: StoredTopic, note: StoredNote) => boolean
+  ): Topic => ({
     title: topic.title,
     startTime: topic.startTime,
     durationMinutes: topic.durationMinutes,
     leader: topic.leader && this.exportPerson(topic.leader),
-    notes: topic.notes.map(this.exportNote),
+    notes: topic.notes
+      .filter((note) => noteFilter?.(topic, note) ?? true)
+      .map(this.exportNote),
   });
 
   private exportCommittee = (committee: StoredCommittee): Committee => ({
@@ -761,9 +828,14 @@ export class SessionStore {
     completed: pastActionItem.completed,
   });
 
-  export = (): Session => {
+  export = (
+    topicFilter?: (topic: StoredTopic) => boolean,
+    noteFilter?: (topic: StoredTopic, note: StoredNote) => boolean
+  ): Session => {
     const metadata = this.db.currentSession.metadata;
-    const topics = this.db.currentSession.topics;
+    const topics = topicFilter
+      ? this.db.currentSession.topics.filter(topicFilter)
+      : this.db.currentSession.topics;
     const committees = this.db.currentSession.committees;
     const pastActionItems = this.db.currentSession.pastActionItems;
     return {
@@ -777,7 +849,7 @@ export class SessionStore {
         othersReferenced: metadata.othersReferenced.map(this.exportPerson),
       },
       calendar: this.exportCalendar(this.db.currentSession.calendar),
-      topics: topics.map(this.exportTopic),
+      topics: topics.map((topic) => this.exportTopic(topic, noteFilter)),
       committees: committees.map(this.exportCommittee),
       pastActionItems: pastActionItems.map(this.exportPastActionItem),
     };

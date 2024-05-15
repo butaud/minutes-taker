@@ -1,33 +1,16 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
-import { render, resetSessionStore } from "./util";
+import {
+  findListItemByTextContent,
+  getListItemByTextContent,
+  render,
+  resetSessionStore,
+} from "./util";
 import { getByTextContent } from "../../test/matchers";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
-
-const findListItemByTextContent = (textContent: string) => {
-  const allListItems = screen.getAllByRole("listitem");
-  return allListItems.find((listitem) => listitem.textContent === textContent);
-};
-
-const getListItemByTextContent = (textContent: string) => {
-  const allListItems = screen.getAllByRole("listitem");
-  const found = allListItems.find(
-    (listitem) => listitem.textContent === textContent
-  );
-  if (found === undefined) {
-    screen.debug();
-    const allText = allListItems
-      .map((listitem) => listitem.textContent)
-      .join("\n");
-    throw new Error(
-      `Could not find list item with text content "${textContent}". Found these items:\n${allText}`
-    );
-  }
-  return found;
-};
 
 describe("listed action items", () => {
   beforeEach(() => {
@@ -53,7 +36,7 @@ describe("listed action items", () => {
       completed: false,
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     const header = screen.getByText("Carried Forward Action Items");
     const actionItem1 = getListItemByTextContent(
@@ -83,7 +66,7 @@ describe("listed action items", () => {
       text: "Test Action Item",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     const header = screen.getByText("New Action Items");
     const actionItem = getListItemByTextContent(
@@ -100,9 +83,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Action Item" }));
     await user.type(
@@ -115,8 +96,6 @@ describe("listed action items", () => {
     });
     fireEvent.click(screen.getByLabelText("Completed"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       getListItemByTextContent("Mr. User to Test Action Item by 1/1/21. (Done)")
@@ -143,9 +122,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(
       getListItemByTextContent(
@@ -153,8 +130,6 @@ describe("listed action items", () => {
       )
     );
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       findListItemByTextContent(
@@ -186,7 +161,7 @@ describe("listed action items", () => {
       text: "Test Action Item",
     });
 
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
 
     await userEvent.hover(
       screen.getByText(
@@ -218,9 +193,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(
       screen.getByText(
@@ -232,8 +205,6 @@ describe("listed action items", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.selectOptions(screen.getByLabelText("Assignee"), "Tom Smith");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       screen.getByText(
@@ -258,9 +229,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(
       screen.getByText(
@@ -274,8 +243,6 @@ describe("listed action items", () => {
       target: { value: "2021-02-01" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       screen.getByText(
@@ -300,9 +267,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(
       screen.getByText(
@@ -318,8 +283,6 @@ describe("listed action items", () => {
       "Updated Action Item"
     );
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       screen.getByText(
@@ -344,9 +307,7 @@ describe("listed action items", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(
       screen.getByText(
@@ -358,8 +319,6 @@ describe("listed action items", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.click(screen.getByLabelText("Completed"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<SessionEditor session={sessionStore.session} />);
 
     expect(
       screen.getByText(

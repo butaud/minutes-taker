@@ -1,8 +1,8 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
+import { App } from "../../App";
 
 let sessionStore: SessionStore;
 
@@ -21,7 +21,7 @@ describe("link notes", () => {
       text: "Test Link",
       url: "https://example.com",
     });
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     expect(screen.getByRole("link", { name: "Test Link" })).toHaveAttribute(
       "href",
       "https://example.com"
@@ -39,14 +39,13 @@ describe("link notes", () => {
       url: "https://example.com",
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.type(screen.getByLabelText("Text"), " edited");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.getByRole("link", { name: "Test Link edited" })
     ).toBeInTheDocument();
@@ -64,15 +63,13 @@ describe("link notes", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.type(screen.getByLabelText("URL"), "edited");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByRole("link", { name: "Test Link" })).toHaveAttribute(
       "href",
       "https://example.com/edited"
@@ -90,14 +87,13 @@ describe("link notes", () => {
       url: "https://example.com/",
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.type(screen.getByLabelText("Text"), " edited");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByRole("link", { name: "Test Link" })).toBeInTheDocument();
   });
 
@@ -112,7 +108,8 @@ describe("link notes", () => {
       url: "https://example.com/",
     });
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.clear(screen.getByLabelText("Text"));
@@ -133,7 +130,7 @@ describe("link notes", () => {
     });
 
     const user = userEvent.setup();
-    render(<SessionEditor session={sessionStore.session} />);
+    render(<App store={sessionStore} />);
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.clear(screen.getByLabelText("URL"));
@@ -148,15 +145,13 @@ describe("link notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Link Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Link");
     await user.type(screen.getByLabelText("URL"), "https://example.com");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByRole("link", { name: "Test Link" })).toHaveAttribute(
       "href",
       "https://example.com"
@@ -169,15 +164,13 @@ describe("link notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Link Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Link");
     await user.type(screen.getByLabelText("URL"), "https://example.com");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByRole("link", { name: "Test Link" })
     ).not.toBeInTheDocument();
@@ -189,15 +182,13 @@ describe("link notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Link Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Link");
     await user.type(screen.getByLabelText("URL"), "https://example.com");
     await user.keyboard("{enter}");
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(screen.getByRole("link", { name: "Test Link" })).toHaveAttribute(
       "href",
       "https://example.com"
@@ -216,12 +207,11 @@ describe("link notes", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Link"));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    rerender(<SessionEditor session={sessionStore.session} />);
+
     expect(
       screen.queryByRole("link", { name: "Test Link" })
     ).not.toBeInTheDocument();
