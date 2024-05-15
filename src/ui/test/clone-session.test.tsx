@@ -88,13 +88,8 @@ describe("follow-up session", () => {
       const originalHandle = new MockFileHandle("JSON", "test.json");
       await mockFilePicker.resolveSave(originalHandle);
 
-      await waitFor(
-        () => {
-          expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
-            "test.json"
-          );
-        },
-        { timeout: 1000 }
+      expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+        "test.json"
       );
 
       // click menu button
@@ -114,14 +109,17 @@ describe("follow-up session", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-      // expect it to be in unsaved state
       await waitFor(
-        () => {
-          expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
-            "Unsaved"
-          );
-        },
-        { timeout: 1000 }
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      // expect it to be in unsaved state
+      expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+        "Unsaved"
       );
     });
   });
@@ -149,7 +147,7 @@ describe("follow-up session", () => {
           expect(screen.getByRole("alert")).toHaveTextContent(
             "Created follow-up session."
           ),
-        { timeout: 100 }
+        { timeout: 10 }
       );
 
       expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
@@ -186,7 +184,7 @@ describe("follow-up session", () => {
           expect(screen.getByRole("alert")).toHaveTextContent(
             "Created follow-up session."
           ),
-        { timeout: 100 }
+        { timeout: 10 }
       );
 
       expect(screen.getByText("Call to Order")).toBeInTheDocument();
@@ -225,7 +223,7 @@ describe("follow-up session", () => {
           expect(screen.getByRole("alert")).toHaveTextContent(
             "Created follow-up session."
           ),
-        { timeout: 100 }
+        { timeout: 10 }
       );
 
       expect(screen.queryByText("Call to Order")).not.toBeInTheDocument();

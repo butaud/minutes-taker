@@ -1,5 +1,5 @@
 import { Session } from "minutes-model";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { exportSessionToDocx } from "./doc";
 import { getIdb, initializeIdb, setIdb } from "./idb";
 import { upgradeSerializedSession } from "../util/upgrade";
@@ -104,18 +104,21 @@ export const useContextFilename: () => string | undefined = () => {
     undefined
   );
 
-  // poll to keep contextFilename up to date
-  useEffect(() => {
-    const intervalHandle = setInterval(() => {
+  useSyncExternalStore(
+    (callback) => {
+      const callbackIndex = saveContext.addCallback(callback);
+      return () => {
+        saveContext.removeCallback(callbackIndex);
+      };
+    },
+    () => {
       const currentContextFilename = saveContext.currentFilename;
       if (contextFilename != currentContextFilename) {
         setContextFilename(currentContextFilename);
       }
-    }, 500);
-    return () => {
-      clearInterval(intervalHandle);
-    };
-  }, [contextFilename]);
+    }
+  );
+
   return contextFilename;
 };
 

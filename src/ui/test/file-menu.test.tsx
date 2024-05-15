@@ -47,13 +47,9 @@ describe("editor", () => {
       await mockFilePicker.resolveSave(new MockFileHandle("JSON", "test.json"));
 
       // assert that the menu icon title is now "test.json"
-      await waitFor(
-        () => {
-          expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
-            "test.json"
-          );
-        },
-        { timeout: 1000 }
+
+      expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+        "test.json"
       );
     });
   });
@@ -107,10 +103,12 @@ describe("save button", () => {
     const firstHandle = new MockFileHandle("JSON", "test.json");
     await mockFilePicker.resolveSave(firstHandle);
 
-    sessionStore.addTopic({
-      title: "Another Topic",
-      startTime: new Date(),
-    });
+    act(() =>
+      sessionStore.addTopic({
+        title: "Another Topic",
+        startTime: new Date(),
+      })
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -250,11 +248,9 @@ describe("load button", () => {
 
     await mockFilePicker.resolveOpen(mockHandle);
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
-        "test.json"
-      );
-    });
+    expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
+      "test.json"
+    );
   });
 
   it("updates the current file handle if a file has already been loaded", async () => {
@@ -277,10 +273,12 @@ describe("load button", () => {
 
     await mockFilePicker.resolveOpen(secondHandle);
 
-    sessionStore.updateMetadata({
-      ...sessionStore.session.metadata,
-      title: "Modified Title",
-    });
+    act(() =>
+      sessionStore.updateMetadata({
+        ...sessionStore.session.metadata,
+        title: "Modified Title",
+      })
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
