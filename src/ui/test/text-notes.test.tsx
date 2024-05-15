@@ -1,6 +1,5 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { App } from "../../App";
@@ -35,14 +34,13 @@ describe("text notes", () => {
       text: "Test Note",
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Note"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.type(screen.getByLabelText("Text"), " edited");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<App store={sessionStore} />);
+
     expect(screen.getByText("Test Note edited")).toBeInTheDocument();
   });
 
@@ -56,14 +54,13 @@ describe("text notes", () => {
       text: "Test Note",
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Note"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     await user.type(screen.getByLabelText("Text"), " edited");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    rerender(<App store={sessionStore} />);
+
     expect(screen.getByText("Test Note")).toBeInTheDocument();
   });
 
@@ -92,14 +89,12 @@ describe("text notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Note");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<App store={sessionStore} />);
+
     expect(screen.getByText("Test Note")).toBeInTheDocument();
   });
 
@@ -109,14 +104,12 @@ describe("text notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Note");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    rerender(<App store={sessionStore} />);
+
     expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
   });
 
@@ -126,14 +119,12 @@ describe("text notes", () => {
       startTime: new Date(),
     });
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Text Note" }));
     await user.type(screen.getByLabelText("Text"), "Test Note");
     await user.keyboard("{enter}");
-    rerender(<App store={sessionStore} />);
+
     expect(screen.getByText("Test Note")).toBeInTheDocument();
   });
 
@@ -148,12 +139,11 @@ describe("text notes", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
+
     await user.hover(screen.getByText("Test Note"));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    rerender(<App store={sessionStore} />);
+
     expect(screen.queryByText("Test Note")).not.toBeInTheDocument();
   });
 });
