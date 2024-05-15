@@ -219,5 +219,47 @@ describe("follow-up session", () => {
         screen.queryByText("The meeting was called to order at 7:01pm.")
       ).not.toBeInTheDocument();
     });
+
+    it.only("should allow selecting which topics to keep", async () => {
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      sessionStore.addTopic({
+        title: "Call to Order",
+        startTime: new Date("2000-01-01T19:01:00Z"),
+      });
+
+      sessionStore.addTopic({
+        title: "Approval of Minutes",
+        startTime: new Date("2000-01-01T19:02:00Z"),
+      });
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      await allowPropagation();
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      mockFilePicker.resolveSave?.(savedHandle);
+
+      await allowPropagation();
+
+      // rerender
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      // uncheck the first topic
+      fireEvent.click(screen.getByRole("checkbox", { name: "Call to Order" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await allowPropagation();
+
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.queryByText("Call to Order")).not.toBeInTheDocument();
+
+      expect(screen.queryByText("Approval of Minutes")).toBeInTheDocument();
+    });
   });
 });

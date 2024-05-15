@@ -45,6 +45,7 @@ type AttendanceLists = Pick<
 export type CloneProps = {
   startTime: Date;
   removeNotes?: boolean;
+  selectedTopicIds: Set<number>;
 };
 
 export class SessionStore {
@@ -63,7 +64,9 @@ export class SessionStore {
   }
 
   cloneSession(props: CloneProps) {
-    const newSession = this.export();
+    const topicFilter = (topic: StoredTopic) =>
+      props.selectedTopicIds.has(topic.id);
+    const newSession = this.export(topicFilter);
     newSession.metadata.startTime = props.startTime;
     if (props.removeNotes) {
       newSession.topics.forEach((topic) => (topic.notes = []));
@@ -775,9 +778,11 @@ export class SessionStore {
     completed: pastActionItem.completed,
   });
 
-  export = (): Session => {
+  export = (topicFilter?: (topic: StoredTopic) => boolean): Session => {
     const metadata = this.db.currentSession.metadata;
-    const topics = this.db.currentSession.topics;
+    const topics = topicFilter
+      ? this.db.currentSession.topics.filter(topicFilter)
+      : this.db.currentSession.topics;
     const committees = this.db.currentSession.committees;
     const pastActionItems = this.db.currentSession.pastActionItems;
     return {

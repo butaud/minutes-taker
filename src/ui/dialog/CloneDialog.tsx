@@ -2,15 +2,25 @@ import { useState } from "react";
 import { CancelledError, Dialog } from "./dialog.interface";
 
 import "./CloneDialog.css";
+import { StoredTopic } from "../../store/types";
+
+export type CloneDialogProps = {
+  topics: readonly StoredTopic[];
+};
 
 export type CloneDialogResult = {
   startTime: Date;
+  selectedTopicIds: Set<number>;
 };
-export const CloneDialog: Dialog<CloneDialogResult> = ({
+export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
+  topics,
   complete,
   reject,
 }) => {
   const [startTime, setStartTime] = useState(new Date());
+  const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(
+    new Set(topics.map((topic) => topic.id))
+  );
 
   const handleStartTimeChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -38,7 +48,31 @@ export const CloneDialog: Dialog<CloneDialogResult> = ({
             onChange={handleStartTimeChange}
           />
         </div>
-        <button onClick={() => complete({ startTime })}>Create</button>
+        <p>Topics to carry over:</p>
+        {topics.map((topic) => (
+          <div className="form-line" key={topic.id}>
+            <label>
+              {topic.title}
+              <input
+                type="checkbox"
+                value={topic.id}
+                checked={selectedTopicIds.has(topic.id)}
+                onChange={(event) => {
+                  const selected = new Set(selectedTopicIds);
+                  if (event.target.checked) {
+                    selected.add(topic.id);
+                  } else {
+                    selected.delete(topic.id);
+                  }
+                  setSelectedTopicIds(selected);
+                }}
+              />
+            </label>
+          </div>
+        ))}
+        <button onClick={() => complete({ startTime, selectedTopicIds })}>
+          Create
+        </button>
       </div>
     </div>
   );

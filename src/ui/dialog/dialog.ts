@@ -2,11 +2,9 @@ import { createElement } from "react";
 import { Dialog } from "./dialog.interface";
 import { createRoot } from "react-dom/client";
 
-export const getDialogResult = async <
-  Result,
-  DialogType extends Dialog<Result>,
->(
-  dialogElement: DialogType
+export const getDialogResult = async <Input, Result>(
+  dialogElement: Dialog<Input, Result>,
+  input: Input
 ): Promise<Result> => {
   if (document.getElementById("modal")) {
     throw new Error("Modal already exists");
@@ -27,7 +25,11 @@ export const getDialogResult = async <
       modalDiv.remove();
     };
     dialogRoot.render(
-      createElement(dialogElement, { complete: onComplete, reject: onReject })
+      createElement(dialogElement, {
+        ...input,
+        complete: onComplete,
+        reject: onReject,
+      })
     );
   });
 };

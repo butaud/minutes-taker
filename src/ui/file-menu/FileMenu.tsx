@@ -12,7 +12,11 @@ import {
 } from "../../fs/io";
 import { fakeSession } from "../fake-session";
 import { getDialogResult } from "../dialog/dialog";
-import { CloneDialog, CloneDialogResult } from "../dialog/CloneDialog";
+import {
+  CloneDialog,
+  CloneDialogProps,
+  CloneDialogResult,
+} from "../dialog/CloneDialog";
 import { CancelledError } from "../dialog/dialog.interface";
 
 export type FileMenuProps = {
@@ -80,12 +84,15 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
           await saveSession(sessionStore.export(), true);
           try {
             const result = await getDialogResult<
-              CloneDialogResult,
-              typeof CloneDialog
-            >(CloneDialog);
+              CloneDialogProps,
+              CloneDialogResult
+            >(CloneDialog, {
+              topics: sessionStore.session.topics,
+            });
             sessionStore.cloneSession({
               startTime: result.startTime,
               removeNotes: true,
+              selectedTopicIds: result.selectedTopicIds,
             });
 
             await unsetHandle();
