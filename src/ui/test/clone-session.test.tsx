@@ -49,6 +49,7 @@ describe("follow-up session", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
+
       await allowPropagation();
 
       // click menu button
@@ -74,6 +75,7 @@ describe("follow-up session", () => {
         <SessionEditor session={sessionStore.session} />
       );
       const originalJson = JSON.stringify(sessionStore.export(), undefined, 2);
+
       await allowPropagation();
 
       // click menu button
@@ -95,6 +97,7 @@ describe("follow-up session", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
+
       await allowPropagation();
 
       // click menu button
@@ -122,6 +125,12 @@ describe("follow-up session", () => {
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
+      fireEvent.change(screen.getByLabelText("Start time"), {
+        target: { value: "2020-01-02 08:00:00" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
       await allowPropagation();
 
       // rerender
@@ -136,6 +145,36 @@ describe("follow-up session", () => {
           );
         },
         { timeout: 1000 }
+      );
+    });
+  });
+
+  describe("updated values", () => {
+    it("should prompt for an updated date", async () => {
+      const { rerender } = render(
+        <SessionEditor session={sessionStore.session} />
+      );
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      await allowPropagation();
+
+      // rerender
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      fireEvent.change(screen.getByLabelText("Start time"), {
+        target: { value: "2020-01-02 08:00:00" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await allowPropagation();
+      rerender(<SessionEditor session={sessionStore.session} />);
+
+      expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+        "Test Meeting - Test Subtitle: Test Location, 1/2/20, 8:00 AM"
       );
     });
   });

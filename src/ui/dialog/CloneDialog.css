@@ -1,0 +1,33 @@
+.clone-dialog .cancel {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  cursor: pointer;
+  color: black;
+}
+
+.clone-dialog .cancel:hover {
+  text-decoration: underline;
+}
+
+.clone-dialog h2 {
+  margin: 0;
+  font-size: 1.25em;
+}
+
+.clone-dialog .content {
+  display: flex;
+  flex-direction: column;
+}
+
+.clone-dialog .form-line {
+  display: flex;
+  flex-direction: row;
+}
+
+.clone-dialog input {
+  margin: 0.5em;
+  padding: 0.5em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}

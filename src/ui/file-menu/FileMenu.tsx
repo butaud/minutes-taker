@@ -11,6 +11,8 @@ import {
   useContextFilename,
 } from "../../fs/io";
 import { fakeSession } from "../fake-session";
+import { getDialogResult } from "../dialog/dialog";
+import { CloneDialog, CloneDialogResult } from "../dialog/CloneDialog";
 
 export type FileMenuProps = {
   setInserting: (inserting: boolean) => void;
@@ -75,8 +77,12 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
       tryAsyncOperation({
         perform: async () => {
           await saveSession(sessionStore.export(), true);
+          const result = await getDialogResult<
+            CloneDialogResult,
+            typeof CloneDialog
+          >(CloneDialog);
           sessionStore.cloneSession({
-            startTime: new Date(),
+            startTime: result.startTime,
           });
           await unsetHandle();
         },

@@ -30,7 +30,7 @@ export const unsetHandle = async () => {
   await initializeIdb();
   if (saveContext.handle) {
     saveContext.handle = undefined;
-    await setIdb<IFileHandle | undefined>(undefined);
+    await setIdb(saveContext.handle);
   }
 };
 
