@@ -137,7 +137,8 @@ const NewAnyMonthNode: FC = () => {
   const [month, setMonth] = useState<CalendarMonth | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
-  const handleAddClick = () => {
+  const handleAddClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setErrorMessage(undefined);
     if (!month) {
       setErrorMessage("Please select a month");
