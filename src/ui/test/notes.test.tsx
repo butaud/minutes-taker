@@ -1,6 +1,5 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { App } from "../../App";
@@ -53,9 +52,7 @@ describe("notes", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.keyDown(screen.getByText("Members in attendance:"), {
       key: "i",
@@ -68,8 +65,6 @@ describe("notes", () => {
     );
     await user.type(screen.getByLabelText("Text"), "Test Note 2");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<App store={sessionStore} />);
 
     const note1 = screen.getByText("Test Note 1");
     const note2 = screen.getByText("Test Note 2");
