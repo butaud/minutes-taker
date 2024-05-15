@@ -1,19 +1,14 @@
 import { initializeIdb, setIdb, getIdb, clearIdb } from "../../fs/idb.mock";
 import { MockFileHandle, mockFilePicker } from "../../fs/file-manager.mock";
 import { SessionStore } from "../../store/SessionStore";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { SessionEditor } from "../SessionEditor";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
-import { resetSaveContext } from "../../fs/io";
+import { unsetHandle } from "../../fs/io";
 import test from "./data/test.json";
 
 let sessionStore: SessionStore;
-
-// Needed for these tests because the file picker is async and we need to wait for it to finish
-export const allowPropagation = async () => {
-  await act(async () => await new Promise((resolve) => setTimeout(resolve, 1)));
-};
 
 vi.mock("../../fs/idb.ts", () => ({
   initializeIdb,
@@ -26,18 +21,16 @@ vi.mock("../../fs/local-file-manager.ts", () => ({
 }));
 
 describe("editor", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockFilePicker.reset();
     clearIdb();
-    resetSaveContext();
+    await unsetHandle();
     sessionStore = resetSessionStore();
   });
 
   describe("menu title", () => {
     it("is unsaved before the file is saved", async () => {
       render(<SessionEditor session={sessionStore.session} />);
-
-      await allowPropagation();
 
       expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
         "Unsaved"
@@ -48,18 +41,16 @@ describe("editor", () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
-      await allowPropagation();
 
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-      mockFilePicker.resolveSave?.(new MockFileHandle("JSON", "test.json"));
-
-      await allowPropagation();
+      await mockFilePicker.resolveSave(new MockFileHandle("JSON", "test.json"));
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
+
       // assert that the menu icon title is now "test.json"
       await waitFor(
         () => {
@@ -76,7 +67,7 @@ describe("save button", () => {
   beforeEach(() => {
     mockFilePicker.reset();
     clearIdb();
-    resetSaveContext();
+    unsetHandle();
     sessionStore = resetSessionStore();
   });
 
@@ -91,15 +82,12 @@ describe("save button", () => {
       url: "https://example.com",
     });
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const savedHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(savedHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(savedHandle);
 
     expect(savedHandle.getFileText()).toBe(
       JSON.stringify(sessionStore.export(), null, 2)
@@ -117,15 +105,12 @@ describe("save button", () => {
       url: "https://example.com",
     });
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const firstHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(firstHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(firstHandle);
 
     sessionStore.addTopic({
       title: "Another Topic",
@@ -136,9 +121,7 @@ describe("save button", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const secondHandle = new MockFileHandle("JSON", "test2.json");
-    mockFilePicker.resolveSave?.(secondHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(secondHandle);
 
     // make sure we didn't write to the second handle
     expect(secondHandle.getFileText()).toEqual("");
@@ -157,15 +140,12 @@ describe("save button", () => {
     const { rerender } = render(
       <SessionEditor session={sessionStore.session} />
     );
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const savedHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(savedHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(savedHandle);
 
     sessionStore.addTopic({
       title: "Another Topic",
@@ -181,9 +161,7 @@ describe("save button", () => {
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
-    mockFilePicker.resolveOpen?.(savedHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveOpen(savedHandle);
 
     rerender(<SessionEditor session={sessionStore.session} />);
 
@@ -205,15 +183,12 @@ describe("save as button", () => {
       url: "https://example.com",
     });
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save as" }));
 
     const savedHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(savedHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(savedHandle);
 
     expect(savedHandle.getFileText()).toBe(
       JSON.stringify(sessionStore.export(), null, 2)
@@ -231,15 +206,12 @@ describe("save as button", () => {
       url: "https://example.com",
     });
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const firstHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(firstHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(firstHandle);
 
     sessionStore.addTopic({
       title: "Another Topic",
@@ -250,9 +222,7 @@ describe("save as button", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save as" }));
 
     const secondHandle = new MockFileHandle("JSON", "test2.json");
-    mockFilePicker.resolveSave?.(secondHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(secondHandle);
 
     expect(firstHandle.getFileText()).not.toContain("Another Topic");
     expect(secondHandle.getFileText()).toContain("Another Topic");
@@ -266,14 +236,11 @@ describe("load button", () => {
     mockHandle.setFileText(jsonToLoad);
 
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
-    mockFilePicker.resolveOpen?.(mockHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveOpen(mockHandle);
 
     expect(sessionStore.session.metadata.title).toBe("Title from test.json");
   });
@@ -286,12 +253,11 @@ describe("load button", () => {
     const { rerender } = render(
       <SessionEditor session={sessionStore.session} />
     );
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Load" }));
 
-    mockFilePicker.resolveOpen?.(mockHandle);
+    await mockFilePicker.resolveOpen(mockHandle);
 
     rerender(<SessionEditor session={sessionStore.session} />);
 
@@ -304,15 +270,12 @@ describe("load button", () => {
 
   it("updates the current file handle if a file has already been loaded", async () => {
     render(<SessionEditor session={sessionStore.session} />);
-    await allowPropagation();
 
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     const originalHandle = new MockFileHandle("JSON", "test.json");
-    mockFilePicker.resolveSave?.(originalHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveSave(originalHandle);
 
     const originalHandleContents = originalHandle.getFileText();
 
@@ -323,9 +286,7 @@ describe("load button", () => {
     const secondHandle = new MockFileHandle("JSON", "test.json");
     secondHandle.setFileText(jsonToLoad);
 
-    mockFilePicker.resolveOpen?.(secondHandle);
-
-    await allowPropagation();
+    await mockFilePicker.resolveOpen(secondHandle);
 
     sessionStore.updateMetadata({
       ...sessionStore.session.metadata,
@@ -335,10 +296,14 @@ describe("load button", () => {
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    await allowPropagation();
-
-    // make sure we wrote to the new handle, not the original one
-    expect(originalHandle.getFileText()).toBe(originalHandleContents);
-    expect(secondHandle.getFileText()).toContain("Modified Title");
+    await waitFor(
+      () => {
+        // make sure we wrote to the new handle, not the original one
+        expect(originalHandle.getFileText()).toBe(originalHandleContents);
+        expect(secondHandle.getFileText()).toContain("Modified Title");
+      },
+      // allow for the async save to finish
+      { timeout: 10 }
+    );
   });
 });

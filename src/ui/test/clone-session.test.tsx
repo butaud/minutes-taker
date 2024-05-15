@@ -1,18 +1,14 @@
 import { initializeIdb, setIdb, getIdb, clearIdb } from "../../fs/idb.mock";
 import { MockFileHandle, mockFilePicker } from "../../fs/file-manager.mock";
 import { SessionStore } from "../../store/SessionStore";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { SessionEditor } from "../SessionEditor";
 import { render, resetSessionStore } from "./util";
 import { vi } from "vitest";
-import { resetSaveContext, unsetHandle } from "../../fs/io";
+import { unsetHandle } from "../../fs/io";
+import { allowPropagation } from "../../util/test";
 
 let sessionStore: SessionStore;
-
-// Needed for these tests because the file picker is async and we need to wait for it to finish
-export const allowPropagation = async () => {
-  await act(async () => await new Promise((resolve) => setTimeout(resolve, 1)));
-};
 
 vi.mock("../../fs/idb.ts", () => ({
   initializeIdb,
@@ -29,7 +25,6 @@ describe("follow-up session", () => {
     mockFilePicker.reset();
     clearIdb();
     unsetHandle();
-    resetSaveContext();
     sessionStore = resetSessionStore({
       metadata: {
         organization: "Test Organization",
@@ -51,13 +46,9 @@ describe("follow-up session", () => {
         <SessionEditor session={sessionStore.session} />
       );
 
-      await allowPropagation();
-
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
-
-      await allowPropagation();
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
@@ -77,16 +68,12 @@ describe("follow-up session", () => {
       );
       const originalJson = JSON.stringify(sessionStore.export(), undefined, 2);
 
-      await allowPropagation();
-
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
       const savedHandle = new MockFileHandle("JSON", "test.json");
-      mockFilePicker.resolveSave?.(savedHandle);
-
-      await allowPropagation();
+      await mockFilePicker.resolveSave(savedHandle);
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
@@ -99,16 +86,12 @@ describe("follow-up session", () => {
         <SessionEditor session={sessionStore.session} />
       );
 
-      await allowPropagation();
-
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
       const originalHandle = new MockFileHandle("JSON", "test.json");
-      mockFilePicker.resolveSave?.(originalHandle);
-
-      await allowPropagation();
+      await mockFilePicker.resolveSave(originalHandle);
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
@@ -132,13 +115,10 @@ describe("follow-up session", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-      await allowPropagation();
-
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
 
       // expect it to be in unsaved state
-
       await waitFor(
         () => {
           expect(screen.getByRole("button", { name: "Menu" }).title).toBe(
@@ -159,8 +139,6 @@ describe("follow-up session", () => {
       // click menu button
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
-
-      await allowPropagation();
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
@@ -198,12 +176,8 @@ describe("follow-up session", () => {
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
-      await allowPropagation();
-
       const savedHandle = new MockFileHandle("JSON", "test.json");
-      mockFilePicker.resolveSave?.(savedHandle);
-
-      await allowPropagation();
+      await mockFilePicker.resolveSave(savedHandle);
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);
@@ -220,7 +194,7 @@ describe("follow-up session", () => {
       ).not.toBeInTheDocument();
     });
 
-    it.only("should allow selecting which topics to keep", async () => {
+    it("should allow selecting which topics to keep", async () => {
       const { rerender } = render(
         <SessionEditor session={sessionStore.session} />
       );
@@ -239,12 +213,8 @@ describe("follow-up session", () => {
       fireEvent.click(screen.getByRole("button", { name: "Menu" }));
       fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
 
-      await allowPropagation();
-
       const savedHandle = new MockFileHandle("JSON", "test.json");
-      mockFilePicker.resolveSave?.(savedHandle);
-
-      await allowPropagation();
+      await mockFilePicker.resolveSave(savedHandle);
 
       // rerender
       rerender(<SessionEditor session={sessionStore.session} />);

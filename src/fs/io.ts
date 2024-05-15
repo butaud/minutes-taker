@@ -5,51 +5,75 @@ import { getIdb, initializeIdb, setIdb } from "./idb";
 import { upgradeSerializedSession } from "../util/upgrade";
 import { localFilePicker } from "./local-file-manager";
 import { IFileHandle } from "./file-manager.interface";
+class SaveContext {
+  private _handle: IFileHandle | undefined;
+  private _callbacks: (() => void)[];
+  private _initialized = false;
+  constructor() {
+    this._handle = undefined;
+    this._callbacks = [];
+  }
 
-const saveContext: {
-  handle?: IFileHandle;
-} = {
-  handle: undefined,
-};
+  public async ensureInitialized(): Promise<void> {
+    if (!this._initialized) {
+      await initializeIdb();
+      this._handle = await getIdb<IFileHandle>();
+      this._initialized = true;
+    }
+  }
+
+  public async getHandle(): Promise<IFileHandle | undefined> {
+    await this.ensureInitialized();
+    return this._handle;
+  }
+
+  public async setHandle(handle: IFileHandle | undefined): Promise<void> {
+    await this.ensureInitialized();
+    this._handle = handle;
+    await setIdb(handle);
+    this._callbacks.forEach((callback) => callback());
+  }
+
+  public get currentFilename(): string | undefined {
+    return this._handle?.filename;
+  }
+
+  public addCallback(callback: () => void): number {
+    this._callbacks.push(callback);
+    return this._callbacks.length - 1;
+  }
+
+  public removeCallback(index: number): void {
+    this._callbacks.splice(index, 1);
+  }
+}
+
+const saveContext = new SaveContext();
 
 export const initializeIndexedDbBackup = async (): Promise<void> => {
-  await initializeIdb();
-  if (!saveContext.handle) {
-    saveContext.handle = await getIdb<IFileHandle>();
-  }
-};
-
-const syncHandleToIndexedDb = async () => {
-  if (saveContext.handle) {
-    await initializeIdb();
-    await setIdb(saveContext.handle);
-  }
+  await saveContext.ensureInitialized();
 };
 
 export const unsetHandle = async () => {
-  await initializeIdb();
-  if (saveContext.handle) {
-    saveContext.handle = undefined;
-    await setIdb(saveContext.handle);
-  }
+  await saveContext.setHandle(undefined);
 };
 
 export const saveSession: (
   session: Session,
   reuseHandle: boolean
 ) => Promise<void> = async (session, reuseHandle) => {
-  if (!saveContext.handle || !reuseHandle) {
+  let eventuallyGuaranteedHandle = await saveContext.getHandle();
+  if (!reuseHandle || !eventuallyGuaranteedHandle) {
     const filename = `${session.metadata.organization}-${
       session.metadata.title
     }-${session.metadata.startTime.toDateString()}.json`;
 
-    saveContext.handle = await localFilePicker.save("JSON", filename);
-    await syncHandleToIndexedDb();
+    eventuallyGuaranteedHandle = await localFilePicker.save("JSON", filename);
+    await saveContext.setHandle(eventuallyGuaranteedHandle);
   }
 
   const json = JSON.stringify(session, undefined, 2);
-
-  await saveContext.handle.write(json);
+  eventuallyGuaranteedHandle.write(json);
 };
 
 export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
@@ -66,18 +90,13 @@ export const saveSessionAsDocx: (session: Session) => Promise<void> = async (
 };
 
 export const loadSession: () => Promise<Session> = async () => {
-  const handle = await localFilePicker.open("JSON");
+  const newHandle = await localFilePicker.open("JSON");
 
-  const json = await handle.read();
+  const json = await newHandle.read();
   const session = JSON.parse(json, dateTimeReviver);
   upgradeSerializedSession(session);
-  saveContext.handle = handle;
-  await syncHandleToIndexedDb();
+  await saveContext.setHandle(newHandle);
   return session;
-};
-
-export const getContextFilename: () => string | undefined = () => {
-  return saveContext.handle?.filename;
 };
 
 export const useContextFilename: () => string | undefined = () => {
@@ -88,7 +107,7 @@ export const useContextFilename: () => string | undefined = () => {
   // poll to keep contextFilename up to date
   useEffect(() => {
     const intervalHandle = setInterval(() => {
-      const currentContextFilename = getContextFilename();
+      const currentContextFilename = saveContext.currentFilename;
       if (contextFilename != currentContextFilename) {
         setContextFilename(currentContextFilename);
       }
@@ -111,8 +130,4 @@ export const dateTimeReviver = (_: string, value: string) => {
     }
   }
   return value;
-};
-
-export const resetSaveContext = () => {
-  saveContext.handle = undefined;
 };

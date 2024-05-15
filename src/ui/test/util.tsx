@@ -4,7 +4,11 @@ import { SessionStore } from "../../store/SessionStore";
 import { ReactElement } from "react";
 import { SessionProvider } from "../context/SessionStoreContext";
 import { PersonListContext } from "../context/PersonListContext";
-import { render as origRender, RenderOptions } from "@testing-library/react";
+import {
+  act,
+  render as origRender,
+  RenderOptions,
+} from "@testing-library/react";
 
 export const makeEmptySession: () => Session = () => ({
   metadata: {
