@@ -11,6 +11,7 @@ export type CloneDialogProps = {
 export type CloneDialogResult = {
   startTime: Date;
   removeCompletedPastActionItems: boolean;
+  resetMotionOutcomes: boolean;
   selectedTopicIds: Set<number>;
   preserveNoteTopicIds: Set<number>;
 };
@@ -22,6 +23,7 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
   const [startTime, setStartTime] = useState(new Date());
   const [removeCompletedPastActionItems, setRemoveCompletedPastActionItems] =
     useState(true);
+  const [resetMotionOutcomes, setResetMotionOutcomes] = useState(true);
   const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(
     new Set(topics.map((topic) => topic.id))
   );
@@ -87,6 +89,15 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
             }
           />
         </div>
+        <div className="form-line">
+          <p>Preserve motion status and counts:</p>
+          <input
+            type="checkbox"
+            aria-label="Preserve motion status and counts"
+            checked={!resetMotionOutcomes}
+            onChange={() => setResetMotionOutcomes(!resetMotionOutcomes)}
+          />
+        </div>
         <p>Topics to carry over:</p>
         <TopicTable
           topics={topics}
@@ -99,6 +110,7 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
           onClick={() =>
             complete({
               startTime,
+              resetMotionOutcomes,
               removeCompletedPastActionItems,
               selectedTopicIds,
               preserveNoteTopicIds,

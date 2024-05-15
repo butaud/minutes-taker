@@ -45,6 +45,7 @@ type AttendanceLists = Pick<
 export type CloneProps = {
   startTime: Date;
   removeCompletedPastActionItems: boolean;
+  resetMotionOutcomes: boolean;
   preserveNoteTopicIds: Set<number>;
   selectedTopicIds: Set<number>;
 };
@@ -100,6 +101,20 @@ export class SessionStore {
         }
       });
     });
+
+    // reset motion outcomes
+    if (props.resetMotionOutcomes) {
+      newSession.topics.forEach((topic) => {
+        topic.notes.forEach((note) => {
+          if (isMotionNote(note)) {
+            note.outcome = "active";
+            note.inFavorCount = 0;
+            note.opposedCount = 0;
+            note.abstainedCount = 0;
+          }
+        });
+      });
+    }
 
     this.loadSession(newSession);
   }

@@ -13,6 +13,7 @@ import { vi } from "vitest";
 import { unsetHandle } from "../../fs/io";
 import { App } from "../../App";
 import { __clearDialogs } from "../dialog/dialog";
+import { getByTextContent } from "../../test/matchers";
 
 let sessionStore: SessionStore;
 
@@ -485,6 +486,134 @@ describe("follow-up session", () => {
           "Mr. Jones to Test Action Item by 1/1/21. (Carry Forward)"
         )
       ).toBeDefined();
+    });
+  });
+
+  describe("motions", () => {
+    it("should reset motion status and counts by default", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mrs.",
+        firstName: "Alice",
+        lastName: "Smith",
+      });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        text: "Test Motion",
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mrs.", firstName: "Alice", lastName: "Smith" },
+        outcome: "passed",
+        inFavorCount: 5,
+        opposedCount: 2,
+        abstainedCount: 1,
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: "Include notes for Test Topic",
+        })
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(
+        screen.getByText(getByTextContent("Mr. Jones moved Test Motion"))
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(getByTextContent("Mrs. Smith seconded."))
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("The motion is under discussion.")
+      ).toBeInTheDocument();
+    });
+
+    it("should not reset motion status and counts if box is checked", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addMemberPresent({
+        title: "Mrs.",
+        firstName: "Alice",
+        lastName: "Smith",
+      });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "motion",
+        text: "Test Motion",
+        mover: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        seconder: { title: "Mrs.", firstName: "Alice", lastName: "Smith" },
+        outcome: "passed",
+        inFavorCount: 5,
+        opposedCount: 2,
+        abstainedCount: 1,
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: "Preserve motion status and counts",
+        })
+      );
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: "Include notes for Test Topic",
+        })
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(
+        screen.getByText(
+          getByTextContent("Vote: 5 in favor, 2 opposed, 1 abstained")
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByText("Motion passed.")).toBeInTheDocument();
     });
   });
 });
