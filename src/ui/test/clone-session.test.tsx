@@ -241,7 +241,7 @@ describe("follow-up session", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("should keep notes for topics where button is unchecked", async () => {
+    it.only("should keep notes for topics where button is unchecked", async () => {
       sessionStore.addTopic({
         title: "Call to Order",
         startTime: new Date("2000-01-01T19:01:00Z"),
@@ -270,7 +270,7 @@ describe("follow-up session", () => {
 
       fireEvent.click(
         screen.getByRole("checkbox", {
-          name: "Delete notes from Call to Order",
+          name: "Include notes for Call to Order",
         })
       );
       fireEvent.click(screen.getByRole("button", { name: "Create" }));

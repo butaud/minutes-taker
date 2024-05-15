@@ -91,7 +91,7 @@ export const FileMenu: FC<FileMenuProps> = ({ setInserting }) => {
             });
             sessionStore.cloneSession({
               startTime: result.startTime,
-              removeNotes: true,
+              preserveNoteTopicIds: result.preserveNoteTopicIds,
               selectedTopicIds: result.selectedTopicIds,
             });
 

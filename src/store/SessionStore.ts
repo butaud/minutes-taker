@@ -44,7 +44,7 @@ type AttendanceLists = Pick<
 
 export type CloneProps = {
   startTime: Date;
-  removeNotes?: boolean;
+  preserveNoteTopicIds: Set<number>;
   selectedTopicIds: Set<number>;
 };
 
@@ -66,11 +66,10 @@ export class SessionStore {
   cloneSession(props: CloneProps) {
     const topicFilter = (topic: StoredTopic) =>
       props.selectedTopicIds.has(topic.id);
-    const newSession = this.export(topicFilter);
+    const noteFilter = (topic: StoredTopic) =>
+      props.preserveNoteTopicIds.has(topic.id);
+    const newSession = this.export(topicFilter, noteFilter);
     newSession.metadata.startTime = props.startTime;
-    if (props.removeNotes) {
-      newSession.topics.forEach((topic) => (topic.notes = []));
-    }
     this.loadSession(newSession);
   }
 
@@ -756,12 +755,17 @@ export class SessionStore {
     }));
   };
 
-  private exportTopic = (topic: StoredTopic): Topic => ({
+  private exportTopic = (
+    topic: StoredTopic,
+    noteFilter?: (topic: StoredTopic, note: StoredNote) => boolean
+  ): Topic => ({
     title: topic.title,
     startTime: topic.startTime,
     durationMinutes: topic.durationMinutes,
     leader: topic.leader && this.exportPerson(topic.leader),
-    notes: topic.notes.map(this.exportNote),
+    notes: topic.notes
+      .filter((note) => noteFilter?.(topic, note) ?? true)
+      .map(this.exportNote),
   });
 
   private exportCommittee = (committee: StoredCommittee): Committee => ({
@@ -778,7 +782,10 @@ export class SessionStore {
     completed: pastActionItem.completed,
   });
 
-  export = (topicFilter?: (topic: StoredTopic) => boolean): Session => {
+  export = (
+    topicFilter?: (topic: StoredTopic) => boolean,
+    noteFilter?: (topic: StoredTopic, note: StoredNote) => boolean
+  ): Session => {
     const metadata = this.db.currentSession.metadata;
     const topics = topicFilter
       ? this.db.currentSession.topics.filter(topicFilter)
@@ -796,7 +803,7 @@ export class SessionStore {
         othersReferenced: metadata.othersReferenced.map(this.exportPerson),
       },
       calendar: this.exportCalendar(this.db.currentSession.calendar),
-      topics: topics.map(this.exportTopic),
+      topics: topics.map((topic) => this.exportTopic(topic, noteFilter)),
       committees: committees.map(this.exportCommittee),
       pastActionItems: pastActionItems.map(this.exportPastActionItem),
     };

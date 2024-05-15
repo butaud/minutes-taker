@@ -32,6 +32,15 @@
   border: 1px solid #ccc;
 }
 
+table.topics th.checkbox {
+  padding: 0 0.3em;
+  border-left: 1px solid #ccc;
+}
+
+table.topics th.checkbox:nth-child(1 of th.checkbox) {
+  border-left: none;
+}
+
 table.topics td,
 table.topics th {
   text-align: start;

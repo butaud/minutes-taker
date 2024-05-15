@@ -11,6 +11,7 @@ export type CloneDialogProps = {
 export type CloneDialogResult = {
   startTime: Date;
   selectedTopicIds: Set<number>;
+  preserveNoteTopicIds: Set<number>;
 };
 export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
   topics,
@@ -22,6 +23,10 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
     new Set(topics.map((topic) => topic.id))
   );
 
+  const [preserveNoteTopicIds, setPreserveNoteTopicIds] = useState<Set<number>>(
+    new Set<number>()
+  );
+
   const handleStartTimeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -30,6 +35,26 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
       const startTime = new Date(timestamp);
       setStartTime(startTime);
     }
+  };
+
+  const onToggleIncludeTopic = (topicId: number) => {
+    const newSelectedTopicIds = new Set(selectedTopicIds);
+    if (newSelectedTopicIds.has(topicId)) {
+      newSelectedTopicIds.delete(topicId);
+    } else {
+      newSelectedTopicIds.add(topicId);
+    }
+    setSelectedTopicIds(newSelectedTopicIds);
+  };
+
+  const onTogglePreserveNotes = (topicId: number) => {
+    const newPreserveNoteTopicIds = new Set(preserveNoteTopicIds);
+    if (newPreserveNoteTopicIds.has(topicId)) {
+      newPreserveNoteTopicIds.delete(topicId);
+    } else {
+      newPreserveNoteTopicIds.add(topicId);
+    }
+    setPreserveNoteTopicIds(newPreserveNoteTopicIds);
   };
 
   return (
@@ -52,17 +77,15 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
         <TopicTable
           topics={topics}
           topicIdsToInclude={selectedTopicIds}
-          onToggleIncludeTopic={(topicId) => {
-            const newSelectedTopicIds = new Set(selectedTopicIds);
-            if (newSelectedTopicIds.has(topicId)) {
-              newSelectedTopicIds.delete(topicId);
-            } else {
-              newSelectedTopicIds.add(topicId);
-            }
-            setSelectedTopicIds(newSelectedTopicIds);
-          }}
+          preserveNoteTopicIds={preserveNoteTopicIds}
+          onToggleIncludeTopic={onToggleIncludeTopic}
+          onTogglePreserveNotes={onTogglePreserveNotes}
         />
-        <button onClick={() => complete({ startTime, selectedTopicIds })}>
+        <button
+          onClick={() =>
+            complete({ startTime, selectedTopicIds, preserveNoteTopicIds })
+          }
+        >
           Create
         </button>
       </div>
@@ -73,20 +96,25 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
 type TopicTableProps = {
   topics: readonly StoredTopic[];
   topicIdsToInclude: Set<number>;
+  preserveNoteTopicIds: Set<number>;
   onToggleIncludeTopic: (topicId: number) => void;
+  onTogglePreserveNotes: (topicId: number) => void;
 };
 
 const TopicTable: React.FC<TopicTableProps> = ({
   topics,
   topicIdsToInclude,
+  preserveNoteTopicIds,
   onToggleIncludeTopic,
+  onTogglePreserveNotes,
 }) => {
   return (
     <table className="topics">
       <thead>
         <tr>
           <th>Topic</th>
-          <th className="checkbox">Include</th>
+          <th className="checkbox">Include Topic</th>
+          <th className="checkbox">Include Notes</th>
         </tr>
       </thead>
       <tbody>
@@ -99,6 +127,14 @@ const TopicTable: React.FC<TopicTableProps> = ({
                 aria-label={`Keep ${topic.title}`}
                 checked={topicIdsToInclude.has(topic.id)}
                 onChange={() => onToggleIncludeTopic(topic.id)}
+              />
+            </td>
+            <td className="checkbox">
+              <input
+                type="checkbox"
+                aria-label={`Include notes for ${topic.title}`}
+                checked={preserveNoteTopicIds.has(topic.id)}
+                onChange={() => onTogglePreserveNotes(topic.id)}
               />
             </td>
           </tr>
