@@ -1,33 +1,16 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render, resetSessionStore } from "./util";
+import {
+  findListItemByTextContent,
+  getListItemByTextContent,
+  render,
+  resetSessionStore,
+} from "./util";
 import { getByTextContent } from "../../test/matchers";
 import { App } from "../../App";
 
 let sessionStore: SessionStore;
-
-const findListItemByTextContent = (textContent: string) => {
-  const allListItems = screen.getAllByRole("listitem");
-  return allListItems.find((listitem) => listitem.textContent === textContent);
-};
-
-const getListItemByTextContent = (textContent: string) => {
-  const allListItems = screen.getAllByRole("listitem");
-  const found = allListItems.find(
-    (listitem) => listitem.textContent === textContent
-  );
-  if (found === undefined) {
-    screen.debug();
-    const allText = allListItems
-      .map((listitem) => listitem.textContent)
-      .join("\n");
-    throw new Error(
-      `Could not find list item with text content "${textContent}". Found these items:\n${allText}`
-    );
-  }
-  return found;
-};
 
 describe("listed action items", () => {
   beforeEach(() => {

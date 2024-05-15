@@ -10,6 +10,7 @@ export type CloneDialogProps = {
 
 export type CloneDialogResult = {
   startTime: Date;
+  removeCompletedPastActionItems: boolean;
   selectedTopicIds: Set<number>;
   preserveNoteTopicIds: Set<number>;
 };
@@ -19,6 +20,8 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
   reject,
 }) => {
   const [startTime, setStartTime] = useState(new Date());
+  const [removeCompletedPastActionItems, setRemoveCompletedPastActionItems] =
+    useState(true);
   const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(
     new Set(topics.map((topic) => topic.id))
   );
@@ -73,6 +76,17 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
             onChange={handleStartTimeChange}
           />
         </div>
+        <div className="form-line">
+          <p>Include completed past action items:</p>
+          <input
+            type="checkbox"
+            aria-label="Include completed past action items"
+            checked={!removeCompletedPastActionItems}
+            onChange={() =>
+              setRemoveCompletedPastActionItems(!removeCompletedPastActionItems)
+            }
+          />
+        </div>
         <p>Topics to carry over:</p>
         <TopicTable
           topics={topics}
@@ -83,7 +97,12 @@ export const CloneDialog: Dialog<CloneDialogProps, CloneDialogResult> = ({
         />
         <button
           onClick={() =>
-            complete({ startTime, selectedTopicIds, preserveNoteTopicIds })
+            complete({
+              startTime,
+              removeCompletedPastActionItems,
+              selectedTopicIds,
+              preserveNoteTopicIds,
+            })
           }
         >
           Create

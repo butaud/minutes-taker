@@ -44,6 +44,7 @@ type AttendanceLists = Pick<
 
 export type CloneProps = {
   startTime: Date;
+  removeCompletedPastActionItems: boolean;
   preserveNoteTopicIds: Set<number>;
   selectedTopicIds: Set<number>;
 };
@@ -78,6 +79,26 @@ export class SessionStore {
     const timeDifference = newStartTime.getTime() - originalStartTime.getTime();
     newSession.topics.forEach((topic) => {
       topic.startTime = new Date(topic.startTime.getTime() + timeDifference);
+    });
+
+    if (props.removeCompletedPastActionItems) {
+      newSession.pastActionItems = newSession.pastActionItems.filter(
+        (item) => !item.completed
+      );
+    }
+
+    // convert new action items to past action items
+    this.db.currentSession.topics.forEach((topic) => {
+      topic.notes.forEach((note) => {
+        if (isActionItemNote(note)) {
+          newSession.pastActionItems.push({
+            text: note.text,
+            assignee: note.assignee,
+            dueDate: note.dueDate,
+            completed: false,
+          });
+        }
+      });
     });
 
     this.loadSession(newSession);

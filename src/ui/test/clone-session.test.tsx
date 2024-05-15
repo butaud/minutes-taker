@@ -8,7 +8,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { resetSessionStore } from "./util";
+import { findListItemByTextContent, resetSessionStore } from "./util";
 import { vi } from "vitest";
 import { unsetHandle } from "../../fs/io";
 import { App } from "../../App";
@@ -334,6 +334,157 @@ describe("follow-up session", () => {
       expect(callToOrderHeading).toPrecede(callToOrderTime);
       expect(callToOrderTime).toPrecede(approvalOfMinutesHeading);
       expect(approvalOfMinutesHeading).toPrecede(approvalOfMinutesTime);
+    });
+  });
+
+  describe("action items", () => {
+    it("should copy non-completed carry over action items by default", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addPastActionItem({
+        text: "Test Action Item 1",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+      sessionStore.addPastActionItem({
+        text: "Test Action Item 2",
+        dueDate: new Date("2021-02-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: true,
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(
+        findListItemByTextContent(
+          "Mr. Jones to Test Action Item 1 by 1/1/21. (Carry Forward)"
+        )
+      ).toBeDefined();
+      expect(
+        findListItemByTextContent(
+          "Mr. Jones to Test Action Item 2 by 2/1/21. (Done)"
+        )
+      ).not.toBeDefined();
+    });
+
+    it("should copy all carry over action items if box is checked", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addPastActionItem({
+        text: "Test Action Item 1",
+        dueDate: new Date("2021-01-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: false,
+      });
+      sessionStore.addPastActionItem({
+        text: "Test Action Item 2",
+        dueDate: new Date("2021-02-01"),
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        completed: true,
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: "Include completed past action items",
+        })
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(
+        findListItemByTextContent(
+          "Mr. Jones to Test Action Item 1 by 1/1/21. (Carry Forward)"
+        )
+      ).toBeDefined();
+      expect(
+        findListItemByTextContent(
+          "Mr. Jones to Test Action Item 2 by 2/1/21. (Done)"
+        )
+      ).toBeDefined();
+    });
+
+    it("should convert new action items to carry over action items", async () => {
+      sessionStore.addMemberPresent({
+        title: "Mr.",
+        firstName: "Bob",
+        lastName: "Jones",
+      });
+      sessionStore.addTopic({
+        title: "Test Topic",
+        startTime: new Date(),
+      });
+      sessionStore.addNote(sessionStore.session.topics[0].id, {
+        type: "actionItem",
+        text: "Test Action Item",
+        assignee: { title: "Mr.", firstName: "Bob", lastName: "Jones" },
+        dueDate: new Date("2021-01-01"),
+      });
+
+      render(<App store={sessionStore} />);
+
+      // click menu button
+      fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+      fireEvent.click(screen.getByRole("button", { name: "Follow-up..." }));
+
+      const savedHandle = new MockFileHandle("JSON", "test.json");
+      await mockFilePicker.resolveSave(savedHandle);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      await waitFor(
+        () =>
+          expect(screen.getByRole("alert")).toHaveTextContent(
+            "Created follow-up session."
+          ),
+        { timeout: 10 }
+      );
+
+      expect(
+        findListItemByTextContent(
+          "Mr. Jones to Test Action Item by 1/1/21. (Carry Forward)"
+        )
+      ).toBeDefined();
     });
   });
 });
