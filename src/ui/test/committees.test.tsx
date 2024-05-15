@@ -1,6 +1,5 @@
 import { SessionStore } from "../../store/SessionStore";
 import { fireEvent, screen } from "@testing-library/react";
-import { SessionEditor } from "../SessionEditor";
 import userEvent from "@testing-library/user-event";
 import { render, resetSessionStore } from "./util";
 import { App } from "../../App";
@@ -47,9 +46,7 @@ describe("committees", () => {
     expect.assertions(1);
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Active Committees"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -60,7 +57,6 @@ describe("committees", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    rerender(<App store={sessionStore} />);
     expect(
       screen.getByRole("link", { name: "(Committee Details)" })
     ).toHaveAttribute("href", "https://example.com");
@@ -69,15 +65,12 @@ describe("committees", () => {
   it("allows adding a new committee", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Committee" }));
     await user.selectOptions(screen.getByLabelText("Committee Type"), "Board");
     await user.type(screen.getByLabelText("Committee Name"), "Test Committee");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    rerender(<App store={sessionStore} />);
 
     expect(screen.getByText("Test Committee (Board)")).toBeInTheDocument();
   });
@@ -90,13 +83,10 @@ describe("committees", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Committee (Board)"));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    rerender(<App store={sessionStore} />);
 
     expect(screen.queryByText("Test Committee")).not.toBeInTheDocument();
   });
@@ -109,9 +99,7 @@ describe("committees", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Committee (Board)"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -121,8 +109,6 @@ describe("committees", () => {
       "Updated Committee"
     );
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<App store={sessionStore} />);
 
     expect(screen.getByText("Updated Committee (Board)")).toBeInTheDocument();
   });
@@ -135,9 +121,7 @@ describe("committees", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Committee (Board)"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -146,8 +130,6 @@ describe("committees", () => {
       "Headmaster"
     );
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    rerender(<App store={sessionStore} />);
 
     expect(screen.getByText("Test Committee (Headmaster)")).toBeInTheDocument();
   });
@@ -159,9 +141,7 @@ describe("committees", () => {
       type: "Board",
     });
 
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await userEvent.hover(screen.getByText("Test Committee (Board)"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -171,7 +151,6 @@ describe("committees", () => {
       "Updated Committee"
     );
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    rerender(<App store={sessionStore} />);
 
     expect(screen.getByText("Test Committee (Board)")).toBeInTheDocument();
   });
@@ -184,9 +163,7 @@ describe("committees", () => {
     });
 
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SessionEditor session={sessionStore.session} />
-    );
+    render(<App store={sessionStore} />);
 
     await user.hover(screen.getByText("Test Committee (Board)"));
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -196,7 +173,6 @@ describe("committees", () => {
       "Updated Committee"
     );
     await user.keyboard("{enter}");
-    rerender(<App store={sessionStore} />);
 
     expect(screen.getByText("Updated Committee (Board)")).toBeInTheDocument();
   });
