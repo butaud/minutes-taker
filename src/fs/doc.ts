@@ -195,7 +195,7 @@ const makeTopicHeader = (topic: Topic): Table => {
         children: [new Paragraph(topic.durationMinutes.toString())],
         shading: TopicHeaderCellShading,
         width: {
-          size: 5,
+          size: 10,
           type: WidthType.PERCENTAGE,
         },
         margins: TopicHeaderCellMargins,
