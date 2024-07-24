@@ -1,35 +1,41 @@
 import { Person, PersonTitle } from "minutes-model";
 import "./AttendanceNode.css";
-import { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { NonFormNodeControls } from "../../controls/NodeControls";
 import { useSessionStore } from "../../context/SessionStoreContext";
 import { StoredPerson } from "../../../store/types";
 
 type PersonListProps = {
-  title: string;
+  list: MoveDestination;
   people: readonly StoredPerson[];
   addPerson: (newPerson: Person) => void;
   removePerson: (person: StoredPerson) => void;
+  movePerson: (person: StoredPerson, destination: MoveDestination) => void;
   isEditing: boolean;
 };
 
+type MoveDestination =
+  | "membersPresent"
+  | "membersAbsent"
+  | "administrationPresent"
+  | "othersReferenced";
+
+const titles: Record<MoveDestination, string> = {
+  membersPresent: "Members in attendance",
+  membersAbsent: "Members not in attendance",
+  administrationPresent: "Administration",
+  othersReferenced: "Others referenced",
+};
+
 const PersonList: React.FC<PersonListProps> = ({
-  title,
+  list,
   people,
   addPerson,
   removePerson,
+  movePerson,
   isEditing,
 }) => {
-  const [errorMessage, setErrorMessage] = useState<string | undefined>();
-
-  const handleRemovePerson = (person: StoredPerson) => {
-    setErrorMessage(undefined);
-    try {
-      removePerson(person);
-    } catch (error) {
-      setErrorMessage(`${error}`);
-    }
-  };
+  const title = titles[list];
 
   return (
     <>
@@ -41,21 +47,96 @@ const PersonList: React.FC<PersonListProps> = ({
       ) : (
         <>
           <h4>{title}</h4>
-          {errorMessage && <p role="alert">{errorMessage}</p>}
           <ul>
             {people.map((person) => (
-              <li key={`${person.firstName}-${person.lastName}`}>
-                {person.firstName} {person.lastName}{" "}
-                <button onClick={() => handleRemovePerson(person)}>
-                  Remove
-                </button>
-              </li>
+              <PersonEditor
+                key={person.id}
+                list={list}
+                person={person}
+                removePerson={removePerson}
+                movePerson={movePerson}
+              />
             ))}
           </ul>
           <NewPerson personListTitle={title} addPerson={addPerson} />
         </>
       )}
     </>
+  );
+};
+
+type PersonEditorProps = {
+  list: MoveDestination;
+  person: StoredPerson;
+  removePerson: (person: StoredPerson) => void;
+  movePerson: (person: StoredPerson, destination: MoveDestination) => void;
+};
+
+const PersonEditor = ({
+  list,
+  person,
+  removePerson,
+  movePerson,
+}: PersonEditorProps) => {
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [moveDestination, setMoveDestination] = useState<
+    MoveDestination | undefined
+  >();
+
+  const handleMoveDestinationChange = (
+    event: ChangeEvent<HTMLSelectElement>
+  ) => {
+    setMoveDestination(event.target.value as MoveDestination);
+  };
+
+  const handleRemovePerson = (person: StoredPerson) => {
+    setErrorMessage(undefined);
+    try {
+      removePerson(person);
+    } catch (error) {
+      setErrorMessage(`${error}`);
+    }
+  };
+
+  const handleMovePerson = (person: StoredPerson) => {
+    setErrorMessage(undefined);
+    if (moveDestination) {
+      try {
+        movePerson(person, moveDestination);
+      } catch (error) {
+        setErrorMessage(`${error}`);
+      }
+    } else {
+      setErrorMessage("Please select a destination.");
+    }
+  };
+
+  return (
+    <li key={`${person.firstName}-${person.lastName}`}>
+      {person.firstName} {person.lastName}{" "}
+      <button onClick={() => handleRemovePerson(person)}>Remove</button>
+      <button
+        onClick={() => handleMovePerson(person)}
+        disabled={!moveDestination}
+      >
+        Move to
+      </button>
+      <select
+        aria-label="Move destination"
+        onChange={handleMoveDestinationChange}
+        value={moveDestination ?? ""}
+      >
+        <option value=""></option>
+        {Object.entries(titles)
+          .filter(([key]) => key !== list)
+          .map(([key, value]) => (
+            <option key={key} value={key}>
+              {value}
+            </option>
+          ))}
+      </select>
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+    </li>
   );
 };
 
@@ -141,6 +222,23 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
     setIsEditing(false);
   };
 
+  const movePerson = (person: StoredPerson, destination: MoveDestination) => {
+    switch (destination) {
+      case "membersPresent":
+        sessionStore.moveToMemberPresent(person);
+        break;
+      case "membersAbsent":
+        sessionStore.moveToMemberAbsent(person);
+        break;
+      case "administrationPresent":
+        sessionStore.moveToAdministrationPresent(person);
+        break;
+      case "othersReferenced":
+        sessionStore.moveToOtherReferenced(person);
+        break;
+    }
+  };
+
   return (
     <NonFormNodeControls
       isEditing={isEditing}
@@ -149,31 +247,35 @@ export const AttendanceNode: React.FC<AttendanceNodeProps> = ({
       className="attendance-container"
     >
       <PersonList
-        title="Members in attendance"
+        list={"membersPresent"}
         people={present}
         addPerson={sessionStore.addMemberPresent}
         removePerson={sessionStore.removeMemberPresent}
+        movePerson={movePerson}
         isEditing={isEditing}
       />
       <PersonList
-        title="Members not in attendance"
+        list={"membersAbsent"}
         people={absent}
         addPerson={sessionStore.addMemberAbsent}
         removePerson={sessionStore.removeMemberAbsent}
+        movePerson={movePerson}
         isEditing={isEditing}
       />
       <PersonList
-        title="Administration"
+        list={"administrationPresent"}
         people={administrationPresent}
         addPerson={sessionStore.addAdministrationPresent}
         removePerson={sessionStore.removeAdministrationPresent}
+        movePerson={movePerson}
         isEditing={isEditing}
       />
       <PersonList
-        title="Others referenced"
+        list={"othersReferenced"}
         people={othersReferenced}
         addPerson={sessionStore.addOtherReferenced}
         removePerson={sessionStore.removeOtherReferenced}
+        movePerson={movePerson}
         isEditing={isEditing}
       />
     </NonFormNodeControls>

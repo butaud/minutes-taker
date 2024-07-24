@@ -445,6 +445,20 @@ export class SessionStore {
     });
   };
 
+  moveToMemberPresent = (member: StoredPerson) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.membersPresent.push(member);
+      draft.metadata.membersAbsent = draft.metadata.membersAbsent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.administrationPresent =
+        draft.metadata.administrationPresent.filter((m) => m.id !== member.id);
+      draft.metadata.othersReferenced = draft.metadata.othersReferenced.filter(
+        (m) => m.id !== member.id
+      );
+    });
+  };
+
   addMemberAbsent = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.membersAbsent.push({ ...member, id: this.db.personId++ });
@@ -469,6 +483,20 @@ export class SessionStore {
         ...member,
         id: draft.metadata.membersAbsent[index].id,
       };
+    });
+  };
+
+  moveToMemberAbsent = (member: StoredPerson) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.membersAbsent.push(member);
+      draft.metadata.membersPresent = draft.metadata.membersPresent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.administrationPresent =
+        draft.metadata.administrationPresent.filter((m) => m.id !== member.id);
+      draft.metadata.othersReferenced = draft.metadata.othersReferenced.filter(
+        (m) => m.id !== member.id
+      );
     });
   };
 
@@ -501,6 +529,21 @@ export class SessionStore {
     });
   };
 
+  moveToAdministrationPresent = (member: StoredPerson) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.administrationPresent.push(member);
+      draft.metadata.membersPresent = draft.metadata.membersPresent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.membersAbsent = draft.metadata.membersAbsent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.othersReferenced = draft.metadata.othersReferenced.filter(
+        (m) => m.id !== member.id
+      );
+    });
+  };
+
   addOtherReferenced = (member: Person) => {
     this.produceUpdate((draft) => {
       draft.metadata.othersReferenced.push({
@@ -528,6 +571,20 @@ export class SessionStore {
         ...member,
         id: draft.metadata.othersReferenced[index].id,
       };
+    });
+  };
+
+  moveToOtherReferenced = (member: StoredPerson) => {
+    this.produceUpdate((draft) => {
+      draft.metadata.othersReferenced.push(member);
+      draft.metadata.membersPresent = draft.metadata.membersPresent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.membersAbsent = draft.metadata.membersAbsent.filter(
+        (m) => m.id !== member.id
+      );
+      draft.metadata.administrationPresent =
+        draft.metadata.administrationPresent.filter((m) => m.id !== member.id);
     });
   };
 

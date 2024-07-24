@@ -239,6 +239,35 @@ describe("attendance", () => {
     );
   });
 
+  it("allows moving members from attendance to another category", async () => {
+    expect.assertions(2);
+
+    sessionStore.addMemberPresent({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Jones",
+    });
+
+    const user = userEvent.setup();
+    render(<App store={sessionStore} />);
+    await user.hover(screen.getByText("Members in attendance:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    await user.selectOptions(
+      screen.getByLabelText("Move destination"),
+      "Members not in attendance"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Move to" }));
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+
+    expect(
+      screen.queryByText(getByTextContent("Members in attendance: Jones"))
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(getByTextContent("Members not in attendance: Jones"))
+    ).toBeInTheDocument();
+  });
+
   it("allows adding members to not in attendance", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
@@ -284,6 +313,35 @@ describe("attendance", () => {
     expect(
       screen.queryByText(getByTextContent("Members not in attendance: Jones"))
     ).not.toBeInTheDocument();
+  });
+
+  it("allows moving members from not in attendance to another category", async () => {
+    expect.assertions(2);
+
+    sessionStore.addMemberAbsent({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Jones",
+    });
+
+    const user = userEvent.setup();
+    render(<App store={sessionStore} />);
+    await user.hover(screen.getByText("Members not in attendance:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    await user.selectOptions(
+      screen.getByLabelText("Move destination"),
+      "Members in attendance"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Move to" }));
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+
+    expect(
+      screen.queryByText(getByTextContent("Members not in attendance: Jones"))
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(getByTextContent("Members in attendance: Jones"))
+    ).toBeInTheDocument();
   });
 
   it("allows adding administrators to attendance", async () => {
@@ -333,6 +391,34 @@ describe("attendance", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("allows moving administrators from attendance to another category", async () => {
+    expect.assertions(2);
+
+    sessionStore.addAdministrationPresent({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Jones",
+    });
+
+    const user = userEvent.setup();
+    render(<App store={sessionStore} />);
+    await user.hover(screen.getByText("Administration:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    await user.selectOptions(
+      screen.getByLabelText("Move destination"),
+      "Others referenced"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Move to" }));
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+
+    expect(
+      screen.queryByText(getByTextContent("Administration: Jones"))
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(getByTextContent("Others referenced: Jones")))
+      .toBeInTheDocument;
+  });
+
   it("allows adding others referenced", async () => {
     expect.assertions(1);
     const user = userEvent.setup();
@@ -378,5 +464,34 @@ describe("attendance", () => {
     expect(
       screen.queryByText(getByTextContent("Others referenced: Jones"))
     ).not.toBeInTheDocument();
+  });
+
+  it("allows moving others referenced to another category", async () => {
+    expect.assertions(2);
+
+    sessionStore.addOtherReferenced({
+      title: "Mr.",
+      firstName: "Bob",
+      lastName: "Jones",
+    });
+
+    const user = userEvent.setup();
+    render(<App store={sessionStore} />);
+    await user.hover(screen.getByText("Others referenced:"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    await user.selectOptions(
+      screen.getByLabelText("Move destination"),
+      "Members in attendance"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Move to" }));
+    fireEvent.click(screen.getByRole("button", { name: "Stop Editing" }));
+
+    expect(
+      screen.queryByText(getByTextContent("Others referenced: Jones"))
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(getByTextContent("Members in attendance: Jones"))
+    ).toBeInTheDocument();
   });
 });
